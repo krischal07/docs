@@ -2,6 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "palm",
   "name": "Samparka Docs",
+  "title": "Samparka Docs",
   "colors": {
     "primary": "#0F766E",
     "light": "#14B8A6",
@@ -17,62 +18,68 @@
         ]
       },
       {
-        "group": "Getting Started",
+        "group": "Integrations",
         "pages": [
-          "getting-started/overview",
-          "PARTNER-HANDOFF",
-          "quick-start",
-          "authentication",
-          "webhook-endpoint"
+          "integrations/restrox/index"
         ]
       },
       {
-        "group": "Events",
+        "group": "RestroX Getting Started",
         "pages": [
-          "event-types",
-          "payload-reference",
-          "response-reference",
-          "refunds"
+          "integrations/restrox/getting-started/overview",
+          "integrations/restrox/PARTNER-HANDOFF",
+          "integrations/restrox/quick-start",
+          "integrations/restrox/authentication",
+          "integrations/restrox/webhook-endpoint"
         ]
       },
       {
-        "group": "Reliability",
+        "group": "RestroX Events",
         "pages": [
-          "idempotency",
-          "location-mapping"
+          "integrations/restrox/event-types",
+          "integrations/restrox/payload-reference",
+          "integrations/restrox/response-reference",
+          "integrations/restrox/refunds"
         ]
       },
       {
-        "group": "Testing",
+        "group": "RestroX Reliability",
         "pages": [
-          "testing-guide",
-          "troubleshooting"
+          "integrations/restrox/idempotency",
+          "integrations/restrox/location-mapping"
         ]
       },
       {
-        "group": "Examples",
+        "group": "RestroX Testing",
         "pages": [
-          "examples/overview",
-          "examples/sale-completed",
-          "examples/refund-created",
-          "examples/duplicate-webhook",
-          "examples/blocked-location"
+          "integrations/restrox/testing-guide",
+          "integrations/restrox/troubleshooting"
         ]
       },
       {
-        "group": "Reference",
+        "group": "RestroX Examples",
         "pages": [
-          "reference/overview",
-          "endpoint-catalog",
-          "api-reference/overview",
-          "reference/postman-collection"
+          "integrations/restrox/examples/overview",
+          "integrations/restrox/examples/sale-completed",
+          "integrations/restrox/examples/refund-created",
+          "integrations/restrox/examples/duplicate-webhook",
+          "integrations/restrox/examples/blocked-location"
         ]
       },
       {
-        "group": "Go Live",
+        "group": "RestroX Reference",
         "pages": [
-          "integration-checklist",
-          "final-verification-report"
+          "integrations/restrox/reference/overview",
+          "integrations/restrox/endpoint-catalog",
+          "integrations/restrox/api-reference/overview",
+          "integrations/restrox/reference/postman-collection"
+        ]
+      },
+      {
+        "group": "RestroX Go Live",
+        "pages": [
+          "integrations/restrox/integration-checklist",
+          "integrations/restrox/final-verification-report"
         ]
       }
     ]

@@ -1,64 +1,49 @@
 ---
-title: RestroX Integration Guide
-description: Integrate RestroX with Samparka Loyalty using secure webhooks.
+title: Samparka Docs
+description: Welcome to Samparka Docs. Choose an integration guide and start onboarding with the right workflow.
 sidebarTitle: Home
 mode: wide
 hideFooterPagination: true
 ---
 
-# RestroX Integration Guide
+# Welcome to Samparka Docs
 
-Integrate RestroX with Samparka Loyalty using secure webhooks.
+Choose the integration guide you need and follow the onboarding path for that product.
 
 <Info>
-This portal organizes the reviewed RestroX integration documents into a cleaner onboarding path. The underlying Markdown guides remain the canonical source of truth.
+This portal is designed to host multiple Samparka integration guides. RestroX is available now, and more integrations can be added alongside it later.
 </Info>
 
 <Columns cols={2}>
-  <Card title="Quick Start" icon="rocket" href="/quick-start">
-    Configure the webhook, send a test sale, and reach a working baseline quickly.
+  <Card title="RestroX" icon="webhook" href="/integrations/restrox">
+    Open the full RestroX integration guide, including onboarding, testing, examples, and reference materials.
   </Card>
-  <Card title="Event Types" icon="radio" href="/event-types">
-    Review the sale, refund, and void events accepted by Samparka.
-  </Card>
-  <Card title="Testing Guide" icon="flask-conical" href="/testing-guide">
-    Validate delivery, duplicate handling, refunds, and common failure paths.
-  </Card>
-  <Card title="Integration Checklist" icon="clipboard-list" href="/integration-checklist">
-    Complete the production-readiness checks before enabling live traffic.
+  <Card title="More Integrations Soon" icon="layers">
+    Future partner integrations will appear here as additional documentation packages are published.
   </Card>
 </Columns>
 
-## Onboarding Flow
+## How To Use This Portal
 
 <Steps>
-  <Step title="Receive Token">
-    Confirm the webhook URL and token from Samparka, along with outlet mapping details.
+  <Step title="Choose An Integration">
+    Start from the integration card that matches the platform you are connecting to Samparka.
   </Step>
-  <Step title="Configure Webhook">
-    Point RestroX at the Samparka webhook endpoint and send JSON `POST` requests.
+  <Step title="Follow The Guide">
+    Each integration section can include its own getting-started flow, payload requirements, test cases, and reference assets.
   </Step>
-  <Step title="Send Test Sale">
-    Use the documented sale fixture to verify that an accepted request returns a `200` acknowledgment.
+  <Step title="Use Canonical Assets">
+    Download the integration-specific OpenAPI, Postman, and example payload assets from within that integration section.
   </Step>
-  <Step title="Verify Response">
-    Confirm the expected success message and resend the same payload once to validate idempotency.
-  </Step>
-  <Step title="Test Refund">
-    Send a `refund.created` payload that references the original sale identifier.
-  </Step>
-  <Step title="Go Live">
-    Finish the integration checklist, then promote the connection to production traffic.
+  <Step title="Return Here For New Guides">
+    As more Samparka integrations are published, they will be added to this homepage.
   </Step>
 </Steps>
 
-## Start With
+## Available Now
 
-<Columns cols={2}>
-  <Card title="Partner Handoff" icon="handshake" href="/PARTNER-HANDOFF">
-    Follow the recommended partner flow from handoff through go-live.
-  </Card>
-  <Card title="Technical Reference" icon="book-open" href="/reference/overview">
-    Jump into endpoint, API, and Postman reference materials.
+<Columns cols={1}>
+  <Card title="RestroX Integration Guide" icon="book-open" href="/integrations/restrox">
+    Go to the RestroX landing page to access the complete guide, test flow, examples, and machine-readable references.
   </Card>
 </Columns>

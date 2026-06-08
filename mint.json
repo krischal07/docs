@@ -1,81 +1,85 @@
 {
-"$schema": "https://mintlify.com/schema.json",
-"name": "Samparka Docs",
-"title": "RestroX Integration Guide",
-"theme": "venus",
-"favicon": "https://samparka.co/favicon.ico",
-
-"colors": {
-"primary": "#0F766E",
-"light": "#14B8A6",
-"dark": "#115E59"
-},
-
-"navigation": [
-{
-"group": "Home",
-"pages": [
-"index"
-]
-},
-{
-"group": "Getting Started",
-"pages": [
-"getting-started/overview",
-"PARTNER-HANDOFF",
-"quick-start",
-"authentication",
-"webhook-endpoint"
-]
-},
-{
-"group": "Events",
-"pages": [
-"event-types",
-"payload-reference",
-"response-reference",
-"refunds"
-]
-},
-{
-"group": "Reliability",
-"pages": [
-"idempotency",
-"location-mapping"
-]
-},
-{
-"group": "Testing",
-"pages": [
-"testing-guide",
-"troubleshooting"
-]
-},
-{
-"group": "Examples",
-"pages": [
-"examples/overview",
-"examples/sale-completed",
-"examples/refund-created",
-"examples/duplicate-webhook",
-"examples/blocked-location"
-]
-},
-{
-"group": "Reference",
-"pages": [
-"reference/overview",
-"endpoint-catalog",
-"api-reference/overview",
-"reference/postman-collection"
-]
-},
-{
-"group": "Go Live",
-"pages": [
-"integration-checklist",
-"final-verification-report"
-]
-}
-]
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Samparka Docs",
+  "title": "Samparka Docs",
+  "theme": "venus",
+  "favicon": "https://samparka.co/favicon.ico",
+  "colors": {
+    "primary": "#0F766E",
+    "light": "#14B8A6",
+    "dark": "#115E59"
+  },
+  "navigation": [
+    {
+      "group": "Home",
+      "pages": [
+        "index"
+      ]
+    },
+    {
+      "group": "Integrations",
+      "pages": [
+        "integrations/restrox/index"
+      ]
+    },
+    {
+      "group": "RestroX Getting Started",
+      "pages": [
+        "integrations/restrox/getting-started/overview",
+        "integrations/restrox/PARTNER-HANDOFF",
+        "integrations/restrox/quick-start",
+        "integrations/restrox/authentication",
+        "integrations/restrox/webhook-endpoint"
+      ]
+    },
+    {
+      "group": "RestroX Events",
+      "pages": [
+        "integrations/restrox/event-types",
+        "integrations/restrox/payload-reference",
+        "integrations/restrox/response-reference",
+        "integrations/restrox/refunds"
+      ]
+    },
+    {
+      "group": "RestroX Reliability",
+      "pages": [
+        "integrations/restrox/idempotency",
+        "integrations/restrox/location-mapping"
+      ]
+    },
+    {
+      "group": "RestroX Testing",
+      "pages": [
+        "integrations/restrox/testing-guide",
+        "integrations/restrox/troubleshooting"
+      ]
+    },
+    {
+      "group": "RestroX Examples",
+      "pages": [
+        "integrations/restrox/examples/overview",
+        "integrations/restrox/examples/sale-completed",
+        "integrations/restrox/examples/refund-created",
+        "integrations/restrox/examples/duplicate-webhook",
+        "integrations/restrox/examples/blocked-location"
+      ]
+    },
+    {
+      "group": "RestroX Reference",
+      "pages": [
+        "integrations/restrox/reference/overview",
+        "integrations/restrox/endpoint-catalog",
+        "integrations/restrox/api-reference/overview",
+        "integrations/restrox/reference/postman-collection"
+      ]
+    },
+    {
+      "group": "RestroX Go Live",
+      "pages": [
+        "integrations/restrox/integration-checklist",
+        "integrations/restrox/final-verification-report"
+      ]
+    }
+  ]
 }

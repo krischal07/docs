@@ -1,0 +1,53 @@
+---
+title: Postman Collection
+description: Download, import, and run the reviewed RestroX Postman collection without modifying its requests.
+sidebarTitle: Postman Collection
+---
+
+# Postman Collection
+
+Use the reviewed Postman collection for hands-on webhook testing without changing the underlying request definitions.
+
+<Columns cols={2}>
+  <Card title="Download Collection" icon="download" href="/integrations/restrox/postman-collection.json">
+    Download the canonical `postman-collection.json` file used for partner testing.
+  </Card>
+  <Card title="Testing Guide" icon="flask-conical" href="/integrations/restrox/testing-guide">
+    Pair the collection with the documented response expectations and fixture order.
+  </Card>
+</Columns>
+
+## Import Instructions
+
+<Steps>
+  <Step title="Download The JSON File">
+    Save the raw `postman-collection.json` file directly from this documentation portal.
+  </Step>
+  <Step title="Import Into Postman">
+    In Postman, choose import and select the unchanged collection file.
+  </Step>
+  <Step title="Fill Environment Values">
+    Set the webhook base URL, token, and any request variables required by your testing environment.
+  </Step>
+</Steps>
+
+## Recommended Testing Order
+
+<Steps>
+  <Step title="Completed Sale">
+    Confirm the first happy-path `order.completed` delivery is accepted.
+  </Step>
+  <Step title="Duplicate Replay">
+    Re-send the same sale request once to confirm duplicate-safe behavior.
+  </Step>
+  <Step title="Refund">
+    Send the refund request that references the original sale identifier.
+  </Step>
+  <Step title="Failure Cases">
+    Validate invalid token and wrong-location behavior before go-live.
+  </Step>
+</Steps>
+
+<Info>
+The collection remains unchanged. This page adds workflow guidance only.
+</Info>

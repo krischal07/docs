@@ -1,0 +1,204 @@
+{
+  "info": {
+    "name": "Samparka RestroX Partner Guide",
+    "_postman_id": "4d6d2f90-7f4c-4eb2-a3e2-2f1d61dcb001",
+    "description": "Partner testing collection for RestroX webhook delivery into Samparka.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://your-domain"
+    },
+    {
+      "key": "token",
+      "value": "replace-with-valid-token"
+    },
+    {
+      "key": "invalidToken",
+      "value": "invalid-token"
+    }
+  ],
+  "item": [
+    {
+      "name": "Sale Completed",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"external_location_id\": \"ktm-branch-01\",\n  \"external_location_name\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "webhook",
+            "restrox",
+            "{{token}}"
+          ]
+        },
+        "description": "Business purpose: send a completed sale to Samparka.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/sale-completed.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
+      },
+      "response": []
+    },
+    {
+      "name": "Refund Created",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event_type\": \"refund.created\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T11:30:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"external_location_id\": \"ktm-branch-01\",\n  \"external_location_name\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "webhook",
+            "restrox",
+            "{{token}}"
+          ]
+        },
+        "description": "Business purpose: send a refund that references the original sale identifier.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/refund-created.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Missing event_type in payload\"}"
+      },
+      "response": []
+    },
+    {
+      "name": "Voided Sale",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event_type\": \"order.voided\",\n  \"order_id\": \"restrox-sale-1002\",\n  \"created_at\": \"2026-06-08T12:00:00.000Z\",\n  \"amount\": 450,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000102\"\n  },\n  \"external_location_id\": \"ktm-branch-01\",\n  \"external_location_name\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Americano\",\n      \"qty\": 1,\n      \"price\": 450\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "webhook",
+            "restrox",
+            "{{token}}"
+          ]
+        },
+        "description": "Business purpose: send a voided sale using the original sale identifier.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/refunds.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
+      },
+      "response": []
+    },
+    {
+      "name": "Duplicate Sale",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"external_location_id\": \"ktm-branch-01\",\n  \"external_location_name\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "webhook",
+            "restrox",
+            "{{token}}"
+          ]
+        },
+        "description": "Business purpose: confirm that reposting the same sale is safe.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/duplicate-webhook.md\nExample success response: {\"success\":true,\"message\":\"Event already processed\"}\nExample failure response: {\"success\":false,\"message\":\"Internal server error\"}"
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"external_location_id\": \"ktm-branch-01\",\n  \"external_location_name\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/webhook/restrox/{{invalidToken}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "webhook",
+            "restrox",
+            "{{invalidToken}}"
+          ]
+        },
+        "description": "Business purpose: confirm token validation before go-live.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/authentication.md\nExample success response: not applicable\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
+      },
+      "response": []
+    },
+    {
+      "name": "Location Mismatch",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-2001\",\n  \"created_at\": \"2026-06-08T13:10:00.000Z\",\n  \"amount\": 600,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000103\"\n  },\n  \"external_location_id\": \"unknown-branch-99\",\n  \"external_location_name\": \"Unknown Branch\",\n  \"items\": [\n    {\n      \"name\": \"Latte\",\n      \"qty\": 1,\n      \"price\": 600\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "webhook",
+            "restrox",
+            "{{token}}"
+          ]
+        },
+        "description": "Business purpose: verify the partner team's location-mapping test case.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/blocked-location.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
+      },
+      "response": []
+    }
+  ]
+}

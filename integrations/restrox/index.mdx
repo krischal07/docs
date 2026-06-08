@@ -1,0 +1,64 @@
+---
+title: RestroX Integration Guide
+description: Integrate RestroX with Samparka Loyalty using secure webhooks.
+sidebarTitle: Overview
+mode: wide
+hideFooterPagination: true
+---
+
+# RestroX Integration Guide
+
+Integrate RestroX with Samparka Loyalty using secure webhooks.
+
+<Info>
+This section organizes the reviewed RestroX integration documents into a cleaner onboarding path. The underlying Markdown guides remain the canonical source of truth for this integration package.
+</Info>
+
+<Columns cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/integrations/restrox/quick-start">
+    Configure the webhook, send a test sale, and reach a working baseline quickly.
+  </Card>
+  <Card title="Event Types" icon="radio" href="/integrations/restrox/event-types">
+    Review the sale, refund, and void events accepted by Samparka.
+  </Card>
+  <Card title="Testing Guide" icon="flask-conical" href="/integrations/restrox/testing-guide">
+    Validate delivery, duplicate handling, refunds, and common failure paths.
+  </Card>
+  <Card title="Integration Checklist" icon="clipboard-list" href="/integrations/restrox/integration-checklist">
+    Complete the production-readiness checks before enabling live traffic.
+  </Card>
+</Columns>
+
+## Onboarding Flow
+
+<Steps>
+  <Step title="Receive Token">
+    Confirm the webhook URL and token from Samparka, along with outlet mapping details.
+  </Step>
+  <Step title="Configure Webhook">
+    Point RestroX at the Samparka webhook endpoint and send JSON `POST` requests.
+  </Step>
+  <Step title="Send Test Sale">
+    Use the documented sale fixture to verify that an accepted request returns a `200` acknowledgment.
+  </Step>
+  <Step title="Verify Response">
+    Confirm the expected success message and resend the same payload once to validate idempotency.
+  </Step>
+  <Step title="Test Refund">
+    Send a `refund.created` payload that references the original sale identifier.
+  </Step>
+  <Step title="Go Live">
+    Finish the integration checklist, then promote the connection to production traffic.
+  </Step>
+</Steps>
+
+## Start With
+
+<Columns cols={2}>
+  <Card title="Partner Handoff" icon="handshake" href="/integrations/restrox/PARTNER-HANDOFF">
+    Follow the recommended partner flow from handoff through go-live.
+  </Card>
+  <Card title="Technical Reference" icon="book-open" href="/integrations/restrox/reference/overview">
+    Jump into endpoint, API, and Postman reference materials.
+  </Card>
+</Columns>

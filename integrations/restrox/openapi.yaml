@@ -1,0 +1,259 @@
+openapi: 3.1.0
+info:
+  title: Samparka RestroX Partner Webhook API
+  version: 1.0.0
+  description: |
+    External partner guide for RestroX webhook delivery into Samparka.
+servers:
+  - url: https://your-domain
+paths:
+  /webhook/restrox/{token}:
+    post:
+      summary: Receive RestroX webhook events
+      description: |
+        Send RestroX sale, refund, or void webhooks to Samparka.
+        A 200 acknowledgment means the delivery was accepted. It does not guarantee loyalty activity was created.
+      operationId: postRestroxWebhook
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: Webhook token supplied by Samparka.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestroxWebhookRequest'
+            examples:
+              saleCompleted:
+                summary: Completed sale
+                x-source-fixture: examples/payloads.json#/sale_completed_request
+                value:
+                  event_type: order.completed
+                  order_id: restrox-sale-1001
+                  created_at: '2026-06-08T10:15:00.000Z'
+                  amount: 850
+                  currency: NPR
+                  customer:
+                    phone: '9800000101'
+                  external_location_id: ktm-branch-01
+                  external_location_name: Kathmandu Branch
+                  items:
+                    - name: Cappuccino
+                      qty: 1
+                      price: 850
+              refundCreated:
+                summary: Refund for original sale
+                x-source-fixture: examples/payloads.json#/refund_created_request
+                value:
+                  event_type: refund.created
+                  order_id: restrox-sale-1001
+                  created_at: '2026-06-08T11:30:00.000Z'
+                  amount: 850
+                  currency: NPR
+                  customer:
+                    phone: '9800000101'
+                  external_location_id: ktm-branch-01
+                  external_location_name: Kathmandu Branch
+                  items:
+                    - name: Cappuccino
+                      qty: 1
+                      price: 850
+              voidedSale:
+                summary: Voided sale
+                x-source-fixture: examples/payloads.json#/voided_sale_request
+                value:
+                  event_type: order.voided
+                  order_id: restrox-sale-1002
+                  created_at: '2026-06-08T12:00:00.000Z'
+                  amount: 450
+                  currency: NPR
+                  customer:
+                    phone: '9800000102'
+                  external_location_id: ktm-branch-01
+                  external_location_name: Kathmandu Branch
+                  items:
+                    - name: Americano
+                      qty: 1
+                      price: 450
+              blockedLocation:
+                summary: Unknown location example
+                x-source-fixture: examples/payloads.json#/blocked_location_request
+                value:
+                  event_type: order.completed
+                  order_id: restrox-sale-2001
+                  created_at: '2026-06-08T13:10:00.000Z'
+                  amount: 600
+                  currency: NPR
+                  customer:
+                    phone: '9800000103'
+                  external_location_id: unknown-branch-99
+                  external_location_name: Unknown Branch
+                  items:
+                    - name: Latte
+                      qty: 1
+                      price: 600
+              missingEventType:
+                summary: Validation failure example
+                x-source-fixture: examples/payloads.json#/missing_event_type_request
+                value:
+                  order_id: restrox-sale-3001
+                  created_at: '2026-06-08T14:00:00.000Z'
+                  amount: 300
+                  currency: NPR
+                  external_location_id: ktm-branch-01
+      responses:
+        '200':
+          description: Event accepted or duplicate acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicResponse'
+              examples:
+                eventReceived:
+                  summary: Accepted
+                  x-source-fixture: examples/payloads.json#/event_received_response
+                  value:
+                    success: true
+                    message: Event received
+                eventAlreadyProcessed:
+                  summary: Duplicate acknowledged
+                  x-source-fixture: examples/payloads.json#/event_already_processed_response
+                  value:
+                    success: true
+                    message: Event already processed
+        '400':
+          description: Request validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicResponse'
+              examples:
+                invalidBody:
+                  summary: Body must be a JSON object
+                  x-source-fixture: examples/payloads.json#/invalid_body_response
+                  value:
+                    success: false
+                    message: Request body must be a JSON object
+                missingEventType:
+                  summary: Event type missing
+                  x-source-fixture: examples/payloads.json#/validation_failure_response
+                  value:
+                    success: false
+                    message: Missing event_type in payload
+        '404':
+          description: Invalid webhook token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicResponse'
+              examples:
+                invalidToken:
+                  summary: Unknown token
+                  x-source-fixture: examples/payloads.json#/invalid_token_response
+                  value:
+                    success: false
+                    message: Invalid webhook token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicResponse'
+              examples:
+                internalServerError:
+                  summary: Unexpected failure
+                  x-source-fixture: examples/payloads.json#/internal_server_error_response
+                  value:
+                    success: false
+                    message: Internal server error
+components:
+  schemas:
+    RestroxWebhookRequest:
+      type: object
+      additionalProperties: true
+      properties:
+        event_type:
+          type: string
+        type:
+          type: string
+        order_id:
+          type: string
+        transaction_id:
+          type: string
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        timestamp:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        order_total:
+          type: number
+        total:
+          type: number
+        currency:
+          type: string
+        currency_code:
+          type: string
+        external_location_id:
+          type: string
+        location_id:
+          type: string
+        outlet_id:
+          type: string
+        branch_id:
+          type: string
+        external_location_name:
+          type: string
+        location_name:
+          type: string
+        branch_name:
+          type: string
+        outlet_name:
+          type: string
+        phone:
+          type: string
+        customer_phone:
+          type: string
+        customer:
+          type: object
+          additionalProperties: true
+          properties:
+            phone:
+              type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineItem'
+        line_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineItem'
+      description: Request payload fields consumed by Samparka for the RestroX webhook.
+    LineItem:
+      type: object
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        qty:
+          type: number
+        price:
+          type: number
+    BasicResponse:
+      type: object
+      required:
+        - success
+        - message
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
