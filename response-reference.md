@@ -23,9 +23,6 @@ Meaning: Samparka accepted the delivery.
 
 Recommended sender behavior: record the delivery as acknowledged. Do not retry unless you later confirm the request did not reach Samparka.
 
-Source:
-samparka-backend/src/integrations/pos/controller.js:332-365
-
 ## `200 Event already processed`
 
 ```json
@@ -38,9 +35,6 @@ samparka-backend/src/integrations/pos/controller.js:332-365
 Meaning: the same webhook was sent before, and Samparka handled it safely.
 
 Recommended sender behavior: stop retrying the same payload.
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:293-312
 
 ## `400 Request body must be a JSON object`
 
@@ -55,10 +49,6 @@ Meaning: the request body was missing, not JSON, or was an array instead of an o
 
 Recommended sender behavior: correct the request body and resend.
 
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/validator.js:23-26
-samparka-backend/src/integrations/pos/controller.js:217-221
-
 ## `400 Missing event_type in payload`
 
 ```json
@@ -71,10 +61,6 @@ samparka-backend/src/integrations/pos/controller.js:217-221
 Meaning: the payload did not include `event_type` or `type`.
 
 Recommended sender behavior: add the event type and resend.
-
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/parser.js:20-23
-samparka-backend/src/integrations/pos/controller.js:235-243
 
 ## `404 Invalid webhook token`
 
@@ -89,9 +75,6 @@ Meaning: the token in the URL did not match a configured RestroX webhook locatio
 
 Recommended sender behavior: verify the webhook URL with Samparka before retrying.
 
-Source:
-samparka-backend/src/integrations/pos/controller.js:200-205
-
 ## `500 Internal server error`
 
 ```json
@@ -104,6 +87,3 @@ samparka-backend/src/integrations/pos/controller.js:200-205
 Meaning: Samparka encountered an unexpected error while handling the request.
 
 Recommended sender behavior: retry later with the same payload.
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:367-397

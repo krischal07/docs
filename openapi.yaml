@@ -4,7 +4,6 @@ info:
   version: 1.0.0
   description: |
     External partner guide for RestroX webhook delivery into Samparka.
-    Source fixtures for all examples: docs/restrox-partner-guide/examples/payloads.json
 servers:
   - url: https://your-domain
 paths:

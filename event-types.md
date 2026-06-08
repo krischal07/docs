@@ -14,9 +14,6 @@ See also: [Payload Reference](./payload-reference).
 - `refund.created` for refunds
 - `order.voided` for voided or canceled sales
 
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
-
 ## `order.completed`
 
 Purpose: send a completed sale that may qualify for loyalty processing.
@@ -33,10 +30,6 @@ Example response:
   "message": "Event received"
 }
 ```
-
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61
-samparka-backend/src/integrations/pos/controller.js:351-365
 
 ## `refund.created`
 
@@ -55,11 +48,6 @@ Example response:
 }
 ```
 
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/mapper.js:27-29
-samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
-samparka-backend/src/integrations/pos/controller.js:351-365
-
 ## `order.voided`
 
 Purpose: send a voided sale when the original sale should no longer count.
@@ -76,8 +64,3 @@ Example response:
   "message": "Event received"
 }
 ```
-
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/mapper.js:23-26
-samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
-samparka-backend/src/integrations/pos/controller.js:351-365

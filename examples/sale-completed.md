@@ -37,11 +37,6 @@ Use the `sale_completed_request` fixture from [`payloads.json`](./payloads.json)
 
 Samparka accepted the sale webhook and continued processing it as a completed sale event.
 
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61
-samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-22
-samparka-backend/src/integrations/pos/controller.js:351-365
-
 ## What To Do Next
 
 Repeat the same payload once to confirm duplicate handling, then continue with the refund test.

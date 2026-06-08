@@ -2,7 +2,7 @@
   "info": {
     "name": "Samparka RestroX Partner Guide",
     "_postman_id": "4d6d2f90-7f4c-4eb2-a3e2-2f1d61dcb001",
-    "description": "Partner testing collection for RestroX webhook delivery into Samparka. Source fixtures for request and response examples: docs/restrox-partner-guide/examples/payloads.json",
+    "description": "Partner testing collection for RestroX webhook delivery into Samparka.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -46,7 +46,7 @@
             "{{token}}"
           ]
         },
-        "description": "Business purpose: send a completed sale to Samparka.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/sale-completed.md\nSource fixture: examples/payloads.json#/sale_completed_request\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
+        "description": "Business purpose: send a completed sale to Samparka.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/sale-completed.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
       },
       "response": []
     },
@@ -76,7 +76,7 @@
             "{{token}}"
           ]
         },
-        "description": "Business purpose: send a refund that references the original sale identifier.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/refund-created.md\nSource fixture: examples/payloads.json#/refund_created_request\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Missing event_type in payload\"}"
+        "description": "Business purpose: send a refund that references the original sale identifier.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/refund-created.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Missing event_type in payload\"}"
       },
       "response": []
     },
@@ -106,7 +106,7 @@
             "{{token}}"
           ]
         },
-        "description": "Business purpose: send a voided sale using the original sale identifier.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/refunds.md\nSource fixture: examples/payloads.json#/voided_sale_request\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
+        "description": "Business purpose: send a voided sale using the original sale identifier.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/refunds.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
       },
       "response": []
     },
@@ -136,7 +136,7 @@
             "{{token}}"
           ]
         },
-        "description": "Business purpose: confirm that reposting the same sale is safe.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/duplicate-webhook.md\nSource fixture: examples/payloads.json#/duplicate_sale_request\nExample success response: {\"success\":true,\"message\":\"Event already processed\"}\nExample failure response: {\"success\":false,\"message\":\"Internal server error\"}"
+        "description": "Business purpose: confirm that reposting the same sale is safe.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/duplicate-webhook.md\nExample success response: {\"success\":true,\"message\":\"Event already processed\"}\nExample failure response: {\"success\":false,\"message\":\"Internal server error\"}"
       },
       "response": []
     },
@@ -166,7 +166,7 @@
             "{{invalidToken}}"
           ]
         },
-        "description": "Business purpose: confirm token validation before go-live.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/authentication.md\nSource fixture: examples/payloads.json#/sale_completed_request\nExample success response: not applicable\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
+        "description": "Business purpose: confirm token validation before go-live.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/authentication.md\nExample success response: not applicable\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
       },
       "response": []
     },
@@ -196,7 +196,7 @@
             "{{token}}"
           ]
         },
-        "description": "Business purpose: verify the partner team's location-mapping test case.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/blocked-location.md\nSource fixture: examples/payloads.json#/blocked_location_request\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
+        "description": "Business purpose: verify the partner team's location-mapping test case.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/blocked-location.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
       },
       "response": []
     }

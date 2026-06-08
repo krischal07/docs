@@ -37,10 +37,6 @@ Use the `blocked_location_request` fixture from [`payloads.json`](./payloads.jso
 
 Samparka accepted the delivery, but the outlet mapping should be reviewed because the payload location did not match a processable configured location.
 
-Source:
-samparka-backend/src/integrations/pos/controller.js:246-349
-samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
-
 ## What To Do Next
 
 Confirm the correct `external_location_id` with Samparka and resend future events with the mapped location value.

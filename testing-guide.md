@@ -10,11 +10,6 @@ This guide uses the shared fixtures in [`examples/payloads.json`](./examples/pay
 
 See also: [Refunds](./refunds) and [Troubleshooting](./troubleshooting).
 
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61
-samparka-backend/src/integrations/pos/controller.js:200-205
-samparka-backend/src/integrations/pos/controller.js:301-365
-
 ## Sale Test
 
 ```bash
@@ -44,9 +39,6 @@ Expected response:
 
 Use the `sale_completed_request` fixture values from [`examples/payloads.json`](./examples/payloads.json).
 
-Source:
-samparka-backend/src/integrations/pos/controller.js:351-365
-
 ## Refund Test
 
 ```bash
@@ -73,10 +65,6 @@ Expected response:
   "message": "Event received"
 }
 ```
-
-Source:
-samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
-samparka-backend/src/integrations/pos/controller.js:351-365
 
 ## Void Test
 
@@ -105,11 +93,6 @@ Expected response:
 }
 ```
 
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/mapper.js:23-26
-samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
-samparka-backend/src/integrations/pos/controller.js:351-365
-
 ## Duplicate Webhook Test
 
 Resend the sale test payload exactly as-is.
@@ -122,9 +105,6 @@ Expected response:
   "message": "Event already processed"
 }
 ```
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:293-312
 
 ## Invalid Token Test
 
@@ -152,9 +132,6 @@ Expected response:
   "message": "Invalid webhook token"
 }
 ```
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:200-205
 
 ## Wrong Location Test
 
@@ -184,7 +161,3 @@ Expected response:
 ```
 
 What this means: Samparka accepted the delivery, but location setup should be verified before go-live.
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:246-349
-samparka-backend/src/integrations/pos/locationResolutionService.js:68-77

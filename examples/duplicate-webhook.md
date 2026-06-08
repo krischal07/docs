@@ -37,9 +37,6 @@ Use the `duplicate_sale_request` fixture from [`payloads.json`](./payloads.json)
 
 Samparka recognized the repeated delivery and acknowledged it safely without handling it as a new sale.
 
-Source:
-samparka-backend/src/integrations/pos/controller.js:293-312
-
 ## What To Do Next
 
 Treat this response as success and stop retrying that payload.

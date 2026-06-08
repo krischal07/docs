@@ -8,12 +8,6 @@ sidebarTitle: Guide Overview
 
 Samparka is a customer loyalty platform. The RestroX webhook integration lets RestroX send completed-sale, refund, and void events to Samparka so eligible transactions can be evaluated for loyalty activity. RestroX sends JSON webhooks to a token-based URL, and Samparka responds with a simple success or error message for each delivery.
 
-Source:
-samparka-backend/src/integrations/pos/routes.js:11-15
-samparka-backend/src/integrations/pos/controller.js:200-205
-samparka-backend/src/integrations/pos/controller.js:301-365
-samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
-
 ## Integration Flow
 
 1. Receive the Samparka webhook URL and token.
@@ -23,12 +17,6 @@ samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
 5. Repost the same payload once to confirm duplicate safety.
 6. Send a `refund.created` webhook that references the original sale identifier.
 7. Complete the go-live checklist.
-
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61
-samparka-backend/src/integrations/pos/controller.js:200-205
-samparka-backend/src/integrations/pos/controller.js:301-365
-samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
 
 ## Quick Links
 
@@ -52,8 +40,3 @@ samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
 ## Important Integration Note
 
 A `200 Event received` response means Samparka accepted the webhook delivery. It does not guarantee that loyalty activity was created, because customer and location requirements are checked after the request is accepted.
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:332-365
-samparka-backend/src/loyalty/handlers/saleCompletedHandler.js:101-110
-samparka-backend/src/loyalty/handlers/saleCompletedHandler.js:134-142

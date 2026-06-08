@@ -8,10 +8,6 @@ sidebarTitle: Location Mapping
 
 Samparka uses `external_location_id` to match a RestroX webhook to the correct outlet configuration. The webhook token identifies the configured location record, and the payload location must also match the expected external location value.
 
-Source:
-samparka-backend/src/integrations/pos/locationResolutionService.js:9-27
-samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
-
 ## What RestroX Needs To Send
 
 Send one of these location fields:
@@ -23,16 +19,9 @@ Send one of these location fields:
 
 `external_location_name`, `location_name`, `branch_name`, or `outlet_name` can also be sent as an optional label.
 
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/parser.js:43-54
-
 ## What Response To Expect
 
 If the token is valid, Samparka can still return `200 Event received` even when the location payload does not match a valid outlet mapping. That acknowledgment means the delivery was accepted, not necessarily credited.
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:246-349
-samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
 
 ## What To Do If Something Goes Wrong
 
@@ -41,7 +30,3 @@ If a sale is accepted but expected loyalty activity is missing, verify:
 1. The payload includes a location identifier.
 2. The location identifier matches the configured Samparka outlet mapping.
 3. The location mapping is enabled for participation.
-
-Source:
-samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
-samparka-backend/src/models/posIntegrationLocationModel.js:46-54

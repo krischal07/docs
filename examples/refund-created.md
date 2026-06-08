@@ -37,11 +37,6 @@ Use the `refund_created_request` fixture from [`payloads.json`](./payloads.json)
 
 Samparka accepted the refund webhook and used the sale identifier to match the original sale.
 
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/mapper.js:27-29
-samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
-samparka-backend/src/integrations/pos/controller.js:351-365
-
 ## What To Do Next
 
 If you plan to retry refund deliveries, resend the exact same payload once and confirm the duplicate acknowledgment.
