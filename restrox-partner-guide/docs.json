@@ -1,0 +1,80 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "palm",
+  "name": "Samparka Docs",
+  "colors": {
+    "primary": "#0F766E",
+    "light": "#14B8A6",
+    "dark": "#115E59"
+  },
+  "favicon": "https://samparka.co/favicon.ico",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Home",
+        "pages": [
+          "index"
+        ]
+      },
+      {
+        "group": "Getting Started",
+        "pages": [
+          "getting-started/overview",
+          "PARTNER-HANDOFF",
+          "quick-start",
+          "authentication",
+          "webhook-endpoint"
+        ]
+      },
+      {
+        "group": "Events",
+        "pages": [
+          "event-types",
+          "payload-reference",
+          "response-reference",
+          "refunds"
+        ]
+      },
+      {
+        "group": "Reliability",
+        "pages": [
+          "idempotency",
+          "location-mapping"
+        ]
+      },
+      {
+        "group": "Testing",
+        "pages": [
+          "testing-guide",
+          "troubleshooting"
+        ]
+      },
+      {
+        "group": "Examples",
+        "pages": [
+          "examples/overview",
+          "examples/sale-completed",
+          "examples/refund-created",
+          "examples/duplicate-webhook",
+          "examples/blocked-location"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "reference/overview",
+          "endpoint-catalog",
+          "api-reference/overview",
+          "reference/postman-collection"
+        ]
+      },
+      {
+        "group": "Go Live",
+        "pages": [
+          "integration-checklist",
+          "final-verification-report"
+        ]
+      }
+    ]
+  }
+}
