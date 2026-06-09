@@ -1,20 +1,29 @@
 ---
 title: Native Authentication
-description: Review the authentication mechanisms used by RestroX partner APIs, webhook delivery, and related merchant-authenticated setup routes.
+description: Review the authentication mechanisms used by RestroX partner APIs, customer APIs, and webhook delivery.
 sidebarTitle: Authentication
 ---
 
 # Native Authentication
 
-The RestroX integration uses more than one authentication mechanism. The correct method depends on the API surface you are calling.
+The RestroX integration uses more than one authentication mechanism. The correct credential depends on the API surface you are calling.
 
 ## Purpose
 
 Use this page to understand:
 
-- which authentication type belongs to each route family
+- which credential belongs to each route family
 - which headers are required
-- how partner routes differ from webhook routes
+- how native partner APIs differ from canonical webhook routing
+
+## Authentication Matrix
+
+| Credential | Purpose | Where It Is Used Today |
+| ------ | ------- | ---------------------- |
+| Partner Key | Authenticate partner-managed APIs | `POST /api/partners/restrox/connect`, `POST /api/partners/restrox/sync-locations`, `POST /api/partners/restrox/test-sale`, and partner customer APIs |
+| Integration Key | Resolve the merchant integration | request body for connect, sync-locations, and test-sale; `x-integration-key` for partner customer APIs |
+| Webhook Token | Route canonical webhook traffic to a mapped location | `POST /webhook/restrox/{token}` and internal token routing used by native `test-sale` |
+| `api_key` | Authenticate the legacy provider event route | `POST /integrations/pos/{provider}/events` only |
 
 ## Authentication Types
 
@@ -31,6 +40,8 @@ Accepted credentials:
 - `x-partner-key`
 - `Authorization: Bearer {partnerKey}`
 
+These routes also require `integrationKey` in the request body so the integration can be resolved.
+
 ### Partner Customer Authentication
 
 Used by:
@@ -46,6 +57,12 @@ Required credentials:
 - partner key through `x-partner-key` or `Authorization: Bearer ...`
 - merchant Connection Key through `x-integration-key`
 
+The current middleware rejects:
+
+- missing integration key
+- invalid integration key
+- inactive integrations
+
 ### Webhook Authentication
 
 Used by:
@@ -58,7 +75,7 @@ Required credential:
 
 ### Legacy Provider Event Authentication
 
-Used internally by the native test-sale path and still supported on:
+Used by:
 
 - `POST /integrations/pos/{provider}/events`
 
@@ -66,7 +83,7 @@ Required credential:
 
 - `x-api-key`
 
-This legacy route is part of the event transport layer. It is not the primary onboarding surface for the native integration.
+This route still exists in the current implementation, but it is not part of native onboarding, partner customer APIs, connect, sync-locations, or test-sale.
 
 ### Merchant API Authentication
 
@@ -74,7 +91,7 @@ Used by merchant POS integration routes such as:
 
 - `/api/pos-integrations/*`
 
-These routes use existing Samparka merchant/store/admin authentication middleware and are not public partner APIs.
+These routes use existing Samparka merchant, store, or admin authentication middleware and are not public partner APIs.
 
 ## Required Headers
 
@@ -120,12 +137,15 @@ x-api-key: integration-api-key
 ```mermaid
 flowchart TD
   A["Partner API request"] --> B["Partner key validation"]
-  B --> C["Optional Connection Key validation"]
-  C --> D["Controller"]
+  B --> C["Integration resolution from request body or x-integration-key"]
+  C --> D["Controller or middleware"]
 
   E["Webhook request"] --> F["Token routing"]
-  F --> G["Provider validation"]
-  G --> H["Event processing"]
+  F --> G["handleTokenEvent()"]
+  G --> H["Canonical event processing"]
+
+  I["Legacy provider route request"] --> J["x-api-key validation"]
+  J --> K["handleEvent()"]
 ```
 
 ## Production Authentication
@@ -135,8 +155,6 @@ The verified implementation reads partner credentials from:
 - `RESTROX_PARTNER_API_KEY`
 - `POS_PARTNER_API_KEY`
 
-Webhook URLs can be built from configured server origin values.
-
 Implementation detail requires clarification.
 
 The current docs package does not publish a formal production credential issuance process.
@@ -145,7 +163,7 @@ The current docs package does not publish a formal production credential issuanc
 
 Implementation detail requires clarification.
 
-No staging-specific partner key issuance flow was verified in the current docs package.
+No staging-specific partner key issuance flow was verified in the current code pass.
 
 ## Authorization Failures
 
@@ -217,8 +235,8 @@ No verified public partner-key rotation route is published in the current implem
 ## Operational Notes
 
 - Partner APIs accept either `x-partner-key` or bearer token format.
-- Partner customer APIs are protected by both partner authentication and merchant integration-key resolution.
-- Native test-sale behavior ultimately depends on the legacy provider event path and its `x-api-key` handling.
+- Partner customer APIs are protected by both partner authentication and integration-key resolution.
+- The native RestroX integration no longer uses `api_key` for partner authentication or test-sale execution.
 
 ## Troubleshooting Notes
 

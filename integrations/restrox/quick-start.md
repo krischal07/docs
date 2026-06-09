@@ -79,6 +79,7 @@ curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
   -H "x-partner-key: your-partner-key" \
   --data '{
     "integrationKey": "SPK-RX-ABC12345",
+    "locationId": "ktm-branch-01",
     "payload": {
       "event_type": "order.completed",
       "order_id": "restrox-sale-1001",
@@ -112,7 +113,7 @@ Use the readiness checklist and merchant onboarding model to confirm the integra
 
 ## Webhook Transport Note
 
-The native test-sale path forwards into Samparka's existing RestroX event pipeline. If you also need to validate raw webhook delivery directly, continue with:
+The native test-sale path resolves the mapped location, loads the stored webhook token, and enters the same canonical token-routed ingress used by production webhook traffic. If you also need to validate raw webhook delivery directly, continue with:
 
 - [Webhook Endpoint](./webhook-endpoint)
 - [Payload Reference](./payload-reference)

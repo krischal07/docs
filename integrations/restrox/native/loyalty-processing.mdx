@@ -1,12 +1,12 @@
 ---
 title: Loyalty Processing
-description: Understand how RestroX native partner flows feed Samparka's webhook-backed loyalty processing engine and how customer identity outcomes affect downstream crediting.
+description: Understand how RestroX native partner flows feed Samparka's canonical webhook-backed loyalty processing engine.
 sidebarTitle: Loyalty Processing
 ---
 
 # Loyalty Processing
 
-The RestroX native integration does not award loyalty points directly through the partner API. Instead, it feeds Samparka's webhook-backed event processing and loyalty engine.
+The RestroX native integration does not award loyalty points directly through the partner API. It feeds Samparka's canonical token-routed event ingress, which then continues through internal event processing and the loyalty engine.
 
 ## Purpose
 
@@ -21,12 +21,14 @@ Use this page to understand:
 ```mermaid
 flowchart TD
   A["RestroX connect + sync"] --> B["Customer lookup/create/upsert"]
-  B --> C["Sale event submitted"]
-  C --> D["Provider validation + routing"]
-  D --> E["Internal event"]
-  E --> F["Loyalty processing"]
-  F --> G["Points earned or skipped"]
-  E --> H["Refund or void reversal"]
+  B --> C["Partner test-sale or production webhook"]
+  C --> D["handleTokenEvent()"]
+  D --> E["Parser + mapper"]
+  E --> F["Idempotency"]
+  F --> G["Internal event"]
+  G --> H["Loyalty processing"]
+  H --> I["Points earned or skipped"]
+  G --> J["Refund or void reversal"]
 ```
 
 ## Concepts
@@ -63,7 +65,7 @@ Practical effect:
 
 Implementation detail requires clarification.
 
-The current webhook docs state that `Event received` means delivery was accepted, not that loyalty activity was guaranteed. This page documents that boundary, but it does not expose an additional public loyalty outcome API for RestroX.
+The current public responses confirm delivery acceptance, not a separate public loyalty outcome.
 
 ## Endpoints Involved
 
@@ -79,13 +81,13 @@ POST /api/partners/restrox/test-sale
 POST /webhook/restrox/{token}
 ```
 
-### Legacy Provider Event Route
+### Existing Legacy Provider Route
 
 ```http
 POST /integrations/pos/{provider}/events
 ```
 
-The native test-sale route forwards into the provider event processing path internally.
+The legacy provider route still exists, but native `test-sale` does not use it.
 
 ## Response Expectations
 
@@ -111,15 +113,17 @@ Duplicate-safe response:
 
 ### Event Accepted, Loyalty Not Visible
 
-Possible reasons already reflected in the docs package:
+Possible reasons already reflected in the current code path:
 
 - location mapping needs review
+- location participation is disabled
+- location mapping is inactive or stale
 - customer input needs review
 - refund linkage needs review
 
 ### Duplicate Replay
 
-The engine acknowledges duplicate deliveries safely and does not treat the same event as a new sale.
+The ingress acknowledges duplicate deliveries safely and does not treat the same event as a new sale.
 
 ### Refund Or Void Cannot Be Matched
 
@@ -127,13 +131,13 @@ Refund and reversal logic depend on being able to match the original sale activi
 
 ## Operational Notes
 
-- The sale handler and reversal handler live behind the same event processing pipeline.
+- Partner `test-sale` and production webhook traffic share the same downstream loyalty path after `handleTokenEvent()`.
 - The native integration changes onboarding and customer preparation, not the underlying transaction engine.
 - Refund verification remains recommended even though it is optional in the current merchant readiness checklist.
 
 ## Troubleshooting Notes
 
-- If customer search and upsert are working but loyalty is still missing, inspect location and event validation next.
+- If customer search and upsert are working but loyalty is still missing, inspect location state and event validation next.
 - If a refund event is accepted but reversal is not visible, confirm the original sale identifier is consistent.
 - If repeated test sales return duplicate acknowledgment, confirm you are changing the event identifier for a new test.
 

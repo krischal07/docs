@@ -6,7 +6,7 @@ sidebarTitle: Connection Keys
 
 # Connection Keys
 
-Samparka issues a merchant-facing Connection Key for each RestroX POS integration. RestroX uses this key to connect the merchant and sync locations through the native partner API.
+Samparka issues a merchant-facing Connection Key for each RestroX POS integration. RestroX uses this key to connect the merchant, sync locations, and submit test sales through the native partner API.
 
 ## Purpose
 
@@ -15,7 +15,16 @@ Use this page to understand:
 - what a Connection Key is
 - why it exists
 - how the backend creates and rotates it
-- how partner APIs validate it
+- how it differs from the legacy `api_key`
+
+## Credential Distinction
+
+| Credential | Backend Field | Current Purpose |
+| ------ | ------- | ------- |
+| Connection Key | `integration_key` | Merchant integration resolution for native partner APIs |
+| Legacy API Key | `api_key` | Legacy provider-route compatibility only |
+
+The native RestroX integration does not use `api_key` for connect, sync-locations, test-sale, or partner customer APIs.
 
 ## What Is A Connection Key
 
@@ -27,10 +36,9 @@ The backend field name is `integration_key`, but partner-facing documentation us
 
 The Connection Key allows RestroX to connect a merchant without exposing:
 
-- webhook URL generation
 - merchant API credentials
 - internal location model details
-- internal processing tokens
+- internal webhook tokens
 
 ## Key Format
 
@@ -83,7 +91,7 @@ Rotation behavior verified in the backend:
 
 ## Ownership Rules
 
-The verified partner connect flow resolves an integration by:
+The verified native partner flows resolve an integration by:
 
 - provider = `restrox`
 - `integration_key`
@@ -108,7 +116,7 @@ These public partner surfaces validate the key:
 
 Validation behavior differs by surface:
 
-- RestroX partner routes return `404 Invalid Integration Key` when the key cannot be resolved
+- RestroX partner routes resolve the key from the request body and return `404 Invalid Integration Key` when it cannot be resolved
 - partner customer routes require the key in `x-integration-key` and return `401 Invalid integration key` when resolution fails
 - inactive integrations are rejected on partner customer routes with `403 Integration is inactive`
 
@@ -128,6 +136,20 @@ POST /api/partners/restrox/connect
     "name": "Java Express"
   },
   "locations": []
+}
+```
+
+### Use In Partner Test Sale
+
+```http
+POST /api/partners/restrox/test-sale
+```
+
+```json
+{
+  "integrationKey": "SPK-RX-ABC12345",
+  "locationId": "ktm-branch-01",
+  "payload": {}
 }
 ```
 
@@ -199,6 +221,7 @@ Implementation detail requires clarification.
 - A Connection Key is provider-specific.
 - The merchant-facing label can be `Connection Key` even though the backend field name remains `integration_key`.
 - Key rotation resets the connection workflow and should be treated as a reconnect event.
+- `api_key` remains an existing legacy provider-route credential, not a native onboarding credential.
 
 ## Troubleshooting Notes
 

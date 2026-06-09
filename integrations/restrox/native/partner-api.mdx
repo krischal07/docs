@@ -22,7 +22,7 @@ All partner routes:
 
 - are authenticated with a partner key
 - are scoped to provider `restrox`
-- use the merchant Connection Key to identify the integration
+- use the merchant Connection Key to resolve the target integration
 
 ## Provider Integration Flow
 
@@ -33,7 +33,10 @@ flowchart TD
   C --> D{"Review required?"}
   D -- Yes --> E["Resolve mappings"]
   D -- No --> F["Submit test sale"]
-  F --> G["Merchant reaches ready state"]
+  F --> G["Resolve location + webhook token"]
+  G --> H["handleTokenEvent()"]
+  H --> I["Canonical ingress"]
+  I --> J["Merchant reaches ready state"]
 ```
 
 ## Authentication
@@ -87,13 +90,13 @@ Example response:
 }
 ```
 
-Behavior:
+Verified behavior:
 
-- validates the Connection Key
-- loads store outlets
-- syncs locations
-- marks the partner connected timestamp
-- sets `partnerConnectionStatus` to `connected` or `review_required`
+- resolves the integration by `integrationKey`
+- loads store outlets from the linked store
+- syncs the supplied locations into `posIntegrationLocation`
+- marks partner connection metadata and sync timestamps
+- returns sync results in the shared success envelope
 
 ### Sync Locations
 
@@ -136,11 +139,13 @@ Example response:
 }
 ```
 
-Behavior:
+Verified behavior:
 
-- does not create a separate merchant account object in public response
-- updates integration sync timestamps
-- writes review issues into partner metadata
+- resolves the integration by `integrationKey`
+- uses provider-facing location fields such as `externalLocationId` and `externalLocationName`
+- attempts outlet matching by outlet hint or normalized name
+- records review issues when a location is missing an external ID, is duplicated, is ambiguous, or cannot be matched
+- updates sync timestamps and partner metadata
 
 ### Test Sale
 
@@ -154,6 +159,7 @@ Example request:
 ```json
 {
   "integrationKey": "SPK-RX-ABC12345",
+  "locationId": "ktm-branch-01",
   "payload": {
     "event_type": "order.completed",
     "order_id": "restrox-sale-1001",
@@ -181,12 +187,44 @@ Example response:
 }
 ```
 
-Behavior:
+Request rules:
 
-- validates the Connection Key
-- resolves the integration API key internally
-- forwards the payload into the existing provider event route
-- updates the integration key last-used timestamp
+- `locationId` is preferred when you already know the RestroX location identifier
+- `locationId` is interpreted as the provider-facing `external_location_id`
+- `locationId` is not a Samparka Mongo `_id`
+- the payload may still supply the location identifier through:
+  - `external_location_id`
+  - `location_id`
+  - `outlet_id`
+  - `branch_id`
+
+Verified `test-sale` flow:
+
+1. resolve integration using `integrationKey`
+2. determine the requested location identifier from `locationId` or payload aliases
+3. reject conflicting top-level and payload identifiers
+4. resolve the mapped location by integration plus `external_location_id`
+5. require a stored `webhook_token`
+6. inject the canonical `external_location_id` into the synthetic payload
+7. invoke `handleTokenEvent()`
+8. continue through the same canonical token-routed ingress used by production webhook traffic
+
+Downstream canonical ingress stages:
+
+- raw event logging
+- token context resolution
+- parsing
+- mapping
+- idempotency reservation
+- internal event creation
+- event processing and loyalty path
+
+Verified behavior:
+
+- does not use `integration.api_key`
+- does not send `x-api-key`
+- does not call `handleEvent()`
+- updates `integration_key_last_used_at` after the token-routed ingress call returns
 
 ## Expected Responses
 
@@ -215,10 +253,15 @@ Verified partner-visible failures include:
 
 - `401 Unauthorized partner request`
 - `404 Invalid Integration Key`
-- partner webhook-forwarded validation failures such as:
+- `400 locationId does not match the payload location identifier`
+- `400 A location identifier is required. Provide locationId or a payload location field.`
+- `404 No mapped RestroX location found for the provided location identifier`
+- `409 Ambiguous RestroX location identifier for this integration`
+- `409 The selected RestroX location does not have a webhook token`
+- `409 The selected RestroX location does not have a mapped external location ID`
+- canonical ingress validation failures such as:
   - `400 Request body must be a JSON object`
   - `400 Missing event_type in payload`
-  - `500 Internal server error`
 
 ## Readiness Requirements
 
@@ -227,7 +270,7 @@ The current onboarding model treats readiness as:
 - Connection Key created
 - RestroX connected
 - locations synced without unresolved review state
-- test sale received
+- test sale received through the canonical token-routed ingress
 
 Refund verification is optional in the current merchant checklist model.
 
@@ -236,7 +279,7 @@ Refund verification is optional in the current merchant checklist model.
 - connect the merchant before sending any production events
 - sync locations before relying on sale traffic
 - verify customer lookup and upsert behavior before go-live
-- use the native test-sale path to confirm the webhook-backed event engine is reachable
+- use the native test-sale path to validate the same token-routed ingress used by production webhook traffic
 
 ## Identity Outcomes In Partner Flow
 
@@ -258,7 +301,7 @@ Implementation detail requires clarification.
 ## Troubleshooting Notes
 
 - If `connect` returns `reviewRequired: true`, inspect the review issues before testing sales.
-- If `test-sale` succeeds at transport level but readiness does not advance, verify location sync and customer identity assumptions.
+- If `test-sale` succeeds at transport level but readiness does not advance, verify location sync, location state, and customer identity assumptions.
 - If the same connection must be re-established after key rotation, use the new Connection Key rather than retrying the old one.
 
 ## Related Documentation

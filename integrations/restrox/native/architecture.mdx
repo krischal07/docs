@@ -1,12 +1,12 @@
 ---
 title: Architecture
-description: Understand how the RestroX native integration layers partner onboarding and customer APIs above Samparka's existing webhook processing engine.
+description: Understand how the RestroX native integration layers partner onboarding and customer APIs above Samparka's webhook processing engine.
 sidebarTitle: Architecture
 ---
 
 # Architecture
 
-The RestroX native integration is not a separate transaction-processing engine. It is a partner-facing onboarding and customer layer that feeds Samparka's existing POS event pipeline.
+The RestroX native integration is not a separate transaction-processing engine. It is a partner-facing onboarding and customer layer that feeds Samparka's canonical token-routed POS event ingress.
 
 ## Purpose
 
@@ -14,8 +14,8 @@ Use this page to understand:
 
 - which APIs RestroX calls directly
 - where Connection Keys fit
+- how test-sale reaches canonical ingress
 - how customer identity affects downstream loyalty outcomes
-- how native onboarding and webhook delivery work together
 
 ## System Flow
 
@@ -23,25 +23,32 @@ Use this page to understand:
 flowchart TD
   A["Merchant"] --> B["Connection Key"]
   B --> C["RestroX Partner API"]
-  C --> D["Location Sync"]
-  D --> E["Customer Identity"]
-  E --> F["Customer APIs"]
-  F --> G["Sale Events"]
-  G --> H["Webhook-backed Event Processing"]
-  H --> I["Loyalty Engine"]
+  C --> D["Connect + sync"]
+  D --> E["Customer APIs"]
+  E --> F["Test sale or production webhook"]
+  F --> G["Canonical token-routed ingress"]
+  G --> H["Internal event processing"]
+  H --> I["Loyalty engine"]
   I --> J["Rewards"]
   I --> K["Receipts"]
 ```
 
-## Architecture Layers
+## Ingress Convergence
 
 ```mermaid
 flowchart TD
-  A["Merchant Experience"] --> B["Partner APIs"]
-  B --> C["Merchant POS Integration Layer"]
-  C --> D["Webhook Routing + Event Normalization"]
-  D --> E["Internal Event Processing"]
-  E --> F["Loyalty, Rewards, and Receipt Services"]
+  A["POST /api/partners/restrox/test-sale"] --> B["Resolve integration by integrationKey"]
+  B --> C["Resolve location by external_location_id"]
+  C --> D["Load stored webhook_token"]
+  D --> E["handleTokenEvent()"]
+
+  F["POST /webhook/restrox/{token}"] --> E
+
+  E --> G["RawWebhookEvent"]
+  G --> H["Parser + mapper"]
+  H --> I["Idempotency"]
+  I --> J["InternalEvent"]
+  J --> K["Loyalty processing"]
 ```
 
 ## External Partner Touchpoints
@@ -82,10 +89,20 @@ Customer identity is store-scoped and phone-first.
 
 See [Customer Identity](./customer-identity) for the exact outcomes used by the implementation.
 
+## Credential Roles
+
+| Credential | Purpose |
+| ------ | ------- |
+| Partner Key | Authenticate native partner APIs and partner customer APIs |
+| Integration Key | Resolve the merchant integration for connect, sync-locations, and test-sale |
+| Webhook Token | Route canonical webhook traffic to the mapped location |
+| `api_key` | Authenticate the legacy provider event route only |
+
 ## Operational Notes
 
-- The native integration still depends on per-location webhook tokens internally.
-- The native partner `test-sale` API does not bypass the event engine. It forwards the payload into the existing provider event route.
+- The native integration uses stored per-location webhook tokens internally for token routing.
+- The native partner `test-sale` API and production webhook traffic converge into the same `handleTokenEvent()` ingress path.
+- The legacy provider route still exists, but it is not part of native onboarding, customer APIs, connect, sync-locations, or test-sale.
 - Location sync can place an integration into a review-required state before any live traffic is sent.
 
 ## Troubleshooting Notes

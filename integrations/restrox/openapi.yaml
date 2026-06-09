@@ -140,7 +140,9 @@ paths:
     post:
       summary: Submit a test sale through the native partner API
       description: |
-        Forward a RestroX sale payload into the existing provider event pipeline.
+        Resolve the target integration and mapped location, load the stored
+        webhook token, and submit the event through the canonical token-routed
+        ingress used by production webhook traffic.
       operationId: submitRestroxTestSale
       security:
         - PartnerKeyHeader: []
@@ -156,6 +158,7 @@ paths:
                 summary: Submit test sale
                 value:
                   integrationKey: SPK-RX-ABC12345
+                  locationId: ktm-branch-01
                   payload:
                     event_type: order.completed
                     order_id: restrox-sale-1001
@@ -185,6 +188,59 @@ paths:
                     data:
                       success: true
                       message: Event received
+        '400':
+          description: Invalid request body or conflicting location identifiers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicError'
+              examples:
+                conflictingLocation:
+                  value:
+                    success: false
+                    message: locationId does not match the payload location identifier
+                missingLocation:
+                  value:
+                    success: false
+                    message: A location identifier is required. Provide locationId or a payload location field.
+                missingEventType:
+                  value:
+                    success: false
+                    message: Missing event_type in payload
+        '404':
+          description: Integration key or mapped location not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicError'
+              examples:
+                invalidKey:
+                  value:
+                    success: false
+                    message: Invalid Integration Key
+                unknownLocation:
+                  value:
+                    success: false
+                    message: No mapped RestroX location found for the provided location identifier
+        '409':
+          description: Ambiguous or unusable mapped location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicError'
+              examples:
+                ambiguousLocation:
+                  value:
+                    success: false
+                    message: Ambiguous RestroX location identifier for this integration
+                missingWebhookToken:
+                  value:
+                    success: false
+                    message: The selected RestroX location does not have a webhook token
+                missingMappedExternalLocation:
+                  value:
+                    success: false
+                    message: The selected RestroX location does not have a mapped external location ID
   /api/partners/{provider}/customers/search:
     get:
       summary: Search for a customer by exact phone
@@ -560,6 +616,10 @@ components:
       properties:
         integrationKey:
           type: string
+          description: Connection Key used to resolve the RestroX integration.
+        locationId:
+          type: string
+          description: Preferred provider-facing external location identifier. This is not a Mongo ID.
         payload:
           $ref: '#/components/schemas/RestroxWebhookRequest'
     PartnerCustomerCreateRequest:

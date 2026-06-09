@@ -67,14 +67,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"payload\": {\n    \"event_type\": \"order.completed\",\n    \"order_id\": \"restrox-sale-1001\",\n    \"created_at\": \"2026-06-08T10:15:00.000Z\",\n    \"amount\": 850,\n    \"currency\": \"NPR\",\n    \"customer\": {\n      \"phone\": \"9801234567\"\n    },\n    \"external_location_id\": \"ktm-branch-01\",\n    \"external_location_name\": \"Kathmandu Branch\",\n    \"items\": [\n      {\n        \"name\": \"Cappuccino\",\n        \"qty\": 1,\n        \"price\": 850\n      }\n    ]\n  }\n}"
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"locationId\": \"ktm-branch-01\",\n  \"payload\": {\n    \"event_type\": \"order.completed\",\n    \"order_id\": \"restrox-sale-1001\",\n    \"created_at\": \"2026-06-08T10:15:00.000Z\",\n    \"amount\": 850,\n    \"currency\": \"NPR\",\n    \"customer\": {\n      \"phone\": \"9801234567\"\n    },\n    \"external_location_id\": \"ktm-branch-01\",\n    \"external_location_name\": \"Kathmandu Branch\",\n    \"items\": [\n      {\n        \"name\": \"Cappuccino\",\n        \"qty\": 1,\n        \"price\": 850\n      }\n    ]\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/partners/restrox/test-sale",
               "host": ["{{baseUrl}}"],
               "path": ["api", "partners", "restrox", "test-sale"]
             },
-            "description": "Business purpose: submit a test sale through the existing event processing pipeline."
+            "description": "Business purpose: submit a test sale that resolves a mapped location and enters the canonical token-routed ingress."
           }
         }
       ]

@@ -91,6 +91,7 @@ curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
   -H "x-partner-key: your-partner-key" \
   --data '{
     "integrationKey": "SPK-RX-ABC12345",
+    "locationId": "ktm-branch-01",
     "payload": {
       "event_type": "order.completed",
       "order_id": "restrox-sale-1001",
@@ -117,6 +118,18 @@ Expected result:
   }
 }
 ```
+
+Verification points:
+
+- `RawWebhookEvent` should be created for the request
+- `route_token` should be populated on the raw event
+- `InternalEvent` should be created when the event passes canonical ingress validation
+- downstream loyalty processing should execute for processable events
+
+Notes:
+
+- `locationId` is the preferred provider-facing `external_location_id`
+- a valid location identifier alone is insufficient; the payload must still be a valid RestroX event payload
 
 ## Direct Webhook Sale Test
 
@@ -175,16 +188,16 @@ Expected response:
 
 ## Wrong Location Test
 
+Use a location identifier that does not resolve to a mapped location for the integration.
+
 Expected response:
 
 ```json
 {
-  "success": true,
-  "message": "Event received"
+  "success": false,
+  "message": "No mapped RestroX location found for the provided location identifier"
 }
 ```
-
-Meaning: delivery was accepted, but location setup still needs review.
 
 ## Related Documentation
 
