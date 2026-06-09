@@ -6,7 +6,7 @@ info:
     External partner guide for the RestroX native integration with Samparka.
 
     The native partner APIs handle merchant connection, location sync, and
-    partner customer operations. Event delivery continues through the existing
+    read-only partner customer retrieval. Event delivery continues through the existing
     RestroX webhook-backed event pipeline.
 servers:
   - url: https://your-domain
@@ -245,9 +245,9 @@ paths:
     get:
       summary: Search for a customer by exact phone
       description: |
-        Search for a customer within the store linked to the provided
-        Connection Key. The current implementation supports exact phone lookup
-        only.
+        Search for a Samparka-owned customer within the store linked to the
+        provided Connection Key. Partner customer access is read-only, and the
+        current implementation supports exact phone lookup only.
       operationId: searchPartnerCustomer
       security:
         - PartnerKeyHeader: []
@@ -312,55 +312,12 @@ paths:
                   value:
                     error: customer_identity_conflict
                     message: Multiple customer records share the same normalized phone. Admin resolution is required.
-  /api/partners/{provider}/customers:
-    post:
-      summary: Create a customer or return an existing one
-      operationId: createPartnerCustomer
-      security:
-        - PartnerKeyHeader: []
-        - PartnerBearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/provider'
-        - $ref: '#/components/parameters/integrationKeyHeader'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerCustomerCreateRequest'
-      responses:
-        '200':
-          description: Customer created or existing customer returned
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerCustomerResponse'
-  /api/partners/{provider}/customers/upsert:
-    post:
-      summary: Create or return existing customer by normalized phone
-      operationId: upsertPartnerCustomer
-      security:
-        - PartnerKeyHeader: []
-        - PartnerBearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/provider'
-        - $ref: '#/components/parameters/integrationKeyHeader'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerCustomerCreateRequest'
-      responses:
-        '200':
-          description: Upsert completed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerCustomerUpsertResponse'
   /api/partners/{provider}/customers/{customerId}:
     get:
       summary: Get one customer by ID
+      description: |
+        Fetch one existing Samparka-owned customer within the store linked to
+        the provided Connection Key. Partner customer access is read-only.
       operationId: getPartnerCustomer
       security:
         - PartnerKeyHeader: []
@@ -387,51 +344,6 @@ paths:
                   value:
                     error: partner_customer_error
                     message: Customer not found
-    patch:
-      summary: Update a customer
-      operationId: updatePartnerCustomer
-      security:
-        - PartnerKeyHeader: []
-        - PartnerBearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/provider'
-        - $ref: '#/components/parameters/integrationKeyHeader'
-        - $ref: '#/components/parameters/customerId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerCustomerUpdateRequest'
-      responses:
-        '200':
-          description: Customer updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerCustomerResponse'
-        '400':
-          description: Invalid update
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerCustomerError'
-              examples:
-                invalidFields:
-                  value:
-                    error: partner_customer_error
-                    message: Only name and email can be updated
-        '409':
-          description: Duplicate email
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerCustomerError'
-              examples:
-                duplicateEmail:
-                  value:
-                    error: partner_customer_error
-                    message: Email already exists
   /webhook/restrox/{token}:
     post:
       summary: Receive RestroX webhook events
@@ -622,24 +534,6 @@ components:
           description: Preferred provider-facing external location identifier. This is not a Mongo ID.
         payload:
           $ref: '#/components/schemas/RestroxWebhookRequest'
-    PartnerCustomerCreateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        phone:
-          type: string
-        email:
-          type: string
-      required: [phone]
-    PartnerCustomerUpdateRequest:
-      type: object
-      minProperties: 1
-      properties:
-        name:
-          type: string
-        email:
-          type: string
     PartnerCustomer:
       type: object
       required: [id, phone, points, lifetimePoints]
@@ -670,14 +564,6 @@ components:
       type: object
       required: [customer]
       properties:
-        customer:
-          $ref: '#/components/schemas/PartnerCustomer'
-    PartnerCustomerUpsertResponse:
-      type: object
-      required: [created, customer]
-      properties:
-        created:
-          type: boolean
         customer:
           $ref: '#/components/schemas/PartnerCustomer'
     CustomerSearchFound:

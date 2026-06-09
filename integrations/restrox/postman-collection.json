@@ -2,7 +2,7 @@
   "info": {
     "name": "Samparka RestroX Native Integration",
     "_postman_id": "c7f3f5e7-7c6e-4b7d-b1b6-restrox-native",
-    "description": "RestroX native onboarding, partner customer APIs, and webhook delivery reference collection.",
+    "description": "RestroX native onboarding, read-only partner customer retrieval, and webhook delivery reference collection.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -98,49 +98,7 @@
                 { "key": "phone", "value": "9801234567" }
               ]
             },
-            "description": "Business purpose: search for a customer by exact phone within the merchant store."
-          }
-        },
-        {
-          "name": "Create Customer",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "x-partner-key", "value": "{{partnerKey}}" },
-              { "key": "x-integration-key", "value": "{{integrationKey}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Asha\",\n  \"phone\": \"+9779801234567\",\n  \"email\": \"asha@example.com\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/partners/restrox/customers",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "partners", "restrox", "customers"]
-            },
-            "description": "Business purpose: create a customer or return an existing normalized-phone match."
-          }
-        },
-        {
-          "name": "Upsert Customer",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "x-partner-key", "value": "{{partnerKey}}" },
-              { "key": "x-integration-key", "value": "{{integrationKey}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Asha\",\n  \"phone\": \"9779801234567\",\n  \"email\": \"asha@example.com\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/partners/restrox/customers/upsert",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "partners", "restrox", "customers", "upsert"]
-            },
-            "description": "Business purpose: create-or-return-existing by normalized phone identity."
+            "description": "Business purpose: search for a Samparka-owned customer by exact phone within the merchant store."
           }
         },
         {
@@ -156,28 +114,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "partners", "restrox", "customers", "{{customerId}}"]
             },
-            "description": "Business purpose: fetch one customer by ID."
-          }
-        },
-        {
-          "name": "Update Customer",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "x-partner-key", "value": "{{partnerKey}}" },
-              { "key": "x-integration-key", "value": "{{integrationKey}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Asha Sharma\",\n  \"email\": \"asha.sharma@example.com\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/partners/restrox/customers/{{customerId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "partners", "restrox", "customers", "{{customerId}}"]
-            },
-            "description": "Business purpose: update the partner-supported customer fields."
+            "description": "Business purpose: retrieve one Samparka-owned customer by ID."
           }
         }
       ]

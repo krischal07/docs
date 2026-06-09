@@ -20,11 +20,10 @@ This catalog lists the externally relevant RestroX routes documented in this pac
 
 | Method | Path | Purpose | Auth | Status |
 | ------ | ---- | ------- | ---- | ------ |
-| `GET` | `/api/partners/{provider}/customers/search` | Search by exact phone within the merchant store | Partner key + Connection Key | Active |
-| `POST` | `/api/partners/{provider}/customers` | Create a customer or return an existing match | Partner key + Connection Key | Active |
-| `POST` | `/api/partners/{provider}/customers/upsert` | Create-or-return-existing by normalized phone | Partner key + Connection Key | Active |
-| `GET` | `/api/partners/{provider}/customers/{customerId}` | Fetch one customer by ID | Partner key + Connection Key | Active |
-| `PATCH` | `/api/partners/{provider}/customers/{customerId}` | Update name or email | Partner key + Connection Key | Active |
+| `GET` | `/api/partners/{provider}/customers/search` | Search for a Samparka-owned customer by exact phone within the merchant store | Partner key + Connection Key | Active |
+| `GET` | `/api/partners/{provider}/customers/{customerId}` | Retrieve one Samparka-owned customer by ID | Partner key + Connection Key | Active |
+
+Customers are owned by Samparka. Partners may search and retrieve customers only. Customer creation occurs through loyalty and event processing, not partner write APIs.
 
 ## Webhook And Event Transport
 
