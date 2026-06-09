@@ -1,12 +1,12 @@
 ---
 title: Customer API
-description: Implement the RestroX partner customer endpoints for search, get, create, update, and upsert using Samparka's store-scoped customer identity rules.
+description: Implement the read-only RestroX partner customer endpoints for search and retrieval using Samparka's store-scoped customer identity rules.
 sidebarTitle: Customer API
 ---
 
 # Customer API
 
-Samparka exposes partner customer APIs so RestroX can search, create, update, and upsert customers using store-scoped normalized phone identity.
+Samparka exposes read-only partner customer APIs for RestroX. Partners can search and retrieve customers, but customer creation is not exposed through partner APIs.
 
 ## Purpose
 
@@ -14,9 +14,6 @@ Use this page to implement:
 
 - customer search
 - customer retrieval
-- customer create
-- customer update
-- customer upsert
 
 ## Concepts
 
@@ -27,6 +24,8 @@ All customer partner routes require:
 - provider path parameter
 
 The current implementation supports provider `restrox`.
+
+Customers are managed by Samparka.
 
 ## Authentication
 
@@ -49,7 +48,6 @@ These endpoints depend on the identity outcomes documented in [Customer Identity
 
 - `found`
 - `missing`
-- `created`
 - `conflict`
 - `invalid_phone`
 
@@ -127,212 +125,20 @@ Failure cases:
 
 - `404 Customer not found`
 
-### Create Customer
-
-```http
-POST /api/partners/{provider}/customers
-Content-Type: application/json
-```
-
-Example request:
-
-```json
-{
-  "name": "Asha",
-  "phone": "+9779801234567",
-  "email": "asha@example.com"
-}
-```
-
-Behavior:
-
-- if exactly one matching customer exists, the existing customer is returned
-- if no matching customer exists, a new customer is created
-- if multiple matching customers exist, the request fails with conflict
-
-Example response:
-
-```json
-{
-  "customer": {
-    "id": "687000000000000000000001",
-    "name": "Asha",
-    "phone": "9801234567",
-    "email": "asha@example.com",
-    "points": 0,
-    "tier": "Bronze Tier",
-    "lifetimePoints": 0,
-    "membershipSince": "2026-06-09T10:15:00.000Z"
-  }
-}
-```
-
-Validation rules:
-
-- `name` required
-- `phone` required
-- `email` optional but must be valid if present
-
-Failure cases:
-
-- `400 Name is required`
-- `400 Phone is required`
-- `400 Invalid phone number`
-- `400 Invalid email`
-- `409 customer_identity_conflict`
-- `409 Email already exists`
-
-### Update Customer
-
-```http
-PATCH /api/partners/{provider}/customers/{customerId}
-Content-Type: application/json
-```
-
-Updatable fields:
-
-- `name`
-- `email`
-
-Example request:
-
-```json
-{
-  "name": "Asha Sharma",
-  "email": "asha.sharma@example.com"
-}
-```
-
-Example response:
-
-```json
-{
-  "customer": {
-    "id": "687000000000000000000001",
-    "name": "Asha Sharma",
-    "phone": "9801234567",
-    "email": "asha.sharma@example.com",
-    "points": 45,
-    "tier": "Bronze Tier",
-    "lifetimePoints": 45,
-    "membershipSince": "2026-06-08T10:15:00.000Z"
-  }
-}
-```
-
-Validation rules:
-
-- at least one field required
-- only `name` and `email` are allowed
-- `email` must be valid if present
-
-Failure cases:
-
-- `400 At least one updatable field is required`
-- `400 Only name and email can be updated`
-- `400 Invalid email`
-- `404 Customer not found`
-- `409 Email already exists`
-
-### Upsert Customer
-
-```http
-POST /api/partners/{provider}/customers/upsert
-Content-Type: application/json
-```
-
-Example request:
-
-```json
-{
-  "name": "Asha",
-  "phone": "9779801234567",
-  "email": "asha@example.com"
-}
-```
-
-Behavior:
-
-- if exactly one matching customer exists, return it with `created: false`
-- if no match exists, create one and return `created: true`
-- if multiple matches exist, fail with conflict
-
-Example created response:
-
-```json
-{
-  "created": true,
-  "customer": {
-    "id": "687000000000000000000001",
-    "name": "Asha",
-    "phone": "9801234567",
-    "email": "asha@example.com",
-    "points": 0,
-    "tier": "Bronze Tier",
-    "lifetimePoints": 0,
-    "membershipSince": "2026-06-09T10:15:00.000Z"
-  }
-}
-```
-
-Example existing response:
-
-```json
-{
-  "created": false,
-  "customer": {
-    "id": "687000000000000000000001",
-    "name": "Asha",
-    "phone": "9801234567",
-    "email": "asha@example.com",
-    "points": 45,
-    "tier": "Bronze Tier",
-    "lifetimePoints": 45,
-    "membershipSince": "2026-06-08T10:15:00.000Z"
-  }
-}
-```
-
-Failure cases:
-
-- `400 Phone is required`
-- `400 Name is required` when a new customer would need to be created
-- `400 Invalid phone number`
-- `400 Invalid email`
-- `409 customer_identity_conflict`
-- `409 Email already exists`
-
-## Duplicate Prevention Notes
-
-Duplicate prevention is store-scoped and phone-first.
-
-- create returns existing customer when one normalized-phone match exists
-- upsert returns existing customer with `created: false`
-- conflict blocks create/upsert when more than one normalized-phone match exists
-
-## Idempotency Notes
-
-The partner customer endpoints do not expose a separate idempotency key header in the verified implementation.
-
-Current practical behavior:
-
-- repeated create calls for the same normalized phone return the existing customer once one match exists
-- repeated upsert calls for the same normalized phone are safe at the application level
-
 ## Operational Notes
 
-- Partner customer auth requires an active integration.
-- New partner-created customers use `customer_source = "pos"` and provider metadata for RestroX.
-- Customer serialization exposes `id`, `name`, `phone`, `email`, `points`, `tier`, `lifetimePoints`, and `membershipSince`.
+- Customer APIs are read-only in the current backend implementation.
+- Customer creation is not exposed through partner APIs.
 
 ## Troubleshooting Notes
 
-- If search fails, check the phone format first.
-- If update fails, verify you are only sending `name` and `email`.
-- If create or upsert fails with conflict, manual customer cleanup is required.
+- If search fails with `Invalid phone number`, normalize and validate the phone before retrying.
+- If search returns conflict, manual customer cleanup is required before automated partner flows can rely on that phone identity.
+- If get-by-id returns `Customer not found`, confirm the customer belongs to the store resolved by the supplied `x-integration-key`.
 
 ## Related Documentation
 
 - [Customer Identity](./customer-identity)
 - [Authentication](./authentication)
 - [Partner API](./partner-api)
+- [Loyalty Processing](./loyalty-processing)

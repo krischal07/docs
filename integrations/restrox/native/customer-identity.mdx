@@ -6,7 +6,7 @@ sidebarTitle: Customer Identity
 
 # Customer Identity
 
-The RestroX native integration uses store-scoped, phone-first customer identity. Partner customer operations resolve, create, and return customers through normalized phone behavior.
+The RestroX native integration uses store-scoped, phone-first customer identity. Partner customer operations search and return customers through normalized phone behavior.
 
 ## Purpose
 
@@ -49,11 +49,10 @@ Implementation note:
 
 ## Customer Resolution
 
-Verified partner-facing outcomes:
+Verified partner-facing outcomes for the current read-only customer APIs:
 
 - `found`
 - `missing`
-- `created`
 - `conflict`
 - `invalid_phone`
 
@@ -67,18 +66,9 @@ flowchart TD
   B -- No --> C["invalid_phone"]
   B -- Yes --> D{"Customer exists?"}
   D -- Yes, one --> E["found → return existing"]
-  D -- No --> F["missing → create when allowed"]
+  D -- No --> F["missing"]
   D -- More than one --> G["conflict → manual resolution required"]
 ```
-
-## Create Or Return Existing
-
-Partner customer create and upsert flows both prevent duplicate creation by:
-
-- normalizing the phone
-- checking for existing customers in the same store
-- returning the existing customer when one match exists
-- rejecting with conflict when more than one match exists
 
 ## Conflict Detection
 
@@ -100,8 +90,6 @@ The verified implementation does not publish a partner-facing merge or conflict-
 When conflict exists:
 
 - search fails with conflict
-- create fails with conflict
-- upsert fails with conflict
 - manual resolution is required before automated partner identity operations can continue
 
 ## Identity Guarantees
@@ -118,8 +106,7 @@ This gives the partner API a deterministic identity guarantee when the store has
 Customer identity affects:
 
 - `GET /api/partners/{provider}/customers/search`
-- `POST /api/partners/{provider}/customers`
-- `POST /api/partners/{provider}/customers/upsert`
+- `GET /api/partners/{provider}/customers/{customerId}`
 - downstream sale-event loyalty resolution
 
 ## Examples
@@ -170,14 +157,11 @@ Customer identity affects:
 
 ## Operational Notes
 
-- Partner update does not allow phone changes.
-- Customer create and upsert mark new records with `customer_source = "pos"` and provider metadata for RestroX.
-- Registration-side effects can still apply when a new partner-created customer is registered through the shared customer registration service.
+- Customer identity for partner APIs is currently exposed through search and get-by-id behavior.
 
 ## Troubleshooting Notes
 
 - If search fails with `Invalid phone number`, normalize and validate the phone before retrying.
-- If create unexpectedly returns an existing customer, the normalized phone already belongs to one customer in that store.
 - If partner flows stop on conflict, manual cleanup is required before continuing automated sync behavior.
 
 ## Related Documentation

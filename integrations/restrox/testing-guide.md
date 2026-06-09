@@ -64,25 +64,6 @@ Expected result:
 - `exists: true` for an existing customer
 - `exists: false` for a missing customer
 
-## Customer Upsert Test
-
-```bash
-curl -X POST "https://your-domain/api/partners/restrox/customers/upsert" \
-  -H "Content-Type: application/json" \
-  -H "x-partner-key: your-partner-key" \
-  -H "x-integration-key: SPK-RX-ABC12345" \
-  --data '{
-    "name": "Asha",
-    "phone": "+9779801234567",
-    "email": "asha@example.com"
-  }'
-```
-
-Expected result:
-
-- `created: true` for a new customer
-- `created: false` when the customer already exists
-
 ## Native Test Sale
 
 ```bash

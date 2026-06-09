@@ -63,7 +63,6 @@ or, for customer identity conflict:
 | Partner Customer API | `400` | `partner_customer_error` | `Search supports exact phone lookup only` | Unsupported search parameters |
 | Partner Customer API | `404` | `partner_customer_error` | `Customer not found` | Missing customer record |
 | Partner Customer API | `409` | `customer_identity_conflict` | `Multiple customer records share the same normalized phone. Admin resolution is required.` | Conflict state |
-| Partner Customer API | `409` | `partner_customer_error` | `Email already exists` | Duplicate email |
 | Webhook API | `404` | not exposed | `Invalid webhook token` | Token route validation |
 | Webhook API | `400` | not exposed | `Missing event_type in payload` | Payload validation |
 | Webhook API | `400` | not exposed | `Request body must be a JSON object` | Request validation |

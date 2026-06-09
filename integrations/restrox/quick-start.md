@@ -69,7 +69,7 @@ curl "https://your-domain/api/partners/restrox/customers/search?phone=9801234567
   -H "x-integration-key: SPK-RX-ABC12345"
 ```
 
-If the customer is missing, create or upsert them through the partner customer API before relying on downstream customer-based workflows.
+If the customer is missing, note that customer creation is not exposed through the partner customer API.
 
 ## 5. Submit A Test Sale
 

@@ -278,7 +278,7 @@ Refund verification is optional in the current merchant checklist model.
 
 - connect the merchant before sending any production events
 - sync locations before relying on sale traffic
-- verify customer lookup and upsert behavior before go-live
+- verify customer lookup behavior before go-live
 - use the native test-sale path to validate the same token-routed ingress used by production webhook traffic
 
 ## Identity Outcomes In Partner Flow
@@ -286,8 +286,7 @@ Refund verification is optional in the current merchant checklist model.
 Customer identity outcomes matter during end-to-end verification:
 
 - `found`: customer can be reused directly
-- `missing`: create or upsert before sales depend on customer presence
-- `created`: new customer record is now available
+- `missing`: customer is not currently available through the read-only partner customer APIs
 - `conflict`: manual resolution is required
 - `invalid_phone`: correct the input before customer calls or loyalty expectations
 

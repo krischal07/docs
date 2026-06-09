@@ -20,7 +20,7 @@ Use this page to understand:
 
 ```mermaid
 flowchart TD
-  A["RestroX connect + sync"] --> B["Customer lookup/create/upsert"]
+  A["RestroX connect + sync"] --> B["Customer lookup"]
   B --> C["Partner test-sale or production webhook"]
   C --> D["handleTokenEvent()"]
   D --> E["Parser + mapper"]
@@ -137,7 +137,7 @@ Refund and reversal logic depend on being able to match the original sale activi
 
 ## Troubleshooting Notes
 
-- If customer search and upsert are working but loyalty is still missing, inspect location state and event validation next.
+- If customer search is working but loyalty is still missing, inspect location state and event validation next.
 - If a refund event is accepted but reversal is not visible, confirm the original sale identifier is consistent.
 - If repeated test sales return duplicate acknowledgment, confirm you are changing the event identifier for a new test.
 
