@@ -1,0 +1,70 @@
+---
+title: Readiness Checklist
+description: Use this native integration checklist to confirm the RestroX integration is connected, validated, and ready for production traffic.
+sidebarTitle: Readiness Checklist
+---
+
+# Readiness Checklist
+
+Use this checklist to confirm the RestroX native integration is ready for production traffic.
+
+## Purpose
+
+This page turns the verified native onboarding flow into an implementation checklist for RestroX engineers.
+
+## Checklist
+
+- [ ] Connection Key validated
+- [ ] Merchant connected
+- [ ] Locations synced
+- [ ] Mappings reviewed
+- [ ] Customer lookup verified
+- [ ] Customer upsert verified
+- [ ] Test sale completed
+- [ ] Loyalty awarded
+- [ ] Refund tested
+- [ ] Webhook delivery verified
+- [ ] Ready for production
+
+## Workflow
+
+<Steps>
+  <Step title="Validate Connection Key">
+    Confirm the active Connection Key works through the native partner connect flow.
+  </Step>
+  <Step title="Connect Merchant">
+    Call the RestroX partner connect route and confirm the merchant enters a connected or reviewable state.
+  </Step>
+  <Step title="Sync And Review Locations">
+    Sync locations, resolve review issues, and confirm no required location is blocked.
+  </Step>
+  <Step title="Verify Customer Operations">
+    Test customer search and upsert using normalized phone input.
+  </Step>
+  <Step title="Submit Test Sale">
+    Send a completed sale through the native test-sale path and confirm the event is accepted.
+  </Step>
+  <Step title="Validate Readiness">
+    Confirm the integration progresses into a ready state and optionally verify refund handling.
+  </Step>
+</Steps>
+
+## Operational Notes
+
+- `Needs Review` should be resolved before relying on production traffic.
+- Refund verification is optional in the current merchant status builder, but it is still recommended before go-live.
+- Webhook delivery remains part of the technical verification path because the native integration still feeds the webhook-backed event engine.
+
+## Troubleshooting Notes
+
+- If the test sale is accepted but readiness does not advance, check location resolution and customer assumptions.
+- If customer operations fail, resolve identity or integration-key issues before retrying sales.
+
+## Related Documentation
+
+- [Merchant Onboarding](./merchant-onboarding)
+- [Store Linking](./store-linking)
+- [Customer API](./customer-api)
+- [Partner API](./partner-api)
+- [Testing Guide](../testing-guide)
+- [Integration Checklist](../integration-checklist)

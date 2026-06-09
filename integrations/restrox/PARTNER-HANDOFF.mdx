@@ -1,39 +1,25 @@
 ---
 title: Partner Handoff
-description: Primary onboarding path for a new RestroX engineer integrating with Samparka Loyalty.
+description: Primary onboarding path for a new RestroX engineer implementing the native integration with Samparka.
 sidebarTitle: Partner Handoff
 ---
 
 # Partner Handoff
 
-Welcome to the RestroX integration path for Samparka Loyalty. Start here if you are configuring the webhook for the first time and need a clear route from handoff to go-live.
+Welcome to the RestroX native integration path for Samparka. Start here if you are implementing merchant connection, location sync, customer APIs, and test-sale validation for the first time.
 
 <Info>
-Use this page as the onboarding map. For technical details, always follow the linked canonical guides.
+Use this page as the onboarding map. The native pages define the primary integration behavior. The webhook pages remain the technical transport reference.
 </Info>
 
 ## Integration Overview
 
 <Columns cols={2}>
-  <Card title="Overview Guide" icon="compass" href="/integrations/restrox/getting-started/overview">
-    Start with the guided reading order and portal structure.
+  <Card title="Native Overview" icon="compass" href="/integrations/restrox/native/overview">
+    Start with the native integration model, reading order, and package structure.
   </Card>
-  <Card title="Canonical Guide" icon="file-text" href="/integrations/restrox/README">
-    Open the reviewed partner guide overview for the full integration context.
-  </Card>
-</Columns>
-
-## Supported Events
-
-<Columns cols={3}>
-  <Card title="order.completed" icon="shopping-bag">
-    Send completed sales for loyalty evaluation.
-  </Card>
-  <Card title="refund.created" icon="rotate-ccw">
-    Reverse loyalty activity tied to an earlier sale.
-  </Card>
-  <Card title="order.voided" icon="x-circle">
-    Notify Samparka when a previously sent sale has been voided.
+  <Card title="Architecture" icon="blocks" href="/integrations/restrox/native/architecture">
+    Understand how partner APIs, customer identity, and webhook processing fit together.
   </Card>
 </Columns>
 
@@ -41,47 +27,47 @@ Use this page as the onboarding map. For technical details, always follow the li
 
 <Steps>
   <Step title="Read Overview">
-    Review the onboarding map and the canonical guide before configuring anything.
+    Review the native overview and architecture before wiring any endpoints.
   </Step>
-  <Step title="Configure Webhook">
-    Use the webhook endpoint and authentication guides to set up delivery.
+  <Step title="Confirm Auth">
+    Use the native authentication guide to confirm partner headers, integration-key usage, and webhook auth.
+  </Step>
+  <Step title="Connect Merchant">
+    Use the Connection Key and Partner API guides to connect the merchant.
+  </Step>
+  <Step title="Sync Locations">
+    Sync external locations and resolve any review-required mapping issues.
+  </Step>
+  <Step title="Verify Customer Flow">
+    Use Customer Identity and Customer API to validate search, create, and upsert behavior.
   </Step>
   <Step title="Send Test Sale">
-    Follow the quick start and testing guide to send the initial `order.completed` payload.
+    Submit the initial sale through the native partner route and confirm the event is accepted.
   </Step>
-  <Step title="Test Duplicate Handling">
-    Repost the same payload once and confirm the duplicate-safe response.
-  </Step>
-  <Step title="Test Refund">
-    Send the refund payload that reuses the original sale identifier.
-  </Step>
-  <Step title="Complete Checklist">
-    Run the production-readiness checks before switching to live traffic.
-  </Step>
-  <Step title="Go Live">
-    Use the checklist and verification materials as your signoff package.
+  <Step title="Complete Readiness Checks">
+    Use the readiness checklist and testing guide before switching to production traffic.
   </Step>
 </Steps>
 
 ## Key Links
 
 <Columns cols={2}>
-  <Card title="Quick Start" icon="rocket" href="/integrations/restrox/quick-start">
-    Fastest path to a working integration.
+  <Card title="Connection Keys" icon="key-round" href="/integrations/restrox/native/connection-keys">
+    Learn how the merchant-facing Connection Key is issued, validated, and rotated.
   </Card>
-  <Card title="Testing Guide" icon="flask-conical" href="/integrations/restrox/testing-guide">
-    Validate the complete test sequence.
+  <Card title="Merchant Onboarding" icon="list-checks" href="/integrations/restrox/native/merchant-onboarding">
+    Understand the readiness model and status progression used by Samparka.
   </Card>
-  <Card title="Integration Checklist" icon="clipboard-list" href="/integrations/restrox/integration-checklist">
-    Confirm the integration is ready for production.
+  <Card title="Store Linking" icon="map" href="/integrations/restrox/native/store-linking">
+    Review location sync, mapping statuses, and review-required behavior.
   </Card>
-  <Card title="OpenAPI Reference" icon="code" href="/integrations/restrox/api-reference/overview">
-    Use the interactive API reference and raw specification.
+  <Card title="Customer API" icon="users" href="/integrations/restrox/native/customer-api">
+    Implement customer search, create, update, and upsert flows.
   </Card>
-  <Card title="Postman Collection" icon="files" href="/integrations/restrox/reference/postman-collection">
-    Download and import the unchanged Postman collection.
+  <Card title="Partner API" icon="plug-zap" href="/integrations/restrox/native/partner-api">
+    Implement merchant connect, sync-locations, and test-sale routes.
   </Card>
-  <Card title="Examples" icon="book-open" href="/integrations/restrox/examples/overview">
-    Compare happy-path and edge-case deliveries.
+  <Card title="Webhook Reference" icon="webhook" href="/integrations/restrox/webhook-endpoint">
+    Keep the webhook transport reference close at hand for event delivery validation.
   </Card>
 </Columns>

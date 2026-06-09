@@ -1,0 +1,234 @@
+---
+title: Native Authentication
+description: Review the authentication mechanisms used by RestroX partner APIs, webhook delivery, and related merchant-authenticated setup routes.
+sidebarTitle: Authentication
+---
+
+# Native Authentication
+
+The RestroX integration uses more than one authentication mechanism. The correct method depends on the API surface you are calling.
+
+## Purpose
+
+Use this page to understand:
+
+- which authentication type belongs to each route family
+- which headers are required
+- how partner routes differ from webhook routes
+
+## Authentication Types
+
+### Partner API Authentication
+
+Used by:
+
+- `POST /api/partners/restrox/connect`
+- `POST /api/partners/restrox/sync-locations`
+- `POST /api/partners/restrox/test-sale`
+
+Accepted credentials:
+
+- `x-partner-key`
+- `Authorization: Bearer {partnerKey}`
+
+### Partner Customer Authentication
+
+Used by:
+
+- `GET /api/partners/{provider}/customers/search`
+- `POST /api/partners/{provider}/customers`
+- `POST /api/partners/{provider}/customers/upsert`
+- `GET /api/partners/{provider}/customers/{customerId}`
+- `PATCH /api/partners/{provider}/customers/{customerId}`
+
+Required credentials:
+
+- partner key through `x-partner-key` or `Authorization: Bearer ...`
+- merchant Connection Key through `x-integration-key`
+
+### Webhook Authentication
+
+Used by:
+
+- `POST /webhook/restrox/{token}`
+
+Required credential:
+
+- webhook token in the URL path
+
+### Legacy Provider Event Authentication
+
+Used internally by the native test-sale path and still supported on:
+
+- `POST /integrations/pos/{provider}/events`
+
+Required credential:
+
+- `x-api-key`
+
+This legacy route is part of the event transport layer. It is not the primary onboarding surface for the native integration.
+
+### Merchant API Authentication
+
+Used by merchant POS integration routes such as:
+
+- `/api/pos-integrations/*`
+
+These routes use existing Samparka merchant/store/admin authentication middleware and are not public partner APIs.
+
+## Required Headers
+
+### Partner API Example
+
+```http
+POST /api/partners/restrox/connect
+Content-Type: application/json
+x-partner-key: your-partner-key
+```
+
+### Partner Customer API Example
+
+```http
+GET /api/partners/restrox/customers/search?phone=9801234567
+x-partner-key: your-partner-key
+x-integration-key: SPK-RX-ABC12345
+```
+
+### Bearer Token Example
+
+```http
+Authorization: Bearer your-partner-key
+```
+
+### Webhook Example
+
+```http
+POST /webhook/restrox/{token}
+Content-Type: application/json
+```
+
+### Legacy Provider Event Example
+
+```http
+POST /integrations/pos/restrox/events
+Content-Type: application/json
+x-api-key: integration-api-key
+```
+
+## Workflow
+
+```mermaid
+flowchart TD
+  A["Partner API request"] --> B["Partner key validation"]
+  B --> C["Optional Connection Key validation"]
+  C --> D["Controller"]
+
+  E["Webhook request"] --> F["Token routing"]
+  F --> G["Provider validation"]
+  G --> H["Event processing"]
+```
+
+## Production Authentication
+
+The verified implementation reads partner credentials from:
+
+- `RESTROX_PARTNER_API_KEY`
+- `POS_PARTNER_API_KEY`
+
+Webhook URLs can be built from configured server origin values.
+
+Implementation detail requires clarification.
+
+The current docs package does not publish a formal production credential issuance process.
+
+## Staging Authentication
+
+Implementation detail requires clarification.
+
+No staging-specific partner key issuance flow was verified in the current docs package.
+
+## Authorization Failures
+
+### Partner API Not Configured
+
+```json
+{
+  "success": false,
+  "message": "RestroX partner API is not configured"
+}
+```
+
+### Unauthorized Partner Request
+
+```json
+{
+  "success": false,
+  "message": "Unauthorized partner request"
+}
+```
+
+### Missing Integration Key
+
+```json
+{
+  "error": "partner_customer_error",
+  "message": "Missing integration key"
+}
+```
+
+### Invalid Integration Key
+
+```json
+{
+  "error": "partner_customer_error",
+  "message": "Invalid integration key"
+}
+```
+
+### Integration Inactive
+
+```json
+{
+  "error": "partner_customer_error",
+  "message": "Integration is inactive"
+}
+```
+
+### Invalid Webhook Token
+
+```json
+{
+  "success": false,
+  "message": "Invalid webhook token"
+}
+```
+
+## Credential Rotation
+
+Verified rotation behavior:
+
+- Connection Keys can be rotated through the merchant integration route
+- webhook tokens can be regenerated per location
+
+Implementation detail requires clarification.
+
+No verified public partner-key rotation route is published in the current implementation.
+
+## Operational Notes
+
+- Partner APIs accept either `x-partner-key` or bearer token format.
+- Partner customer APIs are protected by both partner authentication and merchant integration-key resolution.
+- Native test-sale behavior ultimately depends on the legacy provider event path and its `x-api-key` handling.
+
+## Troubleshooting Notes
+
+- If partner APIs fail with `Unauthorized partner request`, confirm the partner key before checking payloads.
+- If partner customer APIs fail with `Missing integration key`, confirm the `x-integration-key` header is present.
+- If webhook delivery fails with `Invalid webhook token`, confirm you are using the per-location token rather than the merchant Connection Key.
+
+## Related Documentation
+
+- [Connection Keys](./connection-keys)
+- [Partner API](./partner-api)
+- [Customer API](./customer-api)
+- [Webhook Endpoint](../webhook-endpoint)

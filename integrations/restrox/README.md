@@ -1,42 +1,53 @@
 ---
 title: RestroX Partner Guide
-description: Canonical overview of the RestroX webhook integration with Samparka Loyalty.
+description: Canonical overview of the RestroX native integration with Samparka and the webhook-backed event pipeline it uses.
 sidebarTitle: Guide Overview
 ---
 
 # RestroX Partner Guide
 
-Samparka is a customer loyalty platform. The RestroX webhook integration lets RestroX send completed-sale, refund, and void events to Samparka so eligible transactions can be evaluated for loyalty activity. RestroX sends JSON webhooks to a token-based URL, and Samparka responds with a simple success or error message for each delivery.
+Samparka supports RestroX through a native integration flow for merchant onboarding, location sync, and customer operations. The native flow sits above Samparka's existing webhook processing engine, which continues to handle sale, refund, and void events.
 
 ## Integration Flow
 
-1. Receive the Samparka webhook URL and token.
-2. Configure RestroX to send `POST` requests with a JSON body.
-3. Send a test `order.completed` webhook.
-4. Confirm a `200` acknowledgment.
-5. Repost the same payload once to confirm duplicate safety.
-6. Send a `refund.created` webhook that references the original sale identifier.
-7. Complete the go-live checklist.
+1. Merchant creates a RestroX integration in Samparka.
+2. Merchant shares the Samparka Connection Key with RestroX.
+3. RestroX connects the merchant through the partner API.
+4. RestroX syncs locations.
+5. RestroX verifies customer behavior through partner customer APIs.
+6. RestroX sends a test sale.
+7. Samparka marks the integration ready when onboarding checks are satisfied.
+
+## Architecture Note
+
+The native integration is an onboarding and partner API layer. It does not replace the underlying webhook engine.
+
+```mermaid
+flowchart TD
+  A["Merchant + Connection Key"] --> B["Partner APIs"]
+  B --> C["Merchant POS Integration Layer"]
+  C --> D["Webhook Routing + Event Processing"]
+  D --> E["Loyalty, rewards, and receipts"]
+```
 
 ## Quick Links
 
-- [Partner Handoff](./PARTNER-HANDOFF)
-- [Quick Start](./quick-start)
-- [Authentication](./authentication)
+- [Native Overview](./native/overview)
+- [Architecture](./native/architecture)
+- [Environments](./native/environments)
+- [Native Authentication](./native/authentication)
+- [Connection Keys](./native/connection-keys)
+- [Merchant Onboarding](./native/merchant-onboarding)
+- [Customer Identity](./native/customer-identity)
+- [Customer API](./native/customer-api)
+- [Partner API](./native/partner-api)
+- [Store Linking](./native/store-linking)
+- [Loyalty Processing](./native/loyalty-processing)
 - [Webhook Endpoint](./webhook-endpoint)
-- [Event Types](./event-types)
 - [Payload Reference](./payload-reference)
-- [Response Reference](./response-reference)
-- [Refunds](./refunds)
-- [Idempotency](./idempotency)
-- [Location Mapping](./location-mapping)
 - [Testing Guide](./testing-guide)
-- [Troubleshooting](./troubleshooting)
-- [Endpoint Catalog](./endpoint-catalog)
-- [Integration Checklist](./integration-checklist)
-- [OpenAPI](./openapi.yaml)
-- [Postman Collection](./postman-collection.json)
+- [Readiness Checklist](./native/readiness-checklist)
 
 ## Important Integration Note
 
-A `200 Event received` response means Samparka accepted the webhook delivery. It does not guarantee that loyalty activity was created, because customer and location requirements are checked after the request is accepted.
+A successful native onboarding flow does not bypass webhook processing. Event delivery still uses the existing RestroX event pipeline, and a `200 Event received` response means Samparka accepted the delivery. It does not guarantee that loyalty activity was created.

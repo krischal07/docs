@@ -1,0 +1,105 @@
+---
+title: Environments
+description: Review the environment information currently available for the RestroX native integration and note the details that still require clarification.
+sidebarTitle: Environments
+---
+
+# Environments
+
+This page lists the environment information that can be verified from the current documentation package and backend implementation.
+
+## Purpose
+
+Use this page to understand:
+
+- what base URLs are currently documented
+- which environment-specific details are still missing
+- where environment assumptions should be confirmed before implementation
+
+## Documented Base URL
+
+The current RestroX OpenAPI and Postman assets use this placeholder base URL:
+
+```text
+https://your-domain
+```
+
+This value appears in the existing RestroX reference assets and is not tied to a named production, staging, or sandbox environment.
+
+## Production
+
+Implementation detail requires clarification.
+
+The backend includes logic that can build public webhook URLs from:
+
+- `PUBLIC_SERVER_ORIGIN`
+- `SERVER_ORIGIN`
+
+and otherwise falls back to:
+
+- `https://server.samparka.co` in production
+- `http://localhost:8080` outside production
+
+That behavior is used for merchant-generated webhook URLs, but this documentation package does not currently publish a canonical production partner base URL for native partner APIs.
+
+## Staging
+
+Implementation detail requires clarification.
+
+No staging hostname is published in the current RestroX documentation package or the verified partner route definitions.
+
+## Sandbox
+
+Implementation detail requires clarification.
+
+No sandbox hostname is published in the current RestroX documentation package or the verified partner route definitions.
+
+## Environment Differences
+
+The verified implementation shows these behavior differences:
+
+- webhook URLs can be built dynamically from server origin configuration
+- partner API authentication depends on configured partner keys in environment variables
+- health reporting includes `environment` in `/api/health`
+
+No separate feature matrix for production, staging, or sandbox is currently documented.
+
+## Test Data Expectations
+
+The current docs package includes example payloads and request fixtures for:
+
+- completed sale
+- refund
+- void
+- duplicate replay
+- invalid token
+- location mismatch
+
+These fixtures are valid for reference and testing workflows, but the current package does not define environment-specific test merchant accounts, seeded locations, or sandbox-only credentials.
+
+Implementation detail requires clarification.
+
+## Rate Limits
+
+Implementation detail requires clarification.
+
+The verified route files do not publish partner-facing rate-limit values. The webhook route includes a placeholder comment for future rate limiting, but no active published partner rate limit was verified in this pass.
+
+## Operational Notes
+
+- Do not hardcode production, staging, or sandbox hostnames from inference alone.
+- Confirm environment-specific hosts and credential issuance with Samparka before enabling production traffic.
+- The existing Postman collection should continue using variables rather than fixed hosts.
+
+## Troubleshooting Notes
+
+- If partner requests authenticate correctly but still fail at the network layer, confirm the environment hostname first.
+- If webhook URLs differ between generated merchant setup and partner-side assumptions, check the configured server origin values.
+- If you need environment-specific rate limits or test stores, request clarification before rollout.
+
+## Related Documentation
+
+- [Native Overview](./overview)
+- [Authentication](./authentication)
+- [Partner API](./partner-api)
+- [Reference Overview](../reference/overview)

@@ -1,0 +1,195 @@
+---
+title: Store Linking
+description: Understand how Samparka synchronizes RestroX locations, matches them to outlets, and places integrations into review-required states when mapping needs attention.
+sidebarTitle: Store Linking
+---
+
+# Store Linking
+
+Store linking combines merchant outlet sync with partner location sync. Samparka uses both steps to determine whether a RestroX integration is ready to receive production events.
+
+## Purpose
+
+Use this page to understand:
+
+- how Samparka creates draft outlet rows
+- how RestroX location payloads are matched
+- when an integration enters review-required state
+
+## Concepts
+
+Samparka tracks two different location concepts:
+
+- merchant outlet records inside Samparka
+- external RestroX location identifiers supplied by partner sync or event payloads
+
+The native flow attempts to match those automatically before production traffic begins.
+
+## Outlet Sync
+
+Merchant outlet sync is triggered through:
+
+```http
+POST /api/pos-integrations/{id}/sync-outlets
+```
+
+Verified behavior:
+
+- if the store has no outlets, Samparka creates a single draft fallback location
+- if the store has outlets, Samparka creates draft location rows for missing outlets
+- stale location rows are reactivated if the outlet still exists
+- location rows for removed outlets are marked `STALE`
+
+## Sync Process
+
+Partner location sync is triggered through:
+
+```http
+POST /api/partners/restrox/sync-locations
+```
+
+Each location payload is evaluated in this order:
+
+1. external location ID is extracted
+2. explicit Samparka outlet hint is checked
+3. normalized name matching is attempted
+4. existing location rows are reused when possible
+5. matched rows become active
+6. unmatched rows stay draft and generate review issues
+
+## Mapping Statuses
+
+Verified location row statuses:
+
+- `draft`
+- `mapped`
+- `active`
+- `disabled`
+
+Verified location lifecycle statuses:
+
+- `ACTIVE`
+- `STALE`
+
+Verified partner connection statuses:
+
+- `pending`
+- `connected`
+- `review_required`
+
+## Review Required State
+
+The integration enters a review-required state when partner sync generates review issues such as:
+
+- `missing_external_location_id`
+- `duplicate_external_location_id`
+- `ambiguous_location_name`
+- `unmatched_location`
+
+It can also require review when:
+
+- a synced location has no outlet match
+- active location rows become stale
+
+## Endpoints
+
+### Sync Merchant Outlets
+
+```http
+POST /api/pos-integrations/{id}/sync-outlets
+```
+
+Merchant-authenticated route used for Samparka setup lifecycle.
+
+### Sync RestroX Locations
+
+```http
+POST /api/partners/restrox/sync-locations
+```
+
+Example request:
+
+```json
+{
+  "integrationKey": "SPK-RX-ABC12345",
+  "account": {
+    "id": "restrox-account-001",
+    "name": "Java Express"
+  },
+  "locations": [
+    {
+      "externalLocationId": "ktm-branch-01",
+      "externalLocationName": "Kathmandu Branch",
+      "outletId": "685000000000000000000001"
+    }
+  ]
+}
+```
+
+Example response:
+
+```json
+{
+  "success": true,
+  "message": "Locations synchronized",
+  "data": {
+    "syncedCount": 1,
+    "reviewIssues": [],
+    "reviewRequired": false,
+    "partnerConnectionStatus": "connected"
+  }
+}
+```
+
+## Resync Flow
+
+Resync repeats the same matching process and updates:
+
+- `external_location_id`
+- `external_location_name`
+- `outlet_id`
+- `status`
+- `location_status`
+
+The same external location ID cannot appear twice in one sync payload.
+
+## Failure Scenarios
+
+### Missing External Location ID
+
+The location is skipped and review is required.
+
+### Duplicate External Location ID
+
+The duplicated entry produces a review issue and does not create a second active mapping.
+
+### Ambiguous Name Match
+
+If normalized name matching produces more than one outlet candidate, the integration requires review.
+
+### Unmatched Location
+
+The row is saved with:
+
+- external location information
+- no outlet ID
+- `draft` status
+
+## Operational Notes
+
+- Auto-matched rows become `active`.
+- Unmatched rows remain part of the integration state and contribute to `Needs Review`.
+- Webhook tokens still exist per location row and are used by the transport layer.
+
+## Troubleshooting Notes
+
+- If locations sync successfully but the integration still needs review, inspect the review issues returned by the sync response.
+- If a webhook event is accepted but not credited, confirm the external location ID matches an active linked location.
+- If a location was previously valid and later disappears from Samparka, check whether it became `STALE`.
+
+## Related Documentation
+
+- [Merchant Onboarding](./merchant-onboarding)
+- [Partner API](./partner-api)
+- [Location Mapping](../location-mapping)
+- [Testing Guide](../testing-guide)

@@ -24,35 +24,65 @@
         ]
       },
       {
+        "group": "RestroX Foundation",
+        "pages": [
+          "integrations/restrox/native/overview",
+          "integrations/restrox/native/architecture",
+          "integrations/restrox/native/environments"
+        ]
+      },
+      {
         "group": "RestroX Getting Started",
         "pages": [
           "integrations/restrox/getting-started/overview",
           "integrations/restrox/PARTNER-HANDOFF",
           "integrations/restrox/quick-start",
-          "integrations/restrox/authentication",
-          "integrations/restrox/webhook-endpoint"
+          "integrations/restrox/native/authentication",
+          "integrations/restrox/native/connection-keys",
+          "integrations/restrox/native/merchant-onboarding"
+        ]
+      },
+      {
+        "group": "RestroX Core Concepts",
+        "pages": [
+          "integrations/restrox/native/customer-identity",
+          "integrations/restrox/native/store-linking",
+          "integrations/restrox/native/loyalty-processing"
+        ]
+      },
+      {
+        "group": "RestroX Partner APIs",
+        "pages": [
+          "integrations/restrox/native/partner-api",
+          "integrations/restrox/native/customer-api"
+        ]
+      },
+      {
+        "group": "RestroX Operations",
+        "pages": [
+          "integrations/restrox/native/error-codes",
+          "integrations/restrox/testing-guide",
+          "integrations/restrox/native/readiness-checklist",
+          "integrations/restrox/integration-checklist"
         ]
       },
       {
         "group": "RestroX Events",
         "pages": [
+          "integrations/restrox/webhook-endpoint",
           "integrations/restrox/event-types",
           "integrations/restrox/payload-reference",
-          "integrations/restrox/response-reference",
-          "integrations/restrox/refunds"
-        ]
-      },
-      {
-        "group": "RestroX Reliability",
-        "pages": [
+          "integrations/restrox/refunds",
           "integrations/restrox/idempotency",
           "integrations/restrox/location-mapping"
         ]
       },
       {
-        "group": "RestroX Testing",
+        "group": "RestroX Reference",
         "pages": [
-          "integrations/restrox/testing-guide",
+          "integrations/restrox/endpoint-catalog",
+          "integrations/restrox/api-reference/overview",
+          "integrations/restrox/reference/postman-collection",
           "integrations/restrox/troubleshooting"
         ]
       },
@@ -67,18 +97,8 @@
         ]
       },
       {
-        "group": "RestroX Reference",
-        "pages": [
-          "integrations/restrox/reference/overview",
-          "integrations/restrox/endpoint-catalog",
-          "integrations/restrox/api-reference/overview",
-          "integrations/restrox/reference/postman-collection"
-        ]
-      },
-      {
         "group": "RestroX Go Live",
         "pages": [
-          "integrations/restrox/integration-checklist",
           "integrations/restrox/final-verification-report"
         ]
       }

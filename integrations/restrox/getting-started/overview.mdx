@@ -1,45 +1,48 @@
 ---
 title: Getting Started Overview
-description: Navigate the RestroX onboarding flow and choose the right guide for each setup step.
+description: Navigate the RestroX native onboarding flow and choose the right guide for each implementation step.
 sidebarTitle: Overview
 ---
 
 # Getting Started
 
-Use this section to move from first read to first successful webhook delivery.
+Use this section to move from first read to first successful native connection and test sale.
 
 <Columns cols={2}>
   <Card title="Partner Handoff" icon="handshake" href="/integrations/restrox/PARTNER-HANDOFF">
     Best starting point for a new RestroX engineer.
   </Card>
   <Card title="Quick Start" icon="rocket" href="/integrations/restrox/quick-start">
-    Shortest path to a successful sale and refund test.
+    Shortest path to a connected merchant and accepted test sale.
   </Card>
-  <Card title="Authentication" icon="shield" href="/integrations/restrox/authentication">
-    Confirm how the webhook token is used to authorize delivery.
+  <Card title="Native Authentication" icon="shield" href="/integrations/restrox/native/authentication">
+    Confirm partner authentication, Connection Key usage, and webhook auth.
   </Card>
-  <Card title="Webhook Endpoint" icon="webhook" href="/integrations/restrox/webhook-endpoint">
-    Review the request target, request format, and acknowledgment timing.
+  <Card title="Partner API" icon="plug-zap" href="/integrations/restrox/native/partner-api">
+    Review the connect, sync, and test-sale routes used by RestroX.
   </Card>
 </Columns>
 
 ## Recommended Reading Order
 
 <Steps>
-  <Step title="Start With Handoff">
-    Open the partner handoff page for the full onboarding path and partner-specific flow.
+  <Step title="Start With Native Overview">
+    Read the native overview and architecture so the full system makes sense before you start coding.
   </Step>
-  <Step title="Read The Quick Start">
-    Use the quick start to set up delivery and confirm the happy path quickly.
+  <Step title="Read Connection And Auth">
+    Review Connection Keys, authentication, and environments before implementing any client behavior.
   </Step>
-  <Step title="Verify Auth And Endpoint">
-    Review authentication and endpoint details before moving into repeated testing.
+  <Step title="Implement Onboarding">
+    Use Merchant Onboarding and Store Linking to connect the merchant and sync locations.
   </Step>
-  <Step title="Expand Into Testing">
-    Use the testing guide, examples, and checklist to validate the full lifecycle.
+  <Step title="Implement Customer Flow">
+    Use Customer Identity and Customer API to make customer resolution deterministic.
+  </Step>
+  <Step title="Validate Events">
+    Use the Testing Guide, Readiness Checklist, and webhook transport docs to confirm the integration is ready.
   </Step>
 </Steps>
 
 <Note>
-The broader reviewed overview remains available in the canonical [RestroX Partner Guide](/integrations/restrox/README).
+The webhook transport layer remains documented in [Webhook Endpoint](/integrations/restrox/webhook-endpoint), [Payload Reference](/integrations/restrox/payload-reference), and [Testing Guide](/integrations/restrox/testing-guide).
 </Note>

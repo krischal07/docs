@@ -1,20 +1,28 @@
 ---
-title: Authentication
-description: Understand how RestroX authenticates webhook deliveries to Samparka.
-sidebarTitle: Authentication
+title: Webhook Authentication
+description: Understand the canonical webhook authentication flow for RestroX event delivery into Samparka.
+sidebarTitle: Webhook Auth
 ---
 
-# Authentication
+# Webhook Authentication
 
-RestroX webhooks use token-based routing. Samparka provides a unique webhook token for each configured location, and RestroX includes that token in the webhook URL path.
+This page documents the canonical webhook authentication path used for RestroX event delivery.
 
-Canonical path:
+<Note>
+For the complete native authentication matrix, including partner APIs and partner customer APIs, use [Native Authentication](./native/authentication).
+</Note>
 
-`POST /webhook/restrox/{token}`
+## Canonical Webhook Path
+
+RestroX webhook delivery uses token-based routing:
+
+```text
+POST /webhook/restrox/{token}
+```
 
 ## What RestroX Needs To Send
 
-RestroX does not send a separate authentication header on the canonical partner path. The token in the URL is the routing key Samparka uses to look up the configured location.
+RestroX does not send a separate authentication header on the canonical webhook path. The token in the URL path is the routing key Samparka uses to look up the configured location.
 
 ## What Response To Expect
 
@@ -27,10 +35,13 @@ If the token is valid, Samparka continues processing the request. If the token i
 }
 ```
 
-## What To Do If Something Goes Wrong
+## Native Integration Note
 
-If you receive `404 Invalid webhook token`, confirm that:
+The native integration still uses per-location webhook tokens internally. The native Connection Key is not a replacement for the canonical webhook token.
 
-1. The URL path uses the current token exactly as provided by Samparka.
-2. The request is being sent to `/webhook/restrox/{token}`.
-3. The webhook was configured for the intended outlet.
+## Related Documentation
+
+- [Native Authentication](./native/authentication)
+- [Connection Keys](./native/connection-keys)
+- [Webhook Endpoint](./webhook-endpoint)
+- [Response Reference](./response-reference)

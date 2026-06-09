@@ -1,0 +1,214 @@
+---
+title: Connection Keys
+description: Learn how Samparka issues, validates, and rotates the merchant-facing Connection Key used by the RestroX native integration.
+sidebarTitle: Connection Keys
+---
+
+# Connection Keys
+
+Samparka issues a merchant-facing Connection Key for each RestroX POS integration. RestroX uses this key to connect the merchant and sync locations through the native partner API.
+
+## Purpose
+
+Use this page to understand:
+
+- what a Connection Key is
+- why it exists
+- how the backend creates and rotates it
+- how partner APIs validate it
+
+## What Is A Connection Key
+
+A Connection Key is the merchant-facing identifier shared from Samparka to RestroX.
+
+The backend field name is `integration_key`, but partner-facing documentation uses `Connection Key`.
+
+## Why It Exists
+
+The Connection Key allows RestroX to connect a merchant without exposing:
+
+- webhook URL generation
+- merchant API credentials
+- internal location model details
+- internal processing tokens
+
+## Key Format
+
+The verified backend format is:
+
+```text
+SPK-RX-XXXXXXXX
+```
+
+Example valid key:
+
+```text
+SPK-RX-ABC12345
+```
+
+The backend generates eight uppercase alphanumeric characters after the `SPK-RX-` prefix.
+
+## Key Lifecycle
+
+The verified lifecycle states are:
+
+- `active`
+- `revoked`
+
+The key is created when a merchant POS integration is created and can be rotated through the merchant POS integration API.
+
+## Generation
+
+The merchant integration service creates a Connection Key during integration creation and also backfills one if an older integration record is missing a key.
+
+## Rotation
+
+Merchant-authenticated integration routes support key rotation:
+
+```text
+POST /api/pos-integrations/:id/integration-key/rotate
+```
+
+Rotation behavior verified in the backend:
+
+- a new key is generated
+- the previous key stops working
+- `integration_key_status` becomes `active` for the new key
+- `integration_key_last_used_at` is cleared
+- `partner_connection_status` resets to `pending`
+- `partner_connected_at` resets to `null`
+- `partner_last_sync_at` resets to `null`
+- `partner_metadata` resets to an empty object
+- integration `status` resets to `inactive`
+
+## Ownership Rules
+
+The verified partner connect flow resolves an integration by:
+
+- provider = `restrox`
+- `integration_key`
+- `integration_key_status = active`
+
+The current implementation allows RestroX to connect and sync locations against that integration key, but it does not publish a separate one-account ownership lock or disconnect flow in the verified public partner routes.
+
+Implementation detail requires clarification.
+
+## Validation Rules
+
+These public partner surfaces validate the key:
+
+- `POST /api/partners/restrox/connect`
+- `POST /api/partners/restrox/sync-locations`
+- `POST /api/partners/restrox/test-sale`
+- `GET /api/partners/{provider}/customers/search`
+- `POST /api/partners/{provider}/customers`
+- `POST /api/partners/{provider}/customers/upsert`
+- `GET /api/partners/{provider}/customers/{customerId}`
+- `PATCH /api/partners/{provider}/customers/{customerId}`
+
+Validation behavior differs by surface:
+
+- RestroX partner routes return `404 Invalid Integration Key` when the key cannot be resolved
+- partner customer routes require the key in `x-integration-key` and return `401 Invalid integration key` when resolution fails
+- inactive integrations are rejected on partner customer routes with `403 Integration is inactive`
+
+## Endpoints
+
+### Use In Partner Connect
+
+```http
+POST /api/partners/restrox/connect
+```
+
+```json
+{
+  "integrationKey": "SPK-RX-ABC12345",
+  "account": {
+    "id": "restrox-account-001",
+    "name": "Java Express"
+  },
+  "locations": []
+}
+```
+
+### Rotate In Merchant API
+
+```http
+POST /api/pos-integrations/{id}/integration-key/rotate
+```
+
+This route is merchant-authenticated and is not a public partner API.
+
+## Response Examples
+
+### Valid Key Through Partner Connect
+
+```json
+{
+  "success": true,
+  "message": "RestroX connected",
+  "data": {
+    "syncedCount": 0,
+    "reviewIssues": [],
+    "reviewRequired": false,
+    "partnerConnectionStatus": "connected"
+  }
+}
+```
+
+### Invalid Key Through Partner Connect
+
+```json
+{
+  "success": false,
+  "message": "Invalid Integration Key"
+}
+```
+
+### Invalid Key Through Partner Customer API
+
+```json
+{
+  "error": "partner_customer_error",
+  "message": "Invalid integration key"
+}
+```
+
+## Failure Scenarios
+
+### Invalid Key
+
+The key does not match an active RestroX integration.
+
+### Rotated Key
+
+After rotation, the previous key should no longer resolve through partner APIs.
+
+### Revoked Key
+
+If `integration_key_status` is not active, the key should not be used for partner flows.
+
+### Expired Key
+
+Expiry is not implemented in the verified backend behavior.
+
+Implementation detail requires clarification.
+
+## Operational Notes
+
+- A Connection Key is provider-specific.
+- The merchant-facing label can be `Connection Key` even though the backend field name remains `integration_key`.
+- Key rotation resets the connection workflow and should be treated as a reconnect event.
+
+## Troubleshooting Notes
+
+- If `connect` fails with `Invalid Integration Key`, verify the latest key from Samparka before retrying.
+- If partner customer APIs fail with `Integration is inactive`, confirm the merchant integration was not reset or rotated.
+- If a previously working key stops resolving, check whether it was rotated.
+
+## Related Documentation
+
+- [Authentication](./authentication)
+- [Merchant Onboarding](./merchant-onboarding)
+- [Partner API](./partner-api)
+- [Customer API](./customer-api)

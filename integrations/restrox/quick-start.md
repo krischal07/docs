@@ -1,43 +1,96 @@
 ---
 title: Quick Start
-description: Configure RestroX webhooks with Samparka Loyalty and validate the happy path quickly.
+description: Connect a merchant, sync locations, verify customer behavior, and submit a test sale through the RestroX native integration.
 sidebarTitle: Quick Start
 ---
 
 # Quick Start
 
-This is the fastest path to a working RestroX integration.
+This is the fastest path to a working RestroX native integration.
 
-See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integration-checklist).
+See also: [Partner API](./native/partner-api), [Customer API](./native/customer-api), and [Readiness Checklist](./native/readiness-checklist).
 
-## 1. Receive Outlet Mapping Details
+## 1. Receive The Connection Key
 
-Ask Samparka for the webhook URL and confirm the `external_location_id` value that RestroX will send for each outlet. Samparka resolves webhook tokens to a location record and also checks the `external_location_id` in the payload.
+Get the merchant's Samparka Connection Key from the Samparka integration setup.
 
-## 2. Configure the Webhook URL
+Example:
 
-Send `POST` requests to:
+```text
+SPK-RX-ABC12345
+```
 
-`/webhook/restrox/{token}`
+## 2. Connect The Merchant
 
-Use `Content-Type: application/json`.
+```bash
+curl -X POST "https://your-domain/api/partners/restrox/connect" \
+  -H "Content-Type: application/json" \
+  -H "x-partner-key: your-partner-key" \
+  --data '{
+    "integrationKey": "SPK-RX-ABC12345",
+    "account": {
+      "id": "restrox-account-001",
+      "name": "Java Express"
+    },
+    "locations": []
+  }'
+```
 
-## 3. Send a Test Sale
+## 3. Sync Locations
 
-Use the canonical sale fixture from [`examples/payloads.json`](./examples/payloads.json):
+```bash
+curl -X POST "https://your-domain/api/partners/restrox/sync-locations" \
+  -H "Content-Type: application/json" \
+  -H "x-partner-key: your-partner-key" \
+  --data '{
+    "integrationKey": "SPK-RX-ABC12345",
+    "account": {
+      "id": "restrox-account-001",
+      "name": "Java Express"
+    },
+    "locations": [
+      {
+        "externalLocationId": "ktm-branch-01",
+        "externalLocationName": "Kathmandu Branch"
+      }
+    ]
+  }'
+```
 
-```json
-{
-  "event_type": "order.completed",
-  "order_id": "restrox-sale-1001",
-  "created_at": "2026-06-08T10:15:00.000Z",
-  "amount": 850,
-  "currency": "NPR",
-  "customer": { "phone": "9800000101" },
-  "external_location_id": "ktm-branch-01",
-  "external_location_name": "Kathmandu Branch",
-  "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
-}
+If the response includes `reviewRequired: true`, resolve the location review issues before moving on.
+
+## 4. Verify Customer Flow
+
+Search for an existing customer using the partner customer API:
+
+```bash
+curl "https://your-domain/api/partners/restrox/customers/search?phone=9801234567" \
+  -H "x-partner-key: your-partner-key" \
+  -H "x-integration-key: SPK-RX-ABC12345"
+```
+
+If the customer is missing, create or upsert them through the partner customer API before relying on downstream customer-based workflows.
+
+## 5. Submit A Test Sale
+
+```bash
+curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
+  -H "Content-Type: application/json" \
+  -H "x-partner-key: your-partner-key" \
+  --data '{
+    "integrationKey": "SPK-RX-ABC12345",
+    "payload": {
+      "event_type": "order.completed",
+      "order_id": "restrox-sale-1001",
+      "created_at": "2026-06-08T10:15:00.000Z",
+      "amount": 850,
+      "currency": "NPR",
+      "customer": { "phone": "9801234567" },
+      "external_location_id": "ktm-branch-01",
+      "external_location_name": "Kathmandu Branch",
+      "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
+    }
+  }'
 ```
 
 Expected response:
@@ -45,27 +98,22 @@ Expected response:
 ```json
 {
   "success": true,
-  "message": "Event received"
+  "message": "Test sale submitted",
+  "data": {
+    "success": true,
+    "message": "Event received"
+  }
 }
 ```
 
-## 4. Repost the Same Payload Once
+## 6. Confirm Readiness
 
-Send the exact same body again. Samparka should acknowledge the duplicate safely.
+Use the readiness checklist and merchant onboarding model to confirm the integration is ready for production.
 
-Expected response:
+## Webhook Transport Note
 
-```json
-{
-  "success": true,
-  "message": "Event already processed"
-}
-```
+The native test-sale path forwards into Samparka's existing RestroX event pipeline. If you also need to validate raw webhook delivery directly, continue with:
 
-## 5. Send a Test Refund
-
-Use a `refund.created` payload that reuses the original sale identifier.
-
-## 6. Complete Go-Live Validation
-
-Run the checks in [Integration Checklist](./integration-checklist) before switching to production traffic.
+- [Webhook Endpoint](./webhook-endpoint)
+- [Payload Reference](./payload-reference)
+- [Testing Guide](./testing-guide)
