@@ -28,3 +28,13 @@ Customers are owned by Samparka. Partners may search and retrieve customers only
 | Method | Path | Purpose | Auth | Status |
 | ------ | ---- | ------- | ---- | ------ |
 | `POST` | `/webhook/restrox/{token}` | Receive RestroX sale, refund, and void webhooks | Token in URL path | Active |
+| `POST` | `/integrations/pos/restrox/{token}` | Verified alias — executes the same pipeline as `/webhook/restrox/{token}` and produces identical outcomes | Token in URL path | Active |
+
+## Legacy Routes
+
+These routes exist in code but are feature-flag gated and return HTTP 410 by default. They are not active for new integrations.
+
+| Method | Path | Notes |
+| ------ | ---- | ----- |
+| `POST` | `/webhook/:provider/events` | Feature-flag gated. Returns HTTP 410 by default. |
+| `POST` | `/integrations/pos/:provider/events` | Feature-flag gated. Returns HTTP 410 by default. |

@@ -70,14 +70,7 @@ The verified onboarding stage values are:
 - `ready_for_production`
 - `review_required`
 
-The current health builder uses these step keys:
-
-- `integration_key_created`
-- `restrox_connected`
-- `locations_synced`
-- `test_sale_received`
-- `ready_for_production`
-- `refund_flow_verified`
+The readiness model tracks connection, location sync, and first sale receipt. Refund verification is optional.
 
 ## Verification Process
 
@@ -109,7 +102,16 @@ The current readiness logic treats the integration as:
 - awaiting connection before RestroX has connected
 - review required when synced locations need manual review
 - needs testing when RestroX is connected and no test sale has been observed
-- ready when RestroX is connected and a sale event has been received
+- ready when RestroX is connected and at least one `sale.completed` event has been received and processed
+
+**READY means:**
+- The integration is connected
+- At least one `sale.completed` event has been received and processed
+
+**READY does not guarantee:**
+- Loyalty points were awarded on any specific sale
+- Loyalty configuration is complete and valid
+- Every future sale will earn points
 
 ## Endpoints
 

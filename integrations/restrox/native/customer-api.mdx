@@ -25,19 +25,22 @@ The current implementation supports provider `restrox`.
 
 Customers are managed by Samparka.
 
-## Authentication
+## Authentication Requirements
 
-Required headers:
+Customer API requests require **both** of the following headers:
 
 ```http
-x-partner-key: your-partner-key
-x-integration-key: SPK-RX-ABC12345
+x-partner-key: <partner-key>
+x-integration-key: <integration-key>
 ```
+
+Requests that omit either credential are rejected before customer lookup occurs.
 
 You can also send the partner key as:
 
 ```http
 Authorization: Bearer your-partner-key
+x-integration-key: <integration-key>
 ```
 
 ## Customer Identity Notes
@@ -89,12 +92,31 @@ Example success response when missing:
 }
 ```
 
-Failure cases:
+Failure responses:
 
-- `400 Phone is required`
-- `400 Search supports exact phone lookup only`
-- `400 Invalid phone number`
-- `409 customer_identity_conflict`
+```json
+// 400 — phone parameter missing
+{
+  "error": "partner_customer_error",
+  "message": "Phone is required"
+}
+```
+
+```json
+// 400 — phone fails validation
+{
+  "error": "partner_customer_error",
+  "message": "Invalid phone number"
+}
+```
+
+```json
+// 409 — multiple records share the same normalized phone
+{
+  "error": "customer_identity_conflict",
+  "message": "Multiple customer records share the same normalized phone. Admin resolution is required."
+}
+```
 
 ### Get Customer
 
@@ -119,9 +141,15 @@ Example response:
 }
 ```
 
-Failure cases:
+Failure response:
 
-- `404 Customer not found`
+```json
+// 404 — customer not found in the store resolved by the supplied integration key
+{
+  "error": "partner_customer_error",
+  "message": "Customer not found"
+}
+```
 
 ## Operational Notes
 

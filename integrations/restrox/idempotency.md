@@ -30,6 +30,10 @@ A duplicate delivery can return:
 }
 ```
 
+## Idempotency Behavior
+
+Duplicate submissions are acknowledged successfully but are not reprocessed. No loyalty award is attempted on a duplicate event. The transaction ID is used for duplicate detection — submitting the same `order_id`, `transaction_id`, or `id` a second time will return `Event already processed`.
+
 ## What To Do If Something Goes Wrong
 
 If RestroX retries a webhook and receives `Event already processed`, treat that as success and stop retrying that payload.

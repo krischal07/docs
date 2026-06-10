@@ -91,7 +91,7 @@ Verified behavior:
 
 - resolves the integration by `integrationKey`
 - loads store outlets from the linked store
-- syncs the supplied locations into `posIntegrationLocation`
+- persists the synced location records
 - marks partner connection metadata and sync timestamps
 - returns sync results in the shared success envelope
 
@@ -188,7 +188,7 @@ Request rules:
 
 - `locationId` is preferred when you already know the RestroX location identifier
 - `locationId` is interpreted as the provider-facing `external_location_id`
-- `locationId` is not a Samparka Mongo `_id`
+- `locationId` must be the RestroX external location identifier, not a Samparka internal identifier
 - the payload may still supply the location identifier through:
   - `external_location_id`
   - `location_id`

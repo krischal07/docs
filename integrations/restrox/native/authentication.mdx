@@ -100,12 +100,7 @@ Content-Type: application/json
 
 ## Production Authentication
 
-The verified implementation reads partner credentials from:
-
-- `RESTROX_PARTNER_API_KEY`
-- `POS_PARTNER_API_KEY`
-
-Implementation detail requires clarification.
+Credential issuance details are provided during partner onboarding.
 
 The current docs package does not publish a formal production credential issuance process.
 
@@ -128,12 +123,25 @@ No staging-specific partner key issuance flow was verified in the current code p
 
 ### Unauthorized Partner Request
 
+Partner API routes (`/api/partners/restrox/*`) return:
+
 ```json
 {
   "success": false,
   "message": "Unauthorized partner request"
 }
 ```
+
+Partner Customer API routes (`/api/partners/{provider}/customers/*`) return a different envelope for the same condition:
+
+```json
+{
+  "error": "unauthorized",
+  "message": "Unauthorized partner request"
+}
+```
+
+These two route families use different response envelopes. Do not assume partner API error shapes apply to customer API routes.
 
 ### Missing Integration Key
 

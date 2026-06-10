@@ -18,7 +18,7 @@ This page turns the verified native onboarding flow into an implementation check
 - [ ] Mappings reviewed
 - [ ] Customer lookup verified
 - [ ] Test sale completed
-- [ ] Loyalty awarded
+- [ ] Test sale accepted (confirms event received, not that loyalty was awarded)
 - [ ] Refund tested
 - [ ] Webhook delivery verified
 - [ ] Ready for production
@@ -51,6 +51,7 @@ This page turns the verified native onboarding flow into an implementation check
 - `Needs Review` should be resolved before relying on production traffic.
 - Refund verification is optional in the current merchant status builder, but it is still recommended before go-live.
 - Test-sale validates the same downstream loyalty processing behavior used by production webhook traffic.
+- The READY state does not confirm that loyalty was awarded. It confirms that a sale event was received. Verify loyalty award separately before assuming points are flowing.
 
 ## Troubleshooting Notes
 

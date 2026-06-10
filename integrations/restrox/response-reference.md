@@ -21,6 +21,18 @@ Meaning: Samparka accepted the delivery.
 
 Recommended sender behavior: record the delivery as acknowledged. Do not retry unless you later confirm the request did not reach Samparka.
 
+### What 200 Does Not Mean
+
+HTTP 200 confirms the event was received and accepted. It does not indicate the outcome of loyalty processing. All of the following scenarios return HTTP 200:
+
+| Scenario | Internal Result |
+|----------|-----------------|
+| Sale processed, loyalty awarded | loyalty earned |
+| Sale received, no customer phone supplied | skipped — no_phone |
+| Sale received, location not mapped | blocked_unmapped_location |
+| Duplicate sale resent | Event already processed |
+| Refund received, no matching original sale | failed_terminal — original_event_not_found |
+
 ## `200 Event already processed`
 
 ```json

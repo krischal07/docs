@@ -531,7 +531,7 @@ components:
           description: Connection Key used to resolve the RestroX integration.
         locationId:
           type: string
-          description: Preferred provider-facing external location identifier. This is not a Mongo ID.
+          description: Preferred provider-facing external location identifier. Must be the RestroX external location identifier, not a Samparka internal identifier.
         payload:
           $ref: '#/components/schemas/RestroxWebhookRequest'
     PartnerCustomer:

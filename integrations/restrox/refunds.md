@@ -36,6 +36,14 @@ If the same refund is resent, Samparka can return:
 }
 ```
 
+## When No Original Sale Is Found
+
+Samparka always returns HTTP 200 as a delivery acknowledgement for refund and void events, even when no original sale can be matched. The HTTP 200 response only confirms the event was received — it does not confirm the reversal succeeded.
+
+When no matching original sale exists, the internal processing result is `failed_terminal` with reason `original_event_not_found`. No loyalty points are reversed in this case.
+
+To ensure refund matching succeeds, the refund event must supply the same order identifier (`order_id`, `transaction_id`, or `id`) that was used in the original sale event.
+
 ## What To Do If Something Goes Wrong
 
-If a refund does not produce the expected result, verify that the refund uses the same original sale identifier that was sent in the sale webhook. If Samparka cannot match the original sale identifier, the reversal cannot proceed.
+If a refund does not produce the expected reversal, verify that the refund uses the same original sale identifier that was sent in the sale webhook. A `200` acknowledgement does not confirm loyalty was reversed.
