@@ -1,20 +1,24 @@
 ---
 title: Loyalty Processing
-description: Understand how RestroX native partner flows feed Samparka's canonical webhook-backed loyalty processing engine.
+description: Understand what happens after RestroX submits sale and related events for Samparka loyalty processing.
 sidebarTitle: Loyalty Processing
 ---
 
 # Loyalty Processing
 
-The RestroX native integration does not award loyalty points directly through the partner API. It feeds Samparka's canonical token-routed event ingress, which then continues through internal event processing and the loyalty engine.
+RestroX submits sale and related events. Samparka then processes loyalty after receiving those events.
+
+Loyalty calculation is owned by Samparka. RestroX does not calculate points, rewards, tiers, or balances.
 
 ## Purpose
 
 Use this page to understand:
 
-- how native onboarding and customer identity feed event processing
 - what happens after a sale event is submitted
-- where customer identity outcomes affect loyalty expectations
+- which event types affect loyalty
+- what responses partners should expect
+- how duplicate events are handled
+- what partners should troubleshoot
 
 For the cashier-facing and bill-association workflow, use [Customer Loyalty Award Flow](./customer-loyalty-award-flow).
 
@@ -22,50 +26,53 @@ For the cashier-facing and bill-association workflow, use [Customer Loyalty Awar
 
 ```mermaid
 flowchart TD
-  A["RestroX connect + sync"] --> B["Customer lookup"]
-  B --> C["Partner test-sale or production webhook"]
-  C --> D["handleTokenEvent()"]
-  D --> E["Parser + mapper"]
-  E --> F["Idempotency"]
-  F --> G["Internal event"]
-  G --> H["Loyalty processing"]
-  H --> I["Points earned or skipped"]
-  G --> J["Refund or void reversal"]
+  A["Customer associated to sale"] --> B["Sale completed"]
+  B --> C["RestroX sends event"]
+  C --> D["Samparka validates event"]
+  D --> E["Loyalty rules evaluated"]
+  E --> F["Points awarded or skipped"]
+  F --> G["Customer balance updated"]
 ```
 
-## Concepts
+## Event Types
 
-The current event engine processes:
+The loyalty flow is affected by these partner-facing event types:
 
 - `order.completed`
 - `refund.created`
 - `order.voided`
 
-The sale path awards loyalty points when the event can be processed successfully.
+### `order.completed`
 
-The refund and void paths reverse earlier earned activity when the original sale can be matched.
+Eligible loyalty activity may earn points.
 
-## Customer Identity Outcomes
+### `refund.created`
 
-Customer identity still matters even though the native test-sale path focuses on event submission.
+Previously awarded activity may be reversed.
 
-Relevant outcomes:
+### `order.voided`
 
-- `found`
-- `missing`
-- `created`
-- `conflict`
-- `invalid_phone`
+Previously awarded activity may be reversed.
 
-Practical effect:
+## Customer Identity Considerations
 
-- `found`: the customer already exists and can receive loyalty normally if the event is otherwise eligible
-- `missing`: the event may still be accepted, but downstream loyalty expectations can differ if the customer was not prepared in advance
-- `created`: loyalty processing may create a customer internally according to Samparka identity rules
-- `conflict`: manual resolution is required before clean identity-based automation can continue
-- `invalid_phone`: customer preparation must be corrected before reliable identity-based workflows can proceed
+Customer identity affects loyalty eligibility.
 
-The current public responses confirm delivery acceptance, not a separate public loyalty outcome.
+### Found
+
+Customer is identified successfully and can participate in loyalty.
+
+### Not Found
+
+The sale may continue normally, but loyalty participation depends on merchant workflow.
+
+### Conflict
+
+Customer information requires review before reliable customer identification can occur.
+
+### Invalid Phone
+
+Customer lookup information should be corrected before loyalty participation can be verified.
 
 ## Endpoints Involved
 
@@ -109,44 +116,45 @@ Duplicate-safe response:
 }
 ```
 
+The current public responses confirm delivery acceptance, not a separate public loyalty outcome.
+
 ## Failure Scenarios
 
 ### Event Accepted, Loyalty Not Visible
 
-Possible reasons already reflected in the current code path:
+Possible causes:
 
-- location mapping needs review
+- location configuration requires review
 - location participation is disabled
-- location mapping is inactive or stale
-- customer input needs review
-- refund linkage needs review
+- customer identification requires review
 
-### Duplicate Replay
+### Duplicate Delivery
 
-The ingress acknowledges duplicate deliveries safely and does not treat the same event as a new sale.
+Duplicate events are handled safely.
 
-### Refund Or Void Cannot Be Matched
+### Refund Or Void Review
 
-Refund and reversal logic depend on being able to match the original sale activity.
+Verify that the original transaction identifiers remain consistent.
 
 ## Operational Notes
 
-- Partner `test-sale` and production webhook traffic share the same downstream loyalty path after `handleTokenEvent()`.
-- The native integration changes onboarding and customer preparation, not the underlying transaction engine.
-- Refund verification remains recommended even though it is optional in the current merchant readiness checklist.
+- Partner `test-sale` and production webhook traffic follow the same loyalty path.
+- Onboarding and customer preparation influence loyalty outcomes.
+- Refund verification is recommended.
 
 ## Troubleshooting Notes
 
-- If customer search is working but loyalty is still missing, inspect location state and event validation next.
+- If customer lookup succeeds but loyalty is missing, review location setup, participation state, and customer identification.
 - If a refund event is accepted but reversal is not visible, confirm the original sale identifier is consistent.
 - If repeated test sales return duplicate acknowledgment, confirm you are changing the event identifier for a new test.
 
 ## Related Documentation
 
-- [Customer Identity](./customer-identity)
 - [Customer Loyalty Award Flow](./customer-loyalty-award-flow)
+- [Customer Identity](./customer-identity)
 - [Customer API](./customer-api)
 - [Partner API](./partner-api)
 - [Webhook Endpoint](../webhook-endpoint)
 - [Refunds](../refunds)
 - [Idempotency](../idempotency)
+- [Store Linking](./store-linking)
