@@ -62,13 +62,13 @@ Partner customer routes use two distinct error envelopes depending on which laye
 
 | Route Family | HTTP | Error Code | Message | Notes |
 | --- | --- | --- | --- | --- |
+| Partner API | `503` | not exposed | `RestroX partner API is not configured` | Partner key env var not set — `{"success":false,"message":"..."}` envelope |
 | Partner API | `401` | not exposed | `Unauthorized partner request` | Partner key mismatch — `{"success":false,"message":"..."}` envelope |
 | Partner API | `404` | not exposed | `Invalid Integration Key` | Connection Key not found |
-| Partner API | `503` | not exposed | `RestroX partner API is not configured` | Partner key not configured |
 | Partner Customer API | `401` | `unauthorized` | `Unauthorized partner request` | Partner key wrong — `{"error":"unauthorized","message":"..."}` envelope |
 | Partner Customer API | `401` | `unauthorized` | `Missing integration key` | `x-integration-key` header absent |
 | Partner Customer API | `401` | `unauthorized` | `Invalid integration key` | Connection Key not recognized |
-| Partner Customer API | `403` | `partner_customer_error` | `Integration is inactive` | Integration not active |
+| Partner Customer API | `403` | `forbidden` | `Integration is inactive` | Integration not active |
 | Partner Customer API | `400` | `partner_customer_error` | `Invalid phone number` | Identity validation failed |
 | Partner Customer API | `404` | `partner_customer_error` | `Customer not found` | Missing customer record |
 | Partner Customer API | `409` | `customer_identity_conflict` | `Multiple customer records share the same normalized phone. Admin resolution is required.` | Conflict state |

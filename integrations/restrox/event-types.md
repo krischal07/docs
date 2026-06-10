@@ -62,3 +62,25 @@ Example response:
   "message": "Event received"
 }
 ```
+
+## Accepted Aliases
+
+Samparka maps these additional event type strings to the same business-domain events. Prefer the canonical names above in new integrations, but all aliases below are accepted:
+
+| Sent by RestroX | Maps to | Notes |
+| --------------- | ------- | ----- |
+| `order.completed` | `sale.completed` | Canonical recommended name |
+| `transaction.completed` | `sale.completed` | Accepted alias |
+| `sale.completed` | `sale.completed` | Accepted alias |
+| `order.placed` | `sale.completed` | Accepted alias |
+| `refund.created` | `refund.created` | Canonical recommended name |
+| `order.refund` | `refund.created` | Accepted alias |
+| `refund.issued` | `refund.created` | Accepted alias |
+| `order.voided` | `sale.voided` | Canonical recommended name |
+| `order.void` | `sale.voided` | Accepted alias |
+| `order.cancelled` | `sale.voided` | Accepted alias |
+| `order.canceled` | `sale.voided` | Accepted alias |
+
+## Unknown Event Types
+
+If RestroX sends an `event_type` that does not match any entry in the table above, Samparka silently maps it to `sale.completed` and processes it as a completed sale. No error is returned. Verify your `event_type` values match the table to ensure correct processing.

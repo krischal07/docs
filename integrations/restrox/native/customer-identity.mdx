@@ -44,6 +44,7 @@ Implementation note:
 
 - the service tries to derive local and E.164 variants
 - lookup checks `normalized_phone` first and also checks stored `phone` variants
+- phone numbers without a country prefix are assumed to be Nepal (`NP`) by default in the RestroX integration — send the full number including the country prefix (e.g. `9779801234567` or `+9779801234567`) for unambiguous resolution
 
 ## Customer Resolution
 

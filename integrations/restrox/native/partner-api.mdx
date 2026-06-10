@@ -233,8 +233,9 @@ Failures use:
 
 Verified partner-visible failures include:
 
-- `401 Unauthorized partner request`
-- `404 Invalid Integration Key`
+- `503 RestroX partner API is not configured` — the partner key environment variable is not set on the Samparka server
+- `401 Unauthorized partner request` — wrong or missing partner key
+- `404 Invalid Integration Key` — the `integrationKey` body field does not match an active integration
 - `400 locationId does not match the payload location identifier`
 - `400 A location identifier is required. Provide locationId or a payload location field.`
 - `404 No mapped RestroX location found for the provided location identifier`

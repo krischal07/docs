@@ -59,21 +59,19 @@ Each location payload is evaluated in this order:
 
 Verified location row statuses:
 
-- `draft`
-- `mapped`
-- `active`
-- `disabled`
+- `draft` — location record created but no outlet match established yet
+- `active` — location is matched to a Samparka outlet and ready to receive events
 
 Verified location lifecycle statuses:
 
-- `ACTIVE`
-- `STALE`
+- `ACTIVE` — location is current and participates in event processing
+- `STALE` — outlet was removed from the store; events from this location are blocked
 
 Verified partner connection statuses:
 
-- `pending`
-- `connected`
-- `review_required`
+- `pending` — integration created, RestroX has not yet connected
+- `connected` — RestroX connected and all locations resolved cleanly
+- `review_required` — connection completed but one or more locations need manual review
 
 ## Review Required State
 

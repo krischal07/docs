@@ -29,9 +29,15 @@ HTTP 200 confirms the event was received and accepted. It does not indicate the 
 |----------|-----------------|
 | Sale processed, loyalty awarded | loyalty earned |
 | Sale received, no customer phone supplied | skipped — no_phone |
-| Sale received, location not mapped | blocked_unmapped_location |
+| Sale received, location identifier absent from payload | blocked — `missing_external_location_id` |
+| Sale received, location identifier does not match any mapped location | blocked — `unmapped_location` |
+| Sale received, matched location is STALE (outlet removed from store) | blocked — `stale_location_mapping` |
+| Sale received, location participation is disabled | blocked — `participation_disabled` |
+| Sale received, location mapping is inactive | blocked — `inactive_location_mapping` |
 | Duplicate sale resent | Event already processed |
 | Refund received, no matching original sale | failed_terminal — original_event_not_found |
+
+All blocked events are stored internally with `blocked_unmapped_location` status. No loyalty is awarded in any blocked scenario. To diagnose which blocked reason applies, contact Samparka or check the location state in the merchant integration panel.
 
 ## `200 Event already processed`
 

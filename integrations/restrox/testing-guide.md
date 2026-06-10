@@ -165,9 +165,9 @@ Expected response:
 }
 ```
 
-## Wrong Location Test
+## Wrong Location Test (via test-sale)
 
-Use a location identifier that does not resolve to a mapped location for the integration.
+Use the `test-sale` endpoint with a `locationId` that does not exist in the integration.
 
 Expected response:
 
@@ -177,6 +177,21 @@ Expected response:
   "message": "No mapped RestroX location found for the provided location identifier"
 }
 ```
+
+## Wrong Location Test (via direct webhook)
+
+Send a direct webhook with an `external_location_id` that does not resolve to a mapped location.
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Event received"
+}
+```
+
+The event is accepted at the transport level but is stored internally with `blocked_unmapped_location` status. No loyalty is awarded. Confirm the correct `external_location_id` with Samparka and resend future events with the matched value.
 
 ## Related Documentation
 

@@ -32,7 +32,20 @@ A duplicate delivery can return:
 
 ## Idempotency Behavior
 
-Duplicate submissions are acknowledged successfully but are not reprocessed. No loyalty award is attempted on a duplicate event. The transaction ID is used for duplicate detection — submitting the same `order_id`, `transaction_id`, or `id` a second time will return `Event already processed`.
+Duplicate submissions are acknowledged successfully but are not reprocessed. No loyalty award is attempted on a duplicate event.
+
+### Key Construction
+
+The idempotency key is computed as `{event_type}:{order_id}`. Both the event type and the transaction identifier together determine uniqueness. This means:
+
+- A sale and a refund for the same `order_id` are **not** duplicates — they have different `event_type` prefixes and are processed independently.
+- Resending the exact same sale payload with the same `event_type` and `order_id` **is** a duplicate and returns `Event already processed`.
+
+If no `order_id`, `transaction_id`, or `id` is present, Samparka computes a deterministic SHA-256 fallback key from the provider, event type, amount, and timestamp. Retry safety in that case depends on resending exactly the same payload values.
+
+### Scope
+
+Idempotency is scoped per integration. The same `order_id` value used by two different merchant integrations does not cause a conflict.
 
 ## What To Do If Something Goes Wrong
 

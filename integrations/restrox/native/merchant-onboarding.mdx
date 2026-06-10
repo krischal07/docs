@@ -37,26 +37,23 @@ flowchart TD
 
 ## Readiness States
 
-The verified overall status values are:
+The overall status values returned by the health builder are:
 
-- `NOT_CONNECTED`
-- `AWAITING_CONNECTION`
-- `CONNECTED`
-- `NEEDS_TESTING`
-- `READY`
-- `REVIEW_REQUIRED`
+- `AWAITING_CONNECTION` — integration created, RestroX has not connected yet
+- `NOT_CONNECTED` — integration key was revoked; reconnect required
+- `NEEDS_TESTING` — RestroX connected and locations resolved, no test sale received yet
+- `READY` — RestroX connected and at least one `sale.completed` event received
+- `REVIEW_REQUIRED` — connection completed but one or more locations need manual review
 
-The current merchant health builder returns these merchant-facing labels:
+The constant `CONNECTED` exists in the codebase but is never returned by the health builder in the current implementation. Do not rely on it as a production state.
 
-- `Not Connected`
-- `Connecting`
-- `Needs Review`
-- `Needs Testing`
-- `Ready`
+The merchant-facing labels for these states are:
 
-Implementation detail requires clarification.
-
-The `CONNECTED` overall status constant exists, but the verified health builder paths in this pass do not return it as a final externally surfaced state.
+- `Connecting` (AWAITING_CONNECTION)
+- `Not Connected` (NOT_CONNECTED)
+- `Needs Review` (REVIEW_REQUIRED)
+- `Needs Testing` (NEEDS_TESTING)
+- `Ready` (READY)
 
 ## Status Model
 

@@ -40,6 +40,8 @@ The loyalty flow is affected by these partner-facing event types:
 - `refund.created`
 - `order.voided`
 
+See [Event Types](../event-types) for the full list of accepted aliases.
+
 ### `order.completed`
 
 Eligible loyalty activity may earn points.
@@ -51,6 +53,10 @@ Previously awarded activity may be reversed.
 ### `order.voided`
 
 Previously awarded activity may be reversed.
+
+### Unknown Event Types
+
+If an unrecognized `event_type` value is received, Samparka maps it to `sale.completed` and processes it as a completed sale. No error is returned to the sender. Use the canonical event type names in [Event Types](../event-types) to ensure predictable processing.
 
 ## Customer Identity Considerations
 

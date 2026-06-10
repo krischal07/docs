@@ -147,7 +147,7 @@ These two route families use different response envelopes. Do not assume partner
 
 ```json
 {
-  "error": "partner_customer_error",
+  "error": "unauthorized",
   "message": "Missing integration key"
 }
 ```
@@ -156,7 +156,7 @@ These two route families use different response envelopes. Do not assume partner
 
 ```json
 {
-  "error": "partner_customer_error",
+  "error": "unauthorized",
   "message": "Invalid integration key"
 }
 ```
@@ -165,7 +165,7 @@ These two route families use different response envelopes. Do not assume partner
 
 ```json
 {
-  "error": "partner_customer_error",
+  "error": "forbidden",
   "message": "Integration is inactive"
 }
 ```
