@@ -46,6 +46,7 @@
         "group": "RestroX Core Concepts",
         "pages": [
           "integrations/restrox/native/customer-identity",
+          "integrations/restrox/native/customer-loyalty-award-flow",
           "integrations/restrox/native/store-linking",
           "integrations/restrox/native/loyalty-processing"
         ]

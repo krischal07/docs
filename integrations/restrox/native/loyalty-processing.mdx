@@ -16,6 +16,8 @@ Use this page to understand:
 - what happens after a sale event is submitted
 - where customer identity outcomes affect loyalty expectations
 
+For the cashier-facing and bill-association workflow, use [Customer Loyalty Award Flow](./customer-loyalty-award-flow).
+
 ## Workflow
 
 ```mermaid
@@ -59,11 +61,9 @@ Practical effect:
 
 - `found`: the customer already exists and can receive loyalty normally if the event is otherwise eligible
 - `missing`: the event may still be accepted, but downstream loyalty expectations can differ if the customer was not prepared in advance
-- `created`: a new customer is available for subsequent partner flows
+- `created`: loyalty processing may create a customer internally according to Samparka identity rules
 - `conflict`: manual resolution is required before clean identity-based automation can continue
 - `invalid_phone`: customer preparation must be corrected before reliable identity-based workflows can proceed
-
-Implementation detail requires clarification.
 
 The current public responses confirm delivery acceptance, not a separate public loyalty outcome.
 
@@ -144,6 +144,7 @@ Refund and reversal logic depend on being able to match the original sale activi
 ## Related Documentation
 
 - [Customer Identity](./customer-identity)
+- [Customer Loyalty Award Flow](./customer-loyalty-award-flow)
 - [Customer API](./customer-api)
 - [Partner API](./partner-api)
 - [Webhook Endpoint](../webhook-endpoint)
