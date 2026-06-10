@@ -4,8 +4,6 @@ description: Reference the webhook acknowledgment and error responses returned b
 sidebarTitle: Response Reference
 ---
 
-# Response Reference
-
 These are the partner-visible responses for the canonical RestroX webhook path.
 
 See also: [Troubleshooting](./troubleshooting).

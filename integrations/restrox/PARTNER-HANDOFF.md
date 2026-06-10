@@ -4,8 +4,6 @@ description: Canonical partner handoff summary for RestroX onboarding with Sampa
 sidebarTitle: Partner Handoff
 ---
 
-# RestroX Partner Handoff
-
 This package is the shareable entry point for RestroX webhook integration with Samparka. Samparka accepts sale, refund, and void webhook events so restaurants can connect RestroX transactions to loyalty processing. The backend exposes a token-based webhook URL, expects JSON payloads, and returns a simple acknowledgment response. Integration effort is low if your team already sends webhook events from RestroX.
 
 ## Start Here

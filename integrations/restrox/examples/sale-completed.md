@@ -4,8 +4,6 @@ description: Example of a successful completed-sale webhook request and acknowle
 sidebarTitle: Sale Completed
 ---
 
-# Sale Completed Example
-
 ## Request
 
 Use the `sale_completed_request` fixture from [`payloads.json`](./payloads.json).

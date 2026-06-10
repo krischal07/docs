@@ -4,8 +4,6 @@ description: Review the webhook-facing location requirements used after native o
 sidebarTitle: Location Mapping
 ---
 
-# Location Mapping
-
 This page documents the webhook-facing location rules used by the RestroX event pipeline after native onboarding and location sync have established the integration context.
 
 <Note>

@@ -4,8 +4,6 @@ description: Final go-live checklist for validating a RestroX to Samparka integr
 sidebarTitle: Integration Checklist
 ---
 
-# Integration Checklist
-
 See also: [Testing Guide](./testing-guide).
 
 ## Webhook Connectivity

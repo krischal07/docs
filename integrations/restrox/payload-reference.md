@@ -4,8 +4,6 @@ description: Required, optional, and ignored RestroX payload fields for Samparka
 sidebarTitle: Payload Reference
 ---
 
-# Payload Reference
-
 Samparka reads the fields below from RestroX webhooks.
 
 ## Required Fields

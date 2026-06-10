@@ -4,8 +4,6 @@ description: Understand how RestroX connects to Samparka through partner APIs, c
 sidebarTitle: Architecture
 ---
 
-# Architecture
-
 The RestroX native integration connects RestroX to Samparka through onboarding APIs, customer lookup APIs, and sale-event submission.
 
 This page focuses on how the systems and public interfaces fit together. For cashier workflow and loyalty participation behavior, use the dedicated workflow pages.
@@ -76,16 +74,14 @@ See [Customer Identity](./customer-identity) for the exact outcomes used by the 
 
 | Credential | Purpose |
 | ------ | ------- |
-| Partner Key | Authenticate native partner APIs and partner customer APIs |
-| Integration Key | Resolve the merchant integration for connect, sync-locations, and test-sale |
-| Webhook Token | Route canonical webhook traffic to the mapped location |
-| `api_key` | Authenticate the legacy provider event route only |
+| Partner Key | Authenticate partner APIs |
+| Integration Key | Resolve merchant integrations |
+| Webhook Token | Route webhook traffic |
 
 ## Operational Notes
 
 - The native partner `test-sale` API and production webhook traffic follow the same downstream processing behavior.
 - Native onboarding and customer preparation influence loyalty outcomes.
-- The legacy provider route still exists, but it is not part of native onboarding, customer APIs, connect, sync-locations, or test-sale.
 - Location sync can place an integration into a review-required state before any live traffic is sent.
 
 ## Troubleshooting Notes

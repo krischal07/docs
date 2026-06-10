@@ -6,8 +6,8 @@ info:
     External partner guide for the RestroX native integration with Samparka.
 
     The native partner APIs handle merchant connection, location sync, and
-    read-only partner customer retrieval. Event delivery continues through the existing
-    RestroX webhook-backed event pipeline.
+    read-only partner customer retrieval. Event delivery uses the supported
+    RestroX webhook route documented for partners.
 servers:
   - url: https://your-domain
 security:
@@ -140,9 +140,9 @@ paths:
     post:
       summary: Submit a test sale through the native partner API
       description: |
-        Resolve the target integration and mapped location, load the stored
-        webhook token, and submit the event through the canonical token-routed
-        ingress used by production webhook traffic.
+        Validate the target integration and mapped location, then submit a test
+        event through the same downstream loyalty processing behavior used by
+        production webhook traffic.
       operationId: submitRestroxTestSale
       security:
         - PartnerKeyHeader: []

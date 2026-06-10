@@ -4,8 +4,6 @@ description: Example showing how Samparka safely acknowledges a repeated RestroX
 sidebarTitle: Duplicate Webhook
 ---
 
-# Duplicate Webhook Example
-
 ## Request
 
 Use the `duplicate_sale_request` fixture from [`payloads.json`](./payloads.json). This fixture intentionally matches the earlier sale payload.

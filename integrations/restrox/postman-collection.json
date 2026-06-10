@@ -74,7 +74,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "partners", "restrox", "test-sale"]
             },
-            "description": "Business purpose: submit a test sale that resolves a mapped location and enters the canonical token-routed ingress."
+            "description": "Business purpose: submit a test sale that validates mapped location behavior and production-like loyalty processing."
           }
         }
       ]

@@ -4,8 +4,6 @@ description: Review the validation coverage and content verification for the Res
 sidebarTitle: Verification Report
 ---
 
-# Final Verification Report
-
 This report is the acceptance gate for the RestroX partner package.
 
 ## Route Verification
@@ -81,13 +79,13 @@ samparka-backend/src/integrations/pos/controller.js:367-397
 
 | Internal Topic | Exposed? | Status |
 | -------------- | -------- | ------ |
-| `InternalEvent` | No | Pass |
-| `ProcessedEvent` | No | Pass |
-| `RawWebhookEvent` | No | Pass |
-| `LoyaltyLedger` | No | Pass |
-| `CustomerOutletPoints` | No | Pass |
-| `L5PointsTransaction` | No | Pass |
-| `PointsHistory` | No | Pass |
+| Internal event models | No | Pass |
+| Processed event records | No | Pass |
+| Raw event storage models | No | Pass |
+| Internal loyalty data models | No | Pass |
+| Internal customer-points records | No | Pass |
+| Internal transaction records | No | Pass |
+| Internal history records | No | Pass |
 | Replay services | No | Pass |
 | Reprocess services | No | Pass |
 | Reconciliation tooling | No | Pass |

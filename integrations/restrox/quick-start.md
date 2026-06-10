@@ -4,8 +4,6 @@ description: Connect a merchant, sync locations, verify customer behavior, and s
 sidebarTitle: Quick Start
 ---
 
-# Quick Start
-
 This is the fastest path to a working RestroX native integration.
 
 See also: [Partner API](./native/partner-api), [Customer API](./native/customer-api), and [Readiness Checklist](./native/readiness-checklist).
@@ -113,7 +111,7 @@ Use the readiness checklist and merchant onboarding model to confirm the integra
 
 ## Webhook Transport Note
 
-The native test-sale path resolves the mapped location, loads the stored webhook token, and enters the same canonical token-routed ingress used by production webhook traffic. If you also need to validate raw webhook delivery directly, continue with:
+The native test-sale path validates the same downstream loyalty processing behavior used by production webhook traffic. If you also need to validate raw webhook delivery directly, continue with:
 
 - [Webhook Endpoint](./webhook-endpoint)
 - [Payload Reference](./payload-reference)

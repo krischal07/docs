@@ -4,8 +4,6 @@ description: Example of a refund webhook request and successful acknowledgment.
 sidebarTitle: Refund Created
 ---
 
-# Refund Created Example
-
 ## Request
 
 Use the `refund_created_request` fixture from [`payloads.json`](./payloads.json).

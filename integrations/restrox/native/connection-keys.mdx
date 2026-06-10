@@ -4,8 +4,6 @@ description: Learn how Samparka issues, validates, and rotates the merchant-faci
 sidebarTitle: Connection Keys
 ---
 
-# Connection Keys
-
 Samparka issues a merchant-facing Connection Key for each RestroX POS integration. RestroX uses this key to connect the merchant, sync locations, and submit test sales through the native partner API.
 
 ## Purpose
@@ -15,16 +13,7 @@ Use this page to understand:
 - what a Connection Key is
 - why it exists
 - how the backend creates and rotates it
-- how it differs from the legacy `api_key`
-
-## Credential Distinction
-
-| Credential | Backend Field | Current Purpose |
-| ------ | ------- | ------- |
-| Connection Key | `integration_key` | Merchant integration resolution for native partner APIs |
-| Legacy API Key | `api_key` | Legacy provider-route compatibility only |
-
-The native RestroX integration does not use `api_key` for connect, sync-locations, test-sale, or partner customer APIs.
+- how it is used by the supported public integration flows
 
 ## What Is A Connection Key
 
@@ -218,7 +207,6 @@ Implementation detail requires clarification.
 - A Connection Key is provider-specific.
 - The merchant-facing label can be `Connection Key` even though the backend field name remains `integration_key`.
 - Key rotation resets the connection workflow and should be treated as a reconnect event.
-- `api_key` remains an existing legacy provider-route credential, not a native onboarding credential.
 
 ## Troubleshooting Notes
 

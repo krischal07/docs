@@ -4,8 +4,6 @@ description: Validate native onboarding, customer resolution, and webhook-backed
 sidebarTitle: Testing Guide
 ---
 
-# Testing Guide
-
 This guide combines native partner onboarding checks with the existing webhook delivery tests.
 
 See also: [Customer API](./native/customer-api), [Partner API](./native/partner-api), and [Troubleshooting](./troubleshooting).
@@ -102,9 +100,9 @@ Expected result:
 
 Verification points:
 
-- `RawWebhookEvent` should be created for the request
-- `route_token` should be populated on the raw event
-- `InternalEvent` should be created when the event passes canonical ingress validation
+- the event should be accepted for delivery
+- the webhook token should route the event to the correct location
+- partner-visible event validation should succeed for a valid payload
 - downstream loyalty processing should execute for processable events
 
 Notes:

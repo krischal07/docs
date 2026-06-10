@@ -4,8 +4,6 @@ description: Understand duplicate webhook handling and replay safety for RestroX
 sidebarTitle: Idempotency
 ---
 
-# Idempotency
-
 Samparka accepts duplicate webhook deliveries safely. If RestroX sends the same webhook more than once, Samparka can return `200 Event already processed` instead of creating duplicate downstream activity.
 
 ## What RestroX Needs To Send

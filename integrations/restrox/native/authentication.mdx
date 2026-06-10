@@ -4,8 +4,6 @@ description: Review the authentication mechanisms used by RestroX partner APIs, 
 sidebarTitle: Authentication
 ---
 
-# Native Authentication
-
 The RestroX integration uses more than one authentication mechanism. The correct credential depends on the API surface you are calling.
 
 ## Purpose
@@ -14,16 +12,15 @@ Use this page to understand:
 
 - which credential belongs to each route family
 - which headers are required
-- how native partner APIs differ from canonical webhook routing
+- how partner APIs, customer APIs, and webhook delivery are authenticated
 
 ## Authentication Matrix
 
-| Credential | Purpose | Where It Is Used Today |
-| ------ | ------- | ---------------------- |
-| Partner Key | Authenticate partner-managed APIs | `POST /api/partners/restrox/connect`, `POST /api/partners/restrox/sync-locations`, `POST /api/partners/restrox/test-sale`, and partner customer APIs |
-| Integration Key | Resolve the merchant integration | request body for connect, sync-locations, and test-sale; `x-integration-key` for partner customer APIs |
-| Webhook Token | Route canonical webhook traffic to a mapped location | `POST /webhook/restrox/{token}` and internal token routing used by native `test-sale` |
-| `api_key` | Authenticate the legacy provider event route | `POST /integrations/pos/{provider}/events` only |
+| Credential | Purpose |
+| ------ | ------- |
+| Partner Key | Authenticate partner APIs |
+| Integration Key | Resolve merchant integrations |
+| Webhook Token | Route webhook traffic |
 
 ## Authentication Types
 
@@ -70,26 +67,6 @@ Required credential:
 
 - webhook token in the URL path
 
-### Legacy Provider Event Authentication
-
-Used by:
-
-- `POST /integrations/pos/{provider}/events`
-
-Required credential:
-
-- `x-api-key`
-
-This route still exists in the current implementation, but it is not part of native onboarding, partner customer APIs, connect, sync-locations, or test-sale.
-
-### Merchant API Authentication
-
-Used by merchant POS integration routes such as:
-
-- `/api/pos-integrations/*`
-
-These routes use existing Samparka merchant, store, or admin authentication middleware and are not public partner APIs.
-
 ## Required Headers
 
 ### Partner API Example
@@ -119,30 +96,6 @@ Authorization: Bearer your-partner-key
 ```http
 POST /webhook/restrox/{token}
 Content-Type: application/json
-```
-
-### Legacy Provider Event Example
-
-```http
-POST /integrations/pos/restrox/events
-Content-Type: application/json
-x-api-key: integration-api-key
-```
-
-## Workflow
-
-```mermaid
-flowchart TD
-  A["Partner API request"] --> B["Partner key validation"]
-  B --> C["Integration resolution from request body or x-integration-key"]
-  C --> D["Controller or middleware"]
-
-  E["Webhook request"] --> F["Token routing"]
-  F --> G["handleTokenEvent()"]
-  G --> H["Canonical event processing"]
-
-  I["Legacy provider route request"] --> J["x-api-key validation"]
-  J --> K["handleEvent()"]
 ```
 
 ## Production Authentication
@@ -233,7 +186,7 @@ No verified public partner-key rotation route is published in the current implem
 
 - Partner APIs accept either `x-partner-key` or bearer token format.
 - Partner customer APIs are protected by both partner authentication and integration-key resolution.
-- The native RestroX integration no longer uses `api_key` for partner authentication or test-sale execution.
+- Webhook delivery is authenticated by the per-location webhook token in the URL path.
 
 ## Troubleshooting Notes
 

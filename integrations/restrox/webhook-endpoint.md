@@ -4,8 +4,6 @@ description: Configure the RestroX webhook endpoint, request shape, and acknowle
 sidebarTitle: Webhook Endpoint
 ---
 
-# Webhook Endpoint
-
 ## Endpoint
 
 - Method: `POST`

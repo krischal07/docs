@@ -4,8 +4,6 @@ description: Example showing a webhook accepted for delivery while location setu
 sidebarTitle: Blocked Location
 ---
 
-# Blocked Location Example
-
 ## Request
 
 Use the `blocked_location_request` fixture from [`payloads.json`](./payloads.json).

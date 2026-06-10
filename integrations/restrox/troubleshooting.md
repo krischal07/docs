@@ -4,8 +4,6 @@ description: Diagnose webhook authentication, payload, mapping, and delivery iss
 sidebarTitle: Troubleshooting
 ---
 
-# Troubleshooting
-
 | Problem | Likely Cause | Verification Steps | Resolution |
 | ------- | ------------ | ------------------ | ---------- |
 | `404 Invalid webhook token` | Wrong token in the URL path | Compare the configured URL with the token provided by Samparka. | Update the webhook URL and retry. |

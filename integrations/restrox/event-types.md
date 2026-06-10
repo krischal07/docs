@@ -4,8 +4,6 @@ description: Review the RestroX webhook events supported by Samparka Loyalty.
 sidebarTitle: Event Types
 ---
 
-# Event Types
-
 Samparka’s recommended RestroX event types are:
 
 See also: [Payload Reference](./payload-reference).

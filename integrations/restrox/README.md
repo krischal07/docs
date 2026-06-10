@@ -4,9 +4,7 @@ description: Canonical overview of the RestroX native integration with Samparka 
 sidebarTitle: Guide Overview
 ---
 
-# RestroX Partner Guide
-
-Samparka supports RestroX through a native integration flow for merchant onboarding, location sync, and customer operations. The native flow sits above Samparka's existing webhook processing engine, which continues to handle sale, refund, and void events.
+Samparka supports RestroX through a native integration flow for merchant onboarding, location sync, and customer operations. The native flow works alongside the supported webhook delivery model for sale, refund, and void events.
 
 ## Integration Flow
 
@@ -20,7 +18,7 @@ Samparka supports RestroX through a native integration flow for merchant onboard
 
 ## Architecture Note
 
-The native integration is an onboarding and partner API layer. It does not replace the underlying webhook engine.
+The native integration is an onboarding and partner API layer. It does not replace the supported webhook delivery model.
 
 ```mermaid
 flowchart TD

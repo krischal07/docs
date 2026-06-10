@@ -4,8 +4,6 @@ description: Use this native integration checklist to confirm the RestroX integr
 sidebarTitle: Readiness Checklist
 ---
 
-# Readiness Checklist
-
 Use this checklist to confirm the RestroX native integration is ready for production traffic.
 
 ## Purpose
@@ -41,7 +39,7 @@ This page turns the verified native onboarding flow into an implementation check
     Test customer search using normalized phone input.
   </Step>
   <Step title="Submit Test Sale">
-    Send a completed sale through the native test-sale path and confirm it enters the canonical token-routed ingress successfully.
+    Send a completed sale through the native test-sale path and confirm it is accepted through the same downstream loyalty processing behavior used in production.
   </Step>
   <Step title="Validate Readiness">
     Confirm the integration progresses into a ready state and optionally verify refund handling.
@@ -52,7 +50,7 @@ This page turns the verified native onboarding flow into an implementation check
 
 - `Needs Review` should be resolved before relying on production traffic.
 - Refund verification is optional in the current merchant status builder, but it is still recommended before go-live.
-- Test-sale validates the same token-routed webhook ingress used by production webhook traffic.
+- Test-sale validates the same downstream loyalty processing behavior used by production webhook traffic.
 
 ## Troubleshooting Notes
 

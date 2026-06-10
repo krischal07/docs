@@ -4,8 +4,6 @@ description: Implement the RestroX native partner APIs for merchant connection, 
 sidebarTitle: Partner API
 ---
 
-# Partner API
-
 Samparka exposes a small RestroX partner API for native onboarding and readiness verification.
 
 ## Purpose
@@ -33,10 +31,9 @@ flowchart TD
   C --> D{"Review required?"}
   D -- Yes --> E["Resolve mappings"]
   D -- No --> F["Submit test sale"]
-  F --> G["Resolve location + webhook token"]
-  G --> H["handleTokenEvent()"]
-  H --> I["Canonical ingress"]
-  I --> J["Merchant reaches ready state"]
+  F --> G["Samparka receives event"]
+  G --> H["Production-like loyalty processing"]
+  H --> I["Merchant reaches ready state"]
 ```
 
 ## Authentication
@@ -204,27 +201,12 @@ Verified `test-sale` flow:
 2. determine the requested location identifier from `locationId` or payload aliases
 3. reject conflicting top-level and payload identifiers
 4. resolve the mapped location by integration plus `external_location_id`
-5. require a stored `webhook_token`
-6. inject the canonical `external_location_id` into the synthetic payload
-7. invoke `handleTokenEvent()`
-8. continue through the same canonical token-routed ingress used by production webhook traffic
-
-Downstream canonical ingress stages:
-
-- raw event logging
-- token context resolution
-- parsing
-- mapping
-- idempotency reservation
-- internal event creation
-- event processing and loyalty path
+5. require a valid mapped location with webhook delivery enabled
+6. submit the test event through the same downstream loyalty processing behavior used by production webhook traffic
 
 Verified behavior:
 
-- does not use `integration.api_key`
-- does not send `x-api-key`
-- does not call `handleEvent()`
-- updates `integration_key_last_used_at` after the token-routed ingress call returns
+- updates `integration_key_last_used_at` after the test event is submitted successfully
 
 ## Expected Responses
 
@@ -259,7 +241,7 @@ Verified partner-visible failures include:
 - `409 Ambiguous RestroX location identifier for this integration`
 - `409 The selected RestroX location does not have a webhook token`
 - `409 The selected RestroX location does not have a mapped external location ID`
-- canonical ingress validation failures such as:
+- event validation failures such as:
   - `400 Request body must be a JSON object`
   - `400 Missing event_type in payload`
 
@@ -270,7 +252,7 @@ The current onboarding model treats readiness as:
 - Connection Key created
 - RestroX connected
 - locations synced without unresolved review state
-- test sale received through the canonical token-routed ingress
+- test sale accepted through the supported loyalty processing path
 
 Refund verification is optional in the current merchant checklist model.
 
@@ -279,7 +261,7 @@ Refund verification is optional in the current merchant checklist model.
 - connect the merchant before sending any production events
 - sync locations before relying on sale traffic
 - verify customer lookup behavior before go-live
-- use the native test-sale path to validate the same token-routed ingress used by production webhook traffic
+- use the native test-sale path to validate the same downstream loyalty processing behavior used by production webhook traffic
 
 ## Identity Outcomes In Partner Flow
 

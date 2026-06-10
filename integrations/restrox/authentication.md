@@ -4,8 +4,6 @@ description: Understand the canonical webhook authentication flow for RestroX ev
 sidebarTitle: Webhook Auth
 ---
 
-# Webhook Authentication
-
 This page documents the canonical webhook authentication path used for RestroX event delivery.
 
 <Note>
