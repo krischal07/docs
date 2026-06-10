@@ -1,12 +1,14 @@
 ---
 title: Architecture
-description: Understand how the RestroX native integration layers partner onboarding and customer APIs above Samparka's webhook processing engine.
+description: Understand how RestroX connects to Samparka through partner APIs, customer APIs, and sale event submission.
 sidebarTitle: Architecture
 ---
 
 # Architecture
 
-The RestroX native integration is not a separate transaction-processing engine. It is a partner-facing onboarding and customer layer that feeds Samparka's canonical token-routed POS event ingress.
+The RestroX native integration connects RestroX to Samparka through onboarding APIs, customer lookup APIs, and sale-event submission.
+
+This page focuses on how the systems and public interfaces fit together. For cashier workflow and loyalty participation behavior, use the dedicated workflow pages.
 
 ## Purpose
 
@@ -14,42 +16,35 @@ Use this page to understand:
 
 - which APIs RestroX calls directly
 - where Connection Keys fit
-- how test-sale reaches canonical ingress
-- how customer identity affects downstream loyalty outcomes
+- how onboarding, customer lookup, and sale events fit together
+- how customer identity relates to loyalty participation
 
 ## System Flow
 
 ```mermaid
 flowchart TD
   A["Merchant"] --> B["Connection Key"]
-  B --> C["RestroX Partner API"]
-  C --> D["Connect + sync"]
-  D --> E["Customer APIs"]
-  E --> F["Test sale or production webhook"]
-  F --> G["Canonical token-routed ingress"]
-  G --> H["Internal event processing"]
-  H --> I["Loyalty engine"]
-  I --> J["Rewards"]
-  I --> K["Receipts"]
+  B --> C["RestroX partner APIs"]
+  C --> D["Customer APIs"]
+  D --> E["Sale events"]
+  E --> F["Samparka loyalty processing"]
+  F --> G["Rewards and customer benefits"]
 ```
 
-## Ingress Convergence
+## Event Processing Path
 
 ```mermaid
 flowchart TD
-  A["POST /api/partners/restrox/test-sale"] --> B["Resolve integration by integrationKey"]
-  B --> C["Resolve location by external_location_id"]
-  C --> D["Load stored webhook_token"]
-  D --> E["handleTokenEvent()"]
-
-  F["POST /webhook/restrox/{token}"] --> E
-
-  E --> G["RawWebhookEvent"]
-  G --> H["Parser + mapper"]
-  H --> I["Idempotency"]
-  I --> J["InternalEvent"]
-  J --> K["Loyalty processing"]
+  A["Test sale"] --> B["Samparka receives event"]
+  B --> C["Same processing path as production traffic"]
+  C --> D["Loyalty processing"]
 ```
+
+`test-sale` validates integration behavior before go-live.
+
+Production webhooks follow the same downstream loyalty processing behavior after Samparka receives the event.
+
+Partners should expect consistent loyalty outcomes between testing and production when the input conditions are the same.
 
 ## External Partner Touchpoints
 
@@ -65,16 +60,7 @@ RestroX uses these public partner-facing surfaces:
 
 ## Internal Processing Boundaries
 
-The following are implementation layers, not separate partner-managed systems:
-
-- merchant POS integration status calculation
-- location activation checks
-- raw webhook event storage
-- internal event creation
-- loyalty ledger updates
-- receipt-linked points bookkeeping
-
-These internal layers explain behavior that partners can observe, but they are not documented as public APIs.
+Samparka performs internal validation, routing, loyalty evaluation, and reward processing after receiving events. These internal services are not partner-facing APIs and may change without affecting the public integration contract.
 
 ## Customer Identity In The Flow
 
@@ -82,7 +68,7 @@ Customer identity is store-scoped and phone-first.
 
 - partner customer APIs search and retrieve customers using normalized phone identity
 - webhook sale events may still be accepted even when loyalty cannot be awarded immediately
-- customer identity outcomes affect whether a sale can be matched cleanly downstream
+- customer identity affects loyalty participation and customer association
 
 See [Customer Identity](./customer-identity) for the exact outcomes used by the implementation.
 
@@ -97,22 +83,22 @@ See [Customer Identity](./customer-identity) for the exact outcomes used by the 
 
 ## Operational Notes
 
-- The native integration uses stored per-location webhook tokens internally for token routing.
-- The native partner `test-sale` API and production webhook traffic converge into the same `handleTokenEvent()` ingress path.
+- The native partner `test-sale` API and production webhook traffic follow the same downstream processing behavior.
+- Native onboarding and customer preparation influence loyalty outcomes.
 - The legacy provider route still exists, but it is not part of native onboarding, customer APIs, connect, sync-locations, or test-sale.
 - Location sync can place an integration into a review-required state before any live traffic is sent.
 
 ## Troubleshooting Notes
 
-- If a merchant appears connected but is not ready, check the native onboarding state before investigating webhook payloads.
+- If a merchant appears connected but is not ready, check the native onboarding state before investigating event delivery.
 - If locations were synced but not auto-matched, the integration can require review before testing.
-- If a sale is accepted but loyalty is missing, the issue may be location resolution, customer identity, or loyalty eligibility rather than transport failure.
+- If a sale is accepted but loyalty is missing, review location readiness, customer identity, and loyalty participation assumptions.
 
 ## Related Documentation
 
-- [Native Overview](./overview)
-- [Merchant Onboarding](./merchant-onboarding)
-- [Store Linking](./store-linking)
+- [Customer Loyalty Award Flow](./customer-loyalty-award-flow)
+- [Loyalty Processing](./loyalty-processing)
 - [Customer Identity](./customer-identity)
 - [Partner API](./partner-api)
+- [Store Linking](./store-linking)
 - [Webhook Endpoint](../webhook-endpoint)
