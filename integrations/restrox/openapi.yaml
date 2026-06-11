@@ -38,8 +38,9 @@ paths:
                     id: restrox-account-001
                     name: Java Express
                   locations:
-                    - externalLocationId: ktm-branch-01
-                      externalLocationName: Kathmandu Branch
+                    - restaurantId: '12345'
+                      restaurantName: Kathmandu Branch
+                      outletId: '685000000000000000000001'
       responses:
         '200':
           description: Merchant connected
@@ -115,13 +116,25 @@ paths:
                     id: restrox-account-001
                     name: Java Express
                   locations:
-                    - externalLocationId: ktm-branch-01
-                      externalLocationName: Kathmandu Branch
-                    - externalLocationId: pokhara-branch-02
-                      externalLocationName: Pokhara Branch
+                    - restaurantId: '12345'
+                      restaurantName: Kathmandu Branch
+                      outletId: '685000000000000000000001'
+                    - restaurantId: '67890'
+                      restaurantName: Pokhara Branch
+                      outletId: '685000000000000000000002'
+              syncStoreLevelLocation:
+                summary: Sync a zero-outlet merchant location
+                value:
+                  integrationKey: SPK-RX-ABC12345
+                  account:
+                    id: restrox-account-001
+                    name: SPD
+                  locations:
+                    - restaurantId: '12345'
+                      restaurantName: SPD
       responses:
         '200':
-          description: Locations synchronized
+          description: Location mappings established
           content:
             application/json:
               schema:
@@ -130,7 +143,7 @@ paths:
                 synced:
                   value:
                     success: true
-                    message: Locations synchronized
+                    message: Location mappings established
                     data:
                       syncedCount: 2
                       reviewIssues: []
@@ -158,7 +171,7 @@ paths:
                 summary: Submit test sale
                 value:
                   integrationKey: SPK-RX-ABC12345
-                  locationId: ktm-branch-01
+                  restaurantId: '12345'
                   payload:
                     event_type: order.completed
                     order_id: restrox-sale-1001
@@ -167,8 +180,8 @@ paths:
                     currency: NPR
                     customer:
                       phone: '9801234567'
-                    external_location_id: ktm-branch-01
-                    external_location_name: Kathmandu Branch
+                    restaurantId: '12345'
+                    restaurantName: Kathmandu Branch
                     items:
                       - name: Cappuccino
                         qty: 1
@@ -198,11 +211,11 @@ paths:
                 conflictingLocation:
                   value:
                     success: false
-                    message: locationId does not match the payload location identifier
+                    message: restaurantId does not match the payload location identifier
                 missingLocation:
                   value:
                     success: false
-                    message: A location identifier is required. Provide locationId or a payload location field.
+                    message: A location identifier is required. Provide restaurantId or a payload location field.
                 missingEventType:
                   value:
                     success: false
@@ -375,8 +388,8 @@ paths:
                   currency: NPR
                   customer:
                     phone: '9800000101'
-                  external_location_id: ktm-branch-01
-                  external_location_name: Kathmandu Branch
+                  restaurantId: '12345'
+                  restaurantName: Kathmandu Branch
                   items:
                     - name: Cappuccino
                       qty: 1
@@ -496,6 +509,9 @@ components:
       type: object
       additionalProperties: true
       properties:
+        restaurantId:
+          type: string
+          description: Preferred permanent RestroX restaurant/location identifier. It is unique, stable, never changes, and is the primary mapping key. Internally stored as `external_location_id`.
         externalLocationId:
           type: string
         external_location_id:
@@ -506,6 +522,9 @@ components:
           type: string
         id:
           type: string
+        restaurantName:
+          type: string
+          description: Preferred human-readable RestroX restaurant/location name. Internally stored as `external_location_name`.
         externalLocationName:
           type: string
         external_location_name:
@@ -518,6 +537,7 @@ components:
           type: string
         outletId:
           type: string
+          description: Samparka outlet identifier. Required when the store has outlets and optional when the store has zero outlets because store-level mappings are supported.
         outlet_id:
           type: string
         samparkaOutletId:
@@ -529,9 +549,12 @@ components:
         integrationKey:
           type: string
           description: Connection Key used to resolve the RestroX integration.
+        restaurantId:
+          type: string
+          description: Preferred top-level RestroX location identifier for the test sale request.
         locationId:
           type: string
-          description: Preferred provider-facing external location identifier. Must be the RestroX external location identifier, not a Samparka internal identifier.
+          description: Backward-compatible alias for the RestroX location identifier. Must be the RestroX restaurant identifier, not a Samparka internal identifier.
         payload:
           $ref: '#/components/schemas/RestroxWebhookRequest'
     PartnerCustomer:
@@ -653,6 +676,9 @@ components:
           type: string
         currency_code:
           type: string
+        restaurantId:
+          type: string
+          description: Preferred permanent RestroX restaurant/location identifier. It is unique, stable, never changes, and is the primary mapping key. Internally stored as `external_location_id`.
         external_location_id:
           type: string
         location_id:
@@ -661,6 +687,9 @@ components:
           type: string
         branch_id:
           type: string
+        restaurantName:
+          type: string
+          description: Preferred human-readable RestroX restaurant/location name. Internally stored as `external_location_name`.
         external_location_name:
           type: string
         location_name:

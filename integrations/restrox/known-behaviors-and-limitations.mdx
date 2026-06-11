@@ -30,7 +30,7 @@ If loyalty activity is missing after a `200` response, check location mapping, t
 
 ## Location Mapping Dependency
 
-A successfully connected integration with a clean location sync can still fail to award loyalty if the `external_location_id` in the webhook payload does not match the value stored during location sync.
+A successfully connected integration with a clean location sync can still fail to award loyalty if the `restaurantId` in the webhook payload does not match the value stored during location sync.
 
 Connection and sync status reflect the state at the time of setup. They do not guarantee that individual webhook events will be processable if:
 
@@ -38,7 +38,20 @@ Connection and sync status reflect the state at the time of setup. They do not g
 - the matched location was later marked `STALE` because its outlet was removed from the store
 - location participation was disabled after sync
 
-Verify that the `external_location_id` value in every production event payload exactly matches the value registered during the partner location sync. See [Location Mapping](./location-mapping) for details.
+Verify that the `restaurantId` value in every production event payload exactly matches the value registered during the partner location sync. Samparka stores that mapping internally as `external_location_id`. See [Location Mapping](./location-mapping) for details.
+
+## Store Structure Changes
+
+If a merchant begins with no outlets and later adds outlets, existing store-level mappings are preserved but the integration enters `Review Required`.
+
+At that point:
+
+- restaurant IDs must be explicitly remapped to outlets
+- no automatic outlet assignment occurs
+- no automatic remapping occurs
+- previously blocked events can be replayed after remapping
+
+L5 merchants with zero outlets are an explicit configuration error and must correct their store structure before production mapping can be finalized.
 
 ## Idempotency Is Scoped Per Integration
 

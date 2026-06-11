@@ -40,14 +40,14 @@ curl -X POST "https://your-domain/api/partners/restrox/sync-locations" \
     },
     "locations": [
       {
-        "externalLocationId": "ktm-branch-01",
-        "externalLocationName": "Kathmandu Branch"
+        "restaurantId": "12345",
+        "restaurantName": "Kathmandu Branch"
       }
     ]
   }'
 ```
 
-Expected result: `Locations synchronized`. If `reviewRequired` is true, resolve those issues before proceeding.
+Expected result: `Location mappings established`. If `reviewRequired` is true, resolve those issues before proceeding.
 
 ## Customer Lookup Test
 
@@ -70,7 +70,7 @@ curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
   -H "x-partner-key: your-partner-key" \
   --data '{
     "integrationKey": "SPK-RX-ABC12345",
-    "locationId": "ktm-branch-01",
+    "restaurantId": "12345",
     "payload": {
       "event_type": "order.completed",
       "order_id": "restrox-sale-1001",
@@ -78,8 +78,8 @@ curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
       "amount": 850,
       "currency": "NPR",
       "customer": { "phone": "9801234567" },
-      "external_location_id": "ktm-branch-01",
-      "external_location_name": "Kathmandu Branch",
+      "restaurantId": "12345",
+      "restaurantName": "Kathmandu Branch",
       "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
     }
   }'
@@ -107,7 +107,7 @@ Verification points:
 
 Notes:
 
-- `locationId` is the preferred provider-facing `external_location_id`
+- `restaurantId` is the preferred provider-facing identifier
 - a valid location identifier alone is insufficient; the payload must still be a valid RestroX event payload
 
 ## Direct Webhook Sale Test
@@ -122,8 +122,8 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "amount": 850,
     "currency": "NPR",
     "customer": { "phone": "9800000101" },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
   }'
 ```
@@ -167,7 +167,7 @@ Expected response:
 
 ## Wrong Location Test (via test-sale)
 
-Use the `test-sale` endpoint with a `locationId` that does not exist in the integration.
+Use the `test-sale` endpoint with a `restaurantId` that does not exist in the integration.
 
 Expected response:
 
@@ -180,7 +180,7 @@ Expected response:
 
 ## Wrong Location Test (via direct webhook)
 
-Send a direct webhook with an `external_location_id` that does not resolve to a mapped location.
+Send a direct webhook with a `restaurantId` that does not resolve to a mapped location.
 
 Expected response:
 
@@ -191,7 +191,7 @@ Expected response:
 }
 ```
 
-The event is accepted at the transport level but is stored internally with `blocked_unmapped_location` status. No loyalty is awarded. Confirm the correct `external_location_id` with Samparka and resend future events with the matched value.
+The event is accepted at the transport level but is stored internally with `blocked_unmapped_location` status. No loyalty is awarded. Confirm the correct `restaurantId` with Samparka and resend future events with the matched value.
 
 ## Related Documentation
 

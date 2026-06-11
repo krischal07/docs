@@ -48,8 +48,8 @@ curl -X POST "https://your-domain/api/partners/restrox/sync-locations" \
     },
     "locations": [
       {
-        "externalLocationId": "ktm-branch-01",
-        "externalLocationName": "Kathmandu Branch"
+        "restaurantId": "12345",
+        "restaurantName": "Kathmandu Branch"
       }
     ]
   }'
@@ -77,7 +77,7 @@ curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
   -H "x-partner-key: your-partner-key" \
   --data '{
     "integrationKey": "SPK-RX-ABC12345",
-    "locationId": "ktm-branch-01",
+    "restaurantId": "12345",
     "payload": {
       "event_type": "order.completed",
       "order_id": "restrox-sale-1001",
@@ -85,11 +85,29 @@ curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
       "amount": 850,
       "currency": "NPR",
       "customer": { "phone": "9801234567" },
-      "external_location_id": "ktm-branch-01",
-      "external_location_name": "Kathmandu Branch",
+      "restaurantId": "12345",
+      "restaurantName": "Kathmandu Branch",
       "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
     }
   }'
+```
+
+For merchants without outlets, you can sync a single location without `outletId`:
+
+```json
+{
+  "integrationKey": "SPK-RX-ABC12345",
+  "account": {
+    "id": "restrox-account-001",
+    "name": "SPD"
+  },
+  "locations": [
+    {
+      "restaurantId": "12345",
+      "restaurantName": "SPD"
+    }
+  ]
+}
 ```
 
 Expected response:

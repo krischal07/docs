@@ -18,8 +18,8 @@ Use the `refund_created_request` fixture from [`payloads.json`](./payloads.json)
   "amount": 850,
   "currency": "NPR",
   "customer": { "phone": "9800000101" },
-  "external_location_id": "ktm-branch-01",
-  "external_location_name": "Kathmandu Branch",
+  "restaurantId": "12345",
+  "restaurantName": "Kathmandu Branch",
   "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
 }
 ```

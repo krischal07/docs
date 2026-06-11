@@ -65,8 +65,9 @@ Example request:
   },
   "locations": [
     {
-      "externalLocationId": "ktm-branch-01",
-      "externalLocationName": "Kathmandu Branch"
+      "restaurantId": "12345",
+      "restaurantName": "Kathmandu Branch",
+      "outletId": "685000000000000000000001"
     }
   ]
 }
@@ -113,8 +114,8 @@ Example request:
   },
   "locations": [
     {
-      "externalLocationId": "ktm-branch-01",
-      "externalLocationName": "Kathmandu Branch",
+      "restaurantId": "12345",
+      "restaurantName": "Kathmandu Branch",
       "outletId": "685000000000000000000001"
     }
   ]
@@ -126,7 +127,7 @@ Example response:
 ```json
 {
   "success": true,
-  "message": "Locations synchronized",
+  "message": "Location mappings established",
   "data": {
     "syncedCount": 1,
     "reviewIssues": [],
@@ -139,10 +140,146 @@ Example response:
 Verified behavior:
 
 - resolves the integration by `integrationKey`
-- uses provider-facing location fields such as `externalLocationId` and `externalLocationName`
+- uses provider-facing location fields such as `restaurantId` and `restaurantName`
 - attempts outlet matching by outlet hint or normalized name
 - records review issues when a location is missing an external ID, is duplicated, is ambiguous, or cannot be matched
 - updates sync timestamps and partner metadata
+
+Field definitions:
+
+### `restaurantId`
+
+Permanent RestroX restaurant/location identifier.
+
+Used as the primary mapping key between RestroX and Samparka.
+
+Properties:
+
+- unique
+- stable
+- never changes
+- primary mapping key
+
+Internally stored as:
+
+```text
+external_location_id
+```
+
+### `restaurantName`
+
+Human-readable restaurant/location name.
+
+Internally stored as:
+
+```text
+external_location_name
+```
+
+### `outletId`
+
+Samparka outlet ID that the RestroX restaurant should map to.
+
+Required when:
+
+```text
+store has outlets
+```
+
+Optional when:
+
+```text
+store has zero outlets
+```
+
+because store-level mappings are supported.
+
+### Single-Location Example
+
+For merchants without outlets, RestroX can sync a single restaurant without an `outletId`:
+
+```json
+{
+  "integrationKey": "SPK-RX-ABC12345",
+  "account": {
+    "id": "restrox-account-001",
+    "name": "SPD"
+  },
+  "locations": [
+    {
+      "restaurantId": "12345",
+      "restaurantName": "SPD"
+    }
+  ]
+}
+```
+
+Notes:
+
+- no `outletId` is required
+- the `restaurantId` maps directly to the store-level location
+
+### Backward Compatibility
+
+Preferred fields:
+
+- `restaurantId`
+- `restaurantName`
+
+Samparka also accepts the following aliases for compatibility.
+
+Location ID aliases:
+
+- `externalLocationId`
+- `external_location_id`
+- `locationId`
+- `branchId`
+- `id`
+
+Location name aliases:
+
+- `externalLocationName`
+- `external_location_name`
+- `locationName`
+- `branchName`
+- `name`
+
+These aliases remain supported, but new integrations should use:
+
+- `restaurantId`
+- `restaurantName`
+
+### Location Mapping Rules
+
+#### Merchant With Outlets
+
+Example:
+
+```text
+Java Express
+
+Restaurant 1001 -> Kathmandu Outlet
+Restaurant 1002 -> Pokhara Outlet
+```
+
+Mapping requires:
+
+- `outletId`
+- or successful outlet matching during sync review
+
+#### Merchant Without Outlets
+
+Example:
+
+```text
+SPD
+
+Restaurant 12345 -> SPD
+```
+
+No outlet mapping is required.
+
+Store-level mapping is valid.
 
 ### Test Sale
 
@@ -156,7 +293,7 @@ Example request:
 ```json
 {
   "integrationKey": "SPK-RX-ABC12345",
-  "locationId": "ktm-branch-01",
+  "restaurantId": "12345",
   "payload": {
     "event_type": "order.completed",
     "order_id": "restrox-sale-1001",
@@ -164,8 +301,8 @@ Example request:
     "amount": 850,
     "currency": "NPR",
     "customer": { "phone": "9801234567" },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
   }
 }
@@ -186,21 +323,32 @@ Example response:
 
 Request rules:
 
-- `locationId` is preferred when you already know the RestroX location identifier
-- `locationId` is interpreted as the provider-facing `external_location_id`
-- `locationId` must be the RestroX external location identifier, not a Samparka internal identifier
+- `restaurantId` is the preferred field when you already know the RestroX location identifier
+- `restaurantId` is the authoritative RestroX restaurant/location mapping key
+- `restaurantId` must be the RestroX restaurant identifier, not a Samparka internal identifier
+- top-level aliases are also accepted for compatibility:
+  - `locationId`
+  - `branchId`
+  - `id`
 - the payload may still supply the location identifier through:
+  - `restaurantId`
   - `external_location_id`
   - `location_id`
   - `outlet_id`
   - `branch_id`
+- the payload may still supply the location name through:
+  - `restaurantName`
+  - `external_location_name`
+  - `location_name`
+  - `branch_name`
+  - `outlet_name`
 
 Verified `test-sale` flow:
 
 1. resolve integration using `integrationKey`
-2. determine the requested location identifier from `locationId` or payload aliases
+2. determine the requested location identifier from `restaurantId` or supported aliases
 3. reject conflicting top-level and payload identifiers
-4. resolve the mapped location by integration plus `external_location_id`
+4. resolve the mapped location by integration plus the internally stored `external_location_id`
 5. require a valid mapped location with webhook delivery enabled
 6. submit the test event through the same downstream loyalty processing behavior used by production webhook traffic
 
@@ -236,8 +384,8 @@ Verified partner-visible failures include:
 - `503 RestroX partner API is not configured` — the partner key environment variable is not set on the Samparka server
 - `401 Unauthorized partner request` — wrong or missing partner key
 - `404 Invalid Integration Key` — the `integrationKey` body field does not match an active integration
-- `400 locationId does not match the payload location identifier`
-- `400 A location identifier is required. Provide locationId or a payload location field.`
+- `400 restaurantId does not match the payload location identifier`
+- `400 A location identifier is required. Provide restaurantId or a payload location field.`
 - `404 No mapped RestroX location found for the provided location identifier`
 - `409 Ambiguous RestroX location identifier for this integration`
 - `409 The selected RestroX location does not have a webhook token`

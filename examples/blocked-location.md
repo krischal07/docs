@@ -18,8 +18,8 @@ Use the `blocked_location_request` fixture from [`payloads.json`](./payloads.jso
   "amount": 600,
   "currency": "NPR",
   "customer": { "phone": "9800000103" },
-  "external_location_id": "unknown-branch-99",
-  "external_location_name": "Unknown Branch",
+  "restaurantId": "99999",
+  "restaurantName": "Unknown Branch",
   "items": [{ "name": "Latte", "qty": 1, "price": 600 }]
 }
 ```
@@ -39,4 +39,4 @@ Samparka accepted the delivery, but the outlet mapping should be reviewed becaus
 
 ## What To Do Next
 
-Confirm the correct `external_location_id` with Samparka and resend future events with the mapped location value.
+Confirm the correct `restaurantId` with Samparka and resend future events with the mapped location value.

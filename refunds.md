@@ -16,7 +16,7 @@ Send:
 
 1. `event_type` as `refund.created` or `order.voided`
 2. The original sale identifier in `order_id`, `transaction_id`, or `id`
-3. A location identifier such as `external_location_id`
+3. A location identifier such as `restaurantId`
 
 ## What Response To Expect
 

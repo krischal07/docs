@@ -12,7 +12,7 @@ See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integra
 
 ## 1. Receive Outlet Mapping Details
 
-Ask Samparka for the webhook URL and confirm the `external_location_id` value that RestroX will send for each outlet. Samparka resolves webhook tokens to a location record and also checks the `external_location_id` in the payload.
+Ask Samparka for the webhook URL and confirm the `restaurantId` value that RestroX will send for each outlet. Samparka resolves webhook tokens to a location record and also checks the location identifier in the payload.
 
 ## 2. Configure the Webhook URL
 
@@ -34,8 +34,8 @@ Use the canonical sale fixture from [`examples/payloads.json`](./examples/payloa
   "amount": 850,
   "currency": "NPR",
   "customer": { "phone": "9800000101" },
-  "external_location_id": "ktm-branch-01",
-  "external_location_name": "Kathmandu Branch",
+  "restaurantId": "12345",
+  "restaurantName": "Kathmandu Branch",
   "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
 }
 ```

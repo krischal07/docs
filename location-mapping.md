@@ -6,18 +6,34 @@ sidebarTitle: Location Mapping
 
 # Location Mapping
 
-Samparka uses `external_location_id` to match a RestroX webhook to the correct outlet configuration. The webhook token identifies the configured location record, and the payload location must also match the expected external location value.
+Samparka uses `restaurantId` to match a RestroX webhook to the correct outlet configuration. The webhook token identifies the configured location record, and the payload location must also match the expected synced location value.
 
 ## What RestroX Needs To Send
 
-Send one of these location fields:
+Preferred fields:
+
+- `restaurantId`
+- `restaurantName`
+
+Accepted location ID aliases:
 
 - `external_location_id`
 - `location_id`
 - `outlet_id`
 - `branch_id`
 
-`external_location_name`, `location_name`, `branch_name`, or `outlet_name` can also be sent as an optional label.
+Accepted location name aliases:
+
+- `external_location_name`
+- `location_name`
+- `branch_name`
+- `outlet_name`
+
+`restaurantId` is the permanent RestroX restaurant/location identifier and Samparka's authoritative mapping key for RestroX payloads. It is stored internally as `external_location_id`.
+
+## Merchant Without Outlets
+
+For merchants without outlets, `restaurantId` maps directly to the store-level location and no `outletId` is required.
 
 ## What Response To Expect
 

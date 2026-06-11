@@ -30,11 +30,12 @@ The native integration uses partner APIs for onboarding and customer operations,
 ```mermaid
 flowchart TD
   A["Merchant copies Connection Key"] --> B["RestroX partner API"]
-  B --> C["Location sync"]
-  C --> D["Customer identity + customer APIs"]
-  D --> E["Sale events"]
-  E --> F["Webhook-backed event processing"]
-  F --> G["Loyalty, rewards, and receipts"]
+  B --> C["Locations prepared"]
+  C --> D["Location mappings established"]
+  D --> E["Customer identity + customer APIs"]
+  E --> F["Sale events"]
+  F --> G["Webhook-backed event processing"]
+  G --> H["Loyalty, rewards, and receipts"]
 ```
 
 ## Start With

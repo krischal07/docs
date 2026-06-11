@@ -10,7 +10,7 @@ See also: [Testing Guide](./testing-guide) and [Readiness Checklist](./native/re
 
 - [ ] Connection Key received from merchant's Samparka integration setup
 - [ ] `/api/partners/restrox/connect` called successfully with merchant's Connection Key
-- [ ] Location sync completed (`/api/partners/restrox/sync-locations`)
+- [ ] Locations prepared and location mappings established (`/api/partners/restrox/sync-locations`)
 - [ ] `reviewRequired: false` confirmed in sync response (or review issues resolved manually)
 - [ ] Integration status advanced past `AWAITING_CONNECTION`
 
@@ -44,7 +44,7 @@ See also: [Testing Guide](./testing-guide) and [Readiness Checklist](./native/re
 
 ## Location Mapping
 
-- [ ] `external_location_id` in payloads matches the value used during location sync
+- [ ] `restaurantId` in payloads matches the value used during location sync
 - [ ] Unknown location tested via direct webhook — confirmed returns `200 Event received` (blocked internally, no loyalty)
 - [ ] Confirmed the difference: test-sale with unknown location returns `404`, direct webhook returns `200`
 

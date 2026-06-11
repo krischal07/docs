@@ -26,7 +26,7 @@ See also: [Testing Guide](./testing-guide).
 
 ## Location Mapping
 
-- [ ] `external_location_id` matches configured outlet
+- [ ] `restaurantId` matches configured outlet
 - [ ] Unknown location tested
 - [ ] Blocked-location scenario verified
 

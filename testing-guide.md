@@ -22,8 +22,8 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "amount": 850,
     "currency": "NPR",
     "customer": { "phone": "9800000101" },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
   }'
 ```
@@ -51,8 +51,8 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "amount": 850,
     "currency": "NPR",
     "customer": { "phone": "9800000101" },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
   }'
 ```
@@ -78,8 +78,8 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "amount": 450,
     "currency": "NPR",
     "customer": { "phone": "9800000102" },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [{ "name": "Americano", "qty": 1, "price": 450 }]
   }'
 ```
@@ -118,8 +118,8 @@ curl -X POST "https://your-domain/webhook/restrox/{invalid-token}" \
     "amount": 850,
     "currency": "NPR",
     "customer": { "phone": "9800000101" },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
   }'
 ```
@@ -145,8 +145,8 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "amount": 600,
     "currency": "NPR",
     "customer": { "phone": "9800000103" },
-    "external_location_id": "unknown-branch-99",
-    "external_location_name": "Unknown Branch",
+    "restaurantId": "99999",
+    "restaurantName": "Unknown Branch",
     "items": [{ "name": "Latte", "qty": 1, "price": 600 }]
   }'
 ```

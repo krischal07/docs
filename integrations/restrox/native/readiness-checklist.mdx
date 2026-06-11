@@ -13,15 +13,16 @@ This page turns the verified native onboarding flow into an implementation check
 ## Checklist
 
 - [ ] Connection Key validated
-- [ ] Merchant connected
-- [ ] Locations synced
-- [ ] Mappings reviewed
+- [ ] Integration Key Ready
+- [ ] Locations Prepared
+- [ ] RestroX Connected
+- [ ] Location Mappings Established
 - [ ] Customer lookup verified
-- [ ] Test sale completed
+- [ ] Test Sale Received
 - [ ] Test sale accepted (confirms event received, not that loyalty was awarded)
 - [ ] Refund tested
 - [ ] Webhook delivery verified
-- [ ] Ready for production
+- [ ] Ready For Production
 
 ## Workflow
 
@@ -32,8 +33,8 @@ This page turns the verified native onboarding flow into an implementation check
   <Step title="Connect Merchant">
     Call the RestroX partner connect route and confirm the merchant enters a connected or reviewable state.
   </Step>
-  <Step title="Sync And Review Locations">
-    Sync locations, resolve review issues, and confirm no required location is blocked.
+  <Step title="Prepare And Map Locations">
+    Confirm Samparka has prepared location records, sync real RestroX restaurant IDs, resolve review issues, and confirm no required location is blocked.
   </Step>
   <Step title="Verify Customer Operations">
     Test customer search using normalized phone input.
@@ -48,6 +49,8 @@ This page turns the verified native onboarding flow into an implementation check
 
 ## Operational Notes
 
+- `Locations Prepared` means Samparka has created location records.
+- `Location Mappings Established` means real RestroX restaurant IDs have been mapped.
 - `Needs Review` should be resolved before relying on production traffic.
 - Refund verification is optional in the current merchant status builder, but it is still recommended before go-live.
 - Test-sale validates the same downstream loyalty processing behavior used by production webhook traffic.

@@ -14,7 +14,7 @@ Send:
 
 1. `event_type` as `refund.created` or `order.voided`
 2. The **exact same** sale identifier in `order_id`, `transaction_id`, or `id` that was used in the original sale event
-3. A location identifier such as `external_location_id`
+3. A location identifier such as `restaurantId`
 
 The refund and the original sale must use the same identifier field. If the original sale used `order_id`, the refund must also use `order_id` with the same value. Samparka uses this identifier as part of the idempotency key (`{event_type}:{order_id}`) — the refund event type prefix (`refund.created:`) distinguishes it from the original sale.
 

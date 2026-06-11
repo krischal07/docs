@@ -10,7 +10,7 @@ Store linking combines merchant outlet sync with partner location sync. Samparka
 
 Use this page to understand:
 
-- how Samparka creates draft outlet rows
+- how Samparka prepares location records before mappings are finalized
 - how RestroX location payloads are matched
 - when an integration enters review-required state
 
@@ -33,7 +33,7 @@ POST /api/pos-integrations/{id}/sync-outlets
 
 Verified behavior:
 
-- if the store has no outlets, Samparka creates a single draft fallback location
+- if the store has no outlets, Samparka creates a single store-level location record that can later hold an active mapping with `outlet_id = null`
 - if the store has outlets, Samparka creates draft location rows for missing outlets
 - stale location rows are reactivated if the outlet still exists
 - location rows for removed outlets are marked `STALE`
@@ -53,14 +53,14 @@ Each location payload is evaluated in this order:
 3. normalized name matching is attempted
 4. existing location rows are reused when possible
 5. matched rows become active
-6. unmatched rows stay draft and generate review issues
+6. unmatched rows stay prepared for review and generate review issues
 
 ## Mapping Statuses
 
-Verified location row statuses:
+Verified location row states:
 
-- `draft` — location record created but no outlet match established yet
-- `active` — location is matched to a Samparka outlet and ready to receive events
+- prepared — location record exists but a real RestroX mapping is not fully established yet
+- active — location is mapped and ready to receive events
 
 Verified location lifecycle statuses:
 
@@ -86,6 +86,7 @@ It can also require review when:
 
 - a synced location has no outlet match
 - active location rows become stale
+- a merchant that previously used store-level mappings later adds outlets
 
 ## Endpoints
 
@@ -114,8 +115,8 @@ Example request:
   },
   "locations": [
     {
-      "externalLocationId": "ktm-branch-01",
-      "externalLocationName": "Kathmandu Branch",
+      "restaurantId": "12345",
+      "restaurantName": "Kathmandu Branch",
       "outletId": "685000000000000000000001"
     }
   ]
@@ -127,7 +128,7 @@ Example response:
 ```json
 {
   "success": true,
-  "message": "Locations synchronized",
+  "message": "Location mappings established",
   "data": {
     "syncedCount": 1,
     "reviewIssues": [],
@@ -149,6 +150,38 @@ Resync repeats the same matching process and updates:
 
 The same external location ID cannot appear twice in one sync payload.
 
+For zero-outlet merchants, `outletId` is optional and the synced `restaurantId` can map directly to the store-level location.
+
+Draft bootstrap rows are not treated as mapped locations. Readiness and activation only count mappings that use real RestroX `restaurantId` values.
+
+### Location Mapping Rules
+
+#### Merchant With Outlets
+
+```text
+Java Express
+
+Restaurant 1001 -> Kathmandu Outlet
+Restaurant 1002 -> Pokhara Outlet
+```
+
+Mapping requires:
+
+- `outletId`
+- or successful outlet matching during sync
+
+#### Merchant Without Outlets
+
+```text
+SPD
+
+Restaurant 12345 -> SPD
+```
+
+No outlet mapping is required.
+
+Store-level mapping is valid.
+
 ## Failure Scenarios
 
 ### Missing External Location ID
@@ -169,7 +202,22 @@ The row is saved with:
 
 - external location information
 - no outlet ID
-- `draft` status
+- a prepared review state
+
+### L5 Merchant With Zero Outlets
+
+This is an explicit configuration error. L5 merchants must expose outlet structure before RestroX mappings can be finalized.
+
+### Store Structure Changes
+
+If a merchant starts with no outlets and later creates outlets:
+
+- existing store-level mappings are preserved
+- the integration enters `Review Required`
+- restaurant IDs must be explicitly remapped to outlets
+- no automatic outlet assignment occurs
+- no automatic remapping occurs
+- previously blocked events can be replayed after remapping
 
 ## Operational Notes
 
@@ -180,7 +228,7 @@ The row is saved with:
 ## Troubleshooting Notes
 
 - If locations sync successfully but the integration still needs review, inspect the review issues returned by the sync response.
-- If a webhook event is accepted but not credited, confirm the external location ID matches an active linked location.
+- If a webhook event is accepted but not credited, confirm the `restaurantId` matches an active linked location.
 - If a location was previously valid and later disappears from Samparka, check whether it became `STALE`.
 
 ## Related Documentation

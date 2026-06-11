@@ -39,8 +39,8 @@ paths:
                   currency: NPR
                   customer:
                     phone: '9800000101'
-                  external_location_id: ktm-branch-01
-                  external_location_name: Kathmandu Branch
+                  restaurantId: '12345'
+                  restaurantName: Kathmandu Branch
                   items:
                     - name: Cappuccino
                       qty: 1
@@ -56,8 +56,8 @@ paths:
                   currency: NPR
                   customer:
                     phone: '9800000101'
-                  external_location_id: ktm-branch-01
-                  external_location_name: Kathmandu Branch
+                  restaurantId: '12345'
+                  restaurantName: Kathmandu Branch
                   items:
                     - name: Cappuccino
                       qty: 1
@@ -73,8 +73,8 @@ paths:
                   currency: NPR
                   customer:
                     phone: '9800000102'
-                  external_location_id: ktm-branch-01
-                  external_location_name: Kathmandu Branch
+                  restaurantId: '12345'
+                  restaurantName: Kathmandu Branch
                   items:
                     - name: Americano
                       qty: 1
@@ -90,8 +90,8 @@ paths:
                   currency: NPR
                   customer:
                     phone: '9800000103'
-                  external_location_id: unknown-branch-99
-                  external_location_name: Unknown Branch
+                  restaurantId: '99999'
+                  restaurantName: Unknown Branch
                   items:
                     - name: Latte
                       qty: 1
@@ -104,7 +104,7 @@ paths:
                   created_at: '2026-06-08T14:00:00.000Z'
                   amount: 300
                   currency: NPR
-                  external_location_id: ktm-branch-01
+                  restaurantId: '12345'
       responses:
         '200':
           description: Event accepted or duplicate acknowledged
@@ -202,6 +202,9 @@ components:
           type: string
         currency_code:
           type: string
+        restaurantId:
+          type: string
+          description: Preferred permanent RestroX restaurant/location identifier. It is unique, stable, never changes, and is the primary mapping key. Internally stored as `external_location_id`.
         external_location_id:
           type: string
         location_id:
@@ -210,6 +213,9 @@ components:
           type: string
         branch_id:
           type: string
+        restaurantName:
+          type: string
+          description: Preferred human-readable RestroX restaurant/location name. Internally stored as `external_location_name`.
         external_location_name:
           type: string
         location_name:
@@ -236,7 +242,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LineItem'
-      description: Request payload fields consumed by Samparka for the RestroX webhook.
+      description: Request payload fields consumed by Samparka for the RestroX webhook. Preferred RestroX fields are `restaurantId` and `restaurantName`; alias fields remain supported for backward compatibility.
     LineItem:
       type: object
       additionalProperties: true

@@ -8,8 +8,8 @@
     "customer": {
       "phone": "9800000101"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [
       {
         "name": "Cappuccino",
@@ -27,8 +27,8 @@
     "customer": {
       "phone": "9800000101"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [
       {
         "name": "Cappuccino",
@@ -46,8 +46,8 @@
     "customer": {
       "phone": "9800000102"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [
       {
         "name": "Americano",
@@ -65,8 +65,8 @@
     "customer": {
       "phone": "9800000101"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
+    "restaurantId": "12345",
+    "restaurantName": "Kathmandu Branch",
     "items": [
       {
         "name": "Cappuccino",
@@ -84,8 +84,8 @@
     "customer": {
       "phone": "9800000103"
     },
-    "external_location_id": "unknown-branch-99",
-    "external_location_name": "Unknown Branch",
+    "restaurantId": "99999",
+    "restaurantName": "Unknown Branch",
     "items": [
       {
         "name": "Latte",
@@ -99,7 +99,7 @@
     "created_at": "2026-06-08T14:00:00.000Z",
     "amount": 300,
     "currency": "NPR",
-    "external_location_id": "ktm-branch-01"
+    "restaurantId": "12345"
   },
   "event_received_response": {
     "success": true,

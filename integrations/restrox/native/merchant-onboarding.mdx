@@ -4,7 +4,7 @@ description: Follow the native onboarding flow from Connection Key handoff throu
 sidebarTitle: Merchant Onboarding
 ---
 
-The native merchant onboarding flow uses Connection Keys, partner connect, location sync, and test-sale verification to move a RestroX integration into a ready state.
+The native merchant onboarding flow uses Connection Keys, location preparation, RestroX connection, mapping validation, and test-sale verification to move a RestroX integration into a ready state.
 
 ## Purpose
 
@@ -19,21 +19,44 @@ Use this page to understand:
 ```mermaid
 flowchart TD
   A["Merchant creates RestroX integration"] --> B["Connection Key ready"]
-  B --> C["RestroX connect"]
-  C --> D["Location sync"]
-  D --> E{"Review required?"}
-  E -- Yes --> F["Review auto-synced locations"]
-  E -- No --> G["Send test sale"]
-  G --> H["Ready for production"]
+  B --> C["Locations prepared"]
+  C --> D["RestroX connected"]
+  D --> E["Location mappings established"]
+  E --> F{"Review required?"}
+  F -- Yes --> G["Resolve mapping issues"]
+  F -- No --> H["Test sale received"]
+  H --> I["Ready for production"]
 ```
 
 ## Connection Flow
 
 1. The merchant creates a RestroX integration in Samparka.
 2. Samparka issues a Connection Key.
-3. RestroX connects through the native partner API.
-4. RestroX syncs locations.
-5. Samparka calculates readiness based on connection, location sync, and test-sale activity.
+3. Samparka prepares location records.
+4. RestroX connects through the native partner API.
+5. RestroX syncs real restaurant IDs.
+6. Samparka calculates readiness based on connection, valid mappings, and test-sale activity.
+
+## Partner-Facing Onboarding Stages
+
+Use these stage labels when describing onboarding progress:
+
+1. Integration Key Ready
+2. Locations Prepared
+3. RestroX Connected
+4. Location Mappings Established
+5. Test Sale Received
+6. Ready For Production
+
+### Stage Definitions
+
+`Locations Prepared`
+
+Means Samparka has created location records.
+
+`Location Mappings Established`
+
+Means real RestroX restaurant IDs have been mapped.
 
 ## Readiness States
 
@@ -67,7 +90,7 @@ The verified onboarding stage values are:
 - `ready_for_production`
 - `review_required`
 
-The readiness model tracks connection, location sync, and first sale receipt. Refund verification is optional.
+The readiness model tracks connection, mapping validation, and first sale receipt. Refund verification is optional.
 
 ## Verification Process
 
@@ -94,11 +117,11 @@ The verification output includes:
 
 ## Activation Flow
 
-The current readiness logic treats the integration as:
+The current readiness and activation logic share the same mapping validation rules. The integration is treated as:
 
 - awaiting connection before RestroX has connected
-- review required when synced locations need manual review
-- needs testing when RestroX is connected and no test sale has been observed
+- review required when prepared locations still need valid mapping decisions
+- needs testing when RestroX is connected, location mappings are established, and no test sale has been observed
 - ready when RestroX is connected and at least one `sale.completed` event has been received and processed
 
 **READY means:**
@@ -149,7 +172,7 @@ Example merchant status shape derived from the verified service:
   "status": "NEEDS_TESTING",
   "statusLabel": "Needs Testing",
   "progressPercent": 75,
-  "currentStep": "Send Test Sale",
+  "currentStep": "Location Mappings Established",
   "nextAction": {
     "key": "verify_connection",
     "label": "Verify Connection",
@@ -166,8 +189,9 @@ Example merchant status shape derived from the verified service:
 Occurs when:
 
 - partner location sync produces review issues
-- an auto-synced location cannot be matched
+- a real restaurant ID has not yet been mapped
 - a synced location becomes stale
+- a merchant transitions from store-level mapping to outlet-based mapping
 
 ### Not Connected
 
@@ -180,14 +204,25 @@ Occurs when:
 Occurs when:
 
 - RestroX is connected
-- locations are in a usable state
+- location mappings are established and in a usable state
 - no sale event has been received yet
 
 ## Operational Notes
 
 - The status calculator uses test-sale presence from internal sale events.
 - Refund verification is optional in the current step model.
-- Merchant activity timeline entries such as `restrox_connected`, `locations_synced`, and `integration_key_rotated` are part of the readiness context.
+- Merchant activity timeline entries such as `restrox_connected`, `locations_prepared`, `location_mappings_established`, and `integration_key_rotated` are part of the readiness context.
+
+## Store Structure Changes
+
+If a merchant starts with no outlets and later adds outlets:
+
+- existing store-level mappings are preserved
+- the integration enters `Needs Review`
+- restaurant IDs must be explicitly remapped to outlets
+- no automatic outlet assignment occurs
+- no automatic remapping occurs
+- previously blocked events can be replayed after remapping
 
 ## Troubleshooting Notes
 
