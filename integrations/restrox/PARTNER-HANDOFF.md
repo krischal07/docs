@@ -1,49 +1,31 @@
 ---
 title: RestroX Partner Handoff
-description: Canonical partner handoff summary for RestroX onboarding with Samparka Loyalty.
-sidebarTitle: Partner Handoff
+description: Canonical handoff summary for the outlet-owned RestroX launch architecture.
+sidebarTitle: Partner Handoff Summary
 ---
 
-This package is the shareable entry point for RestroX webhook integration with Samparka. Samparka accepts sale, refund, and void webhook events so restaurants can connect RestroX transactions to loyalty processing. The backend exposes a token-based webhook URL, expects JSON payloads, and returns a simple acknowledgment response. Integration effort is low if your team already sends webhook events from RestroX.
+# RestroX Partner Handoff
 
-## Start Here
-
-1. [Overview](./README)
-2. [Quick Start](./quick-start)
-3. [Webhook Endpoint](./webhook-endpoint)
-4. [Payload Reference](./payload-reference)
-5. [Testing Guide](./testing-guide)
-
-## Integration Flow
+RestroX is an outlet-owned integration. The onboarding sequence is:
 
 ```mermaid
 flowchart TD
-  A["Receive webhook token"] --> B["Configure RestroX webhook"]
-  B --> C["Send test sale"]
-  C --> D["Verify acknowledgment"]
-  D --> E["Test duplicate repost"]
-  E --> F["Test refund"]
-  F --> G["Production signoff"]
+  A["Merchant creates integration"] --> B["Samparka generates Integration Key"]
+  B --> C["Samparka generates webhook token"]
+  C --> D["RestroX connects restaurant"]
+  D --> E["Samparka stores external_location_id"]
+  E --> F["RestroX sends first sale"]
+  F --> G["Integration becomes ACTIVE"]
 ```
 
-## Supported Events
+## What To Share
 
-- `order.completed`
-- `refund.created`
-- `order.voided`
+- outlet-specific Integration Key
+- outlet-specific webhook URL
+- expected restaurant identifier for that outlet
 
-## Testing Checklist
+## What To Avoid
 
-Use [Integration Checklist](./integration-checklist) for go-live validation.
-
-## OpenAPI
-
-Use [openapi.yaml](./openapi.yaml) for machine-readable request and response definitions.
-
-## Postman Collection
-
-Use [postman-collection.json](./postman-collection.json) for hands-on testing.
-
-## Support Contact
-
-Implementation Detail Requires Confirmation
+- do not plan a migration flow
+- do not create a second RestroX integration for the same outlet
+- do not use store-owned setup assumptions for RestroX

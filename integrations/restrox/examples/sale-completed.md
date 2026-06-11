@@ -1,12 +1,8 @@
 ---
-title: Sale Completed Example
-description: Example of a successful completed-sale webhook request and acknowledgment.
+title: Sale Completed
+description: Example of a valid outlet-owned RestroX sale webhook.
 sidebarTitle: Sale Completed
 ---
-
-## Request
-
-Use the `sale_completed_request` fixture from [`payloads.json`](./payloads.json).
 
 ```json
 {
@@ -15,14 +11,12 @@ Use the `sale_completed_request` fixture from [`payloads.json`](./payloads.json)
   "created_at": "2026-06-08T10:15:00.000Z",
   "amount": 850,
   "currency": "NPR",
-  "customer": { "phone": "9800000101" },
   "restaurantId": "12345",
-  "restaurantName": "Kathmandu Branch",
-  "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
+  "restaurantName": "Kathmandu Branch"
 }
 ```
 
-## Response
+Expected webhook response:
 
 ```json
 {
@@ -30,11 +24,3 @@ Use the `sale_completed_request` fixture from [`payloads.json`](./payloads.json)
   "message": "Event received"
 }
 ```
-
-## What Happened
-
-Samparka accepted the sale webhook and continued processing it as a completed sale event.
-
-## What To Do Next
-
-Repeat the same payload once to confirm duplicate handling, then continue with the refund test.

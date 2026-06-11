@@ -1,71 +1,15 @@
 ---
 title: Readiness Checklist
-description: Use this native integration checklist to confirm the RestroX integration is connected, validated, and ready for production traffic.
+description: Confirm an outlet-owned RestroX integration is ready for production traffic.
 sidebarTitle: Readiness Checklist
 ---
 
-Use this checklist to confirm the RestroX native integration is ready for production traffic.
-
-## Purpose
-
-This page turns the verified native onboarding flow into an implementation checklist for RestroX engineers.
-
-## Checklist
-
-- [ ] Connection Key validated
-- [ ] Integration Key Ready
-- [ ] Locations Prepared
-- [ ] RestroX Connected
-- [ ] Location Mappings Established
-- [ ] Customer lookup verified
-- [ ] Test Sale Received
-- [ ] Test sale accepted (confirms event received, not that loyalty was awarded)
-- [ ] Refund tested
-- [ ] Webhook delivery verified
-- [ ] Ready For Production
-
-## Workflow
-
-<Steps>
-  <Step title="Validate Connection Key">
-    Confirm the active Connection Key works through the native partner connect flow.
-  </Step>
-  <Step title="Connect Merchant">
-    Call the RestroX partner connect route and confirm the merchant enters a connected or reviewable state.
-  </Step>
-  <Step title="Prepare And Map Locations">
-    Confirm Samparka has prepared location records, sync real RestroX restaurant IDs, resolve review issues, and confirm no required location is blocked.
-  </Step>
-  <Step title="Verify Customer Operations">
-    Test customer search using normalized phone input.
-  </Step>
-  <Step title="Submit Test Sale">
-    Send a completed sale through the native test-sale path and confirm it is accepted through the same downstream loyalty processing behavior used in production.
-  </Step>
-  <Step title="Validate Readiness">
-    Confirm the integration progresses into a ready state and optionally verify refund handling.
-  </Step>
-</Steps>
-
-## Operational Notes
-
-- `Locations Prepared` means Samparka has created location records.
-- `Location Mappings Established` means real RestroX restaurant IDs have been mapped.
-- `Needs Review` should be resolved before relying on production traffic.
-- Refund verification is optional in the current merchant status builder, but it is still recommended before go-live.
-- Test-sale validates the same downstream loyalty processing behavior used by production webhook traffic.
-- The READY state does not confirm that loyalty was awarded. It confirms that a sale event was received. Verify loyalty award separately before assuming points are flowing.
-
-## Troubleshooting Notes
-
-- If the test sale is accepted but readiness does not advance, check location resolution, location state, and customer assumptions.
-- If customer operations fail, resolve identity or integration-key issues before retrying sales.
-
-## Related Documentation
-
-- [Merchant Onboarding](./merchant-onboarding)
-- [Store Linking](./store-linking)
-- [Customer API](./customer-api)
-- [Partner API](./partner-api)
-- [Testing Guide](../testing-guide)
-- [Integration Checklist](../integration-checklist)
+- [ ] Store already has the target outlet
+- [ ] RestroX integration created with `storeId` and `outletId`
+- [ ] Integration Key copied to RestroX
+- [ ] Partner connect completed successfully
+- [ ] `external_location_id` is stored on the integration
+- [ ] Webhook URL uses the integration webhook token
+- [ ] First valid sale has been received
+- [ ] Integration lifecycle status is `ACTIVE`
+- [ ] Health status is `HEALTHY`

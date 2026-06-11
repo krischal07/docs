@@ -1,64 +1,12 @@
 ---
-title: Known Behaviors and Limitations
+title: Known Behaviors And Limitations
 description: Production behaviors RestroX engineers should understand before going live.
 sidebarTitle: Known Behaviors
 ---
 
-This page documents behaviors that are correct by design but that commonly surprise partner engineers during integration or production debugging.
-
-## Event Type Fallback
-
-Unknown `event_type` values silently normalize to `sale.completed`.
-
-If RestroX sends an event type that Samparka does not recognize, no error is returned. The event is accepted, stored, and processed as a completed sale. This means a typo or an unsupported event type will appear to succeed at the transport level while producing unexpected loyalty outcomes.
-
-**Recommendation:** Only send event types from the documented list in [Event Types](./event-types). Do not rely on the fallback behavior for any intentional event routing.
-
-## HTTP 200 Does Not Guarantee Loyalty Processing
-
-A `200 Event received` response confirms that Samparka accepted the delivery. It does not confirm that loyalty was awarded or that the event was fully processed.
-
-The following scenarios all return `200 Event received`:
-
-- Sale processed and loyalty awarded
-- Sale received but location identifier was absent from the payload
-- Sale received but location identifier does not match any mapped location
-- Sale received but the matched location is stale or participation is disabled
-- Refund received but no matching original sale was found
-
-If loyalty activity is missing after a `200` response, check location mapping, the customer phone field, and the original sale identifier for refunds. See [Troubleshooting](./troubleshooting) and [Response Reference](./response-reference) for the full list of internal blocking reasons.
-
-## Location Mapping Dependency
-
-A successfully connected integration with a clean location sync can still fail to award loyalty if the `restaurantId` in the webhook payload does not match the value stored during location sync.
-
-Connection and sync status reflect the state at the time of setup. They do not guarantee that individual webhook events will be processable if:
-
-- the payload sends a different location identifier than the one synced
-- the matched location was later marked `STALE` because its outlet was removed from the store
-- location participation was disabled after sync
-
-Verify that the `restaurantId` value in every production event payload exactly matches the value registered during the partner location sync. Samparka stores that mapping internally as `external_location_id`. See [Location Mapping](./location-mapping) for details.
-
-## Store Structure Changes
-
-If a merchant begins with no outlets and later adds outlets, existing store-level mappings are preserved but the integration enters `Review Required`.
-
-At that point:
-
-- restaurant IDs must be explicitly remapped to outlets
-- no automatic outlet assignment occurs
-- no automatic remapping occurs
-- previously blocked events can be replayed after remapping
-
-L5 merchants with zero outlets are an explicit configuration error and must correct their store structure before production mapping can be finalized.
-
-## Idempotency Is Scoped Per Integration
-
-Duplicate detection is scoped to a single merchant integration. Two different merchant integrations can use the same `order_id` without conflict.
-
-The idempotency key format is `{event_type}:{order_id}`. This means a sale and a refund for the same `order_id` are treated as separate events and will both be processed — they are not considered duplicates of each other.
-
-If no `order_id`, `transaction_id`, or `id` is present in the payload, Samparka falls back to a SHA-256 key derived from the provider, event type, amount, and timestamp. Retry safety without an explicit identifier depends on resending exactly the same payload values.
-
-See [Idempotency](./idempotency) for full details.
+- RestroX is always outlet-owned in Samparka.
+- `sync-locations` is implemented as a skipped no-op for RestroX.
+- reconnect preserves the existing Integration Key and webhook token.
+- rebind is blocked until the integration is disconnected.
+- the first valid `sale.completed` event promotes `CONNECTED` to `ACTIVE`.
+- a restaurant mismatch webhook returns `409` and sets health to `ERROR`.

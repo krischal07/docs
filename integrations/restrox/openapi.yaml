@@ -1,374 +1,261 @@
 openapi: 3.1.0
 info:
-  title: Samparka RestroX Native Integration API
-  version: 1.1.0
-  description: |
-    External partner guide for the RestroX native integration with Samparka.
-
-    The native partner APIs handle merchant connection, location sync, and
-    read-only partner customer retrieval. Event delivery uses the supported
-    RestroX webhook route documented for partners.
+  title: Samparka RestroX Outlet-Owned API
+  version: 1.0.0
+  description: >
+    Reference for the current outlet-owned RestroX implementation in Samparka.
 servers:
   - url: https://your-domain
-security:
-  - PartnerKeyHeader: []
 paths:
+  /api/pos-integrations:
+    post:
+      summary: Create a RestroX integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIntegrationRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationEnvelope'
+  /api/pos-integrations/{id}:
+    get:
+      summary: Get a RestroX integration
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationEnvelope'
+    patch:
+      summary: Update a RestroX integration
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                outletId:
+                  type: string
+                status:
+                  type: string
+                  enum: [CREATED, CONNECTED, ACTIVE, DISCONNECTED]
+                health_status:
+                  type: string
+                  enum: [HEALTHY, WARNING, ERROR]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationEnvelope'
+    delete:
+      summary: Disconnect an outlet-owned RestroX integration
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Disconnected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisconnectEnvelope'
+  /api/pos-integrations/{id}/status:
+    get:
+      summary: Get derived RestroX status
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusEnvelope'
+  /api/pos-integrations/{id}/verify:
+    post:
+      summary: Verify production readiness
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyEnvelope'
+  /api/pos-integrations/{id}/webhook-url:
+    get:
+      summary: Get integration webhook URL
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      webhookUrl:
+                        type: string
+  /api/pos-integrations/{id}/locations:
+    get:
+      summary: Shared POS route not applicable to outlet-owned RestroX
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '409':
+          description: Not applicable to outlet-owned RestroX
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Shared POS route not applicable to outlet-owned RestroX
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '409':
+          description: Not applicable to outlet-owned RestroX
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/pos-integrations/{id}/sync-outlets:
+    post:
+      summary: Shared POS route not applicable to outlet-owned RestroX
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '409':
+          description: Not applicable to outlet-owned RestroX
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/partners/restrox/connect:
     post:
-      summary: Connect a merchant using a Connection Key
-      description: |
-        Validate a RestroX Connection Key, associate partner account metadata,
-        and optionally sync locations during the same request.
-      operationId: connectRestroxMerchant
-      security:
-        - PartnerKeyHeader: []
-        - PartnerBearerAuth: []
+      summary: Connect a RestroX restaurant to an outlet-owned integration
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartnerConnectRequest'
-            examples:
-              connectMerchant:
-                summary: Connect merchant
-                value:
-                  integrationKey: SPK-RX-ABC12345
-                  account:
-                    id: restrox-account-001
-                    name: Java Express
-                  locations:
-                    - restaurantId: '12345'
-                      restaurantName: Kathmandu Branch
-                      outletId: '685000000000000000000001'
+              $ref: '#/components/schemas/ConnectRequest'
       responses:
         '200':
-          description: Merchant connected
+          description: Connected
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PartnerSuccessEnvelope'
-              examples:
-                connected:
-                  value:
-                    success: true
-                    message: RestroX connected
-                    data:
-                      syncedCount: 1
-                      reviewIssues: []
-                      reviewRequired: false
-                      partnerConnectionStatus: connected
-        '401':
-          description: Unauthorized partner request
+                $ref: '#/components/schemas/ConnectEnvelope'
+        '409':
+          description: Duplicate bind or invalid rebind
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicError'
-              examples:
-                unauthorized:
-                  value:
-                    success: false
-                    message: Unauthorized partner request
-        '404':
-          description: Invalid Connection Key
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BasicError'
-              examples:
-                invalidKey:
-                  value:
-                    success: false
-                    message: Invalid Integration Key
-        '503':
-          description: Partner API not configured
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BasicError'
-              examples:
-                notConfigured:
-                  value:
-                    success: false
-                    message: RestroX partner API is not configured
+                $ref: '#/components/schemas/ErrorResponse'
   /api/partners/restrox/sync-locations:
     post:
-      summary: Synchronize RestroX locations
-      description: |
-        Sync external RestroX locations into Samparka and return review issues
-        when locations cannot be matched automatically.
-      operationId: syncRestroxLocations
-      security:
-        - PartnerKeyHeader: []
-        - PartnerBearerAuth: []
+      summary: No-op response for outlet-owned RestroX
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartnerConnectRequest'
-            examples:
-              syncLocations:
-                summary: Sync locations
-                value:
-                  integrationKey: SPK-RX-ABC12345
-                  account:
-                    id: restrox-account-001
-                    name: Java Express
-                  locations:
-                    - restaurantId: '12345'
-                      restaurantName: Kathmandu Branch
-                      outletId: '685000000000000000000001'
-                    - restaurantId: '67890'
-                      restaurantName: Pokhara Branch
-                      outletId: '685000000000000000000002'
-              syncStoreLevelLocation:
-                summary: Sync a zero-outlet merchant location
-                value:
-                  integrationKey: SPK-RX-ABC12345
-                  account:
-                    id: restrox-account-001
-                    name: SPD
-                  locations:
-                    - restaurantId: '12345'
-                      restaurantName: SPD
+              $ref: '#/components/schemas/ConnectRequest'
       responses:
         '200':
-          description: Location mappings established
+          description: Skipped
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PartnerSuccessEnvelope'
-              examples:
-                synced:
-                  value:
-                    success: true
-                    message: Location mappings established
-                    data:
-                      syncedCount: 2
-                      reviewIssues: []
-                      reviewRequired: false
-                      partnerConnectionStatus: connected
+                $ref: '#/components/schemas/SyncLocationsEnvelope'
   /api/partners/restrox/test-sale:
     post:
-      summary: Submit a test sale through the native partner API
-      description: |
-        Validate the target integration and mapped location, then submit a test
-        event through the same downstream loyalty processing behavior used by
-        production webhook traffic.
-      operationId: submitRestroxTestSale
-      security:
-        - PartnerKeyHeader: []
-        - PartnerBearerAuth: []
+      summary: Submit a test sale through the webhook pipeline
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/TestSaleRequest'
-            examples:
-              testSale:
-                summary: Submit test sale
-                value:
-                  integrationKey: SPK-RX-ABC12345
-                  restaurantId: '12345'
-                  payload:
-                    event_type: order.completed
-                    order_id: restrox-sale-1001
-                    created_at: '2026-06-08T10:15:00.000Z'
-                    amount: 850
-                    currency: NPR
-                    customer:
-                      phone: '9801234567'
-                    restaurantId: '12345'
-                    restaurantName: Kathmandu Branch
-                    items:
-                      - name: Cappuccino
-                        qty: 1
-                        price: 850
       responses:
         '200':
-          description: Test sale submitted
+          description: Accepted into webhook processing
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TestSaleEnvelope'
-              examples:
-                submitted:
-                  value:
-                    success: true
-                    message: Test sale submitted
-                    data:
-                      success: true
-                      message: Event received
-        '400':
-          description: Invalid request body or conflicting location identifiers
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BasicError'
-              examples:
-                conflictingLocation:
-                  value:
-                    success: false
-                    message: restaurantId does not match the payload location identifier
-                missingLocation:
-                  value:
-                    success: false
-                    message: A location identifier is required. Provide restaurantId or a payload location field.
-                missingEventType:
-                  value:
-                    success: false
-                    message: Missing event_type in payload
-        '404':
-          description: Integration key or mapped location not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BasicError'
-              examples:
-                invalidKey:
-                  value:
-                    success: false
-                    message: Invalid Integration Key
-                unknownLocation:
-                  value:
-                    success: false
-                    message: No mapped RestroX location found for the provided location identifier
         '409':
-          description: Ambiguous or unusable mapped location
+          description: Restaurant binding missing or mismatched
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicError'
-              examples:
-                ambiguousLocation:
-                  value:
-                    success: false
-                    message: Ambiguous RestroX location identifier for this integration
-                missingWebhookToken:
-                  value:
-                    success: false
-                    message: The selected RestroX location does not have a webhook token
-                missingMappedExternalLocation:
-                  value:
-                    success: false
-                    message: The selected RestroX location does not have a mapped external location ID
+                $ref: '#/components/schemas/ErrorResponse'
   /api/partners/{provider}/customers/search:
     get:
-      summary: Search for a customer by exact phone
-      description: |
-        Search for a Samparka-owned customer within the store linked to the
-        provided Connection Key. Partner customer access is read-only, and the
-        current implementation supports exact phone lookup only.
-      operationId: searchPartnerCustomer
-      security:
-        - PartnerKeyHeader: []
-        - PartnerBearerAuth: []
+      summary: Search customers by exact phone
       parameters:
-        - $ref: '#/components/parameters/provider'
-        - $ref: '#/components/parameters/integrationKeyHeader'
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [restrox]
         - name: phone
           in: query
           required: true
           schema:
             type: string
-          description: Customer phone number to normalize and search.
       responses:
         '200':
-          description: Search completed
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/CustomerSearchFound'
-                  - $ref: '#/components/schemas/CustomerSearchMissing'
-              examples:
-                found:
-                  value:
-                    exists: true
-                    customer:
-                      id: 687000000000000000000001
-                      name: Asha
-                      phone: '9801234567'
-                      email: asha@example.com
-                      points: 45
-                      tier: Bronze Tier
-                      lifetimePoints: 45
-                      membershipSince: '2026-06-08T10:15:00.000Z'
-                missing:
-                  value:
-                    exists: false
-        '400':
-          description: Invalid search request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerCustomerError'
-              examples:
-                invalidPhone:
-                  value:
-                    error: partner_customer_error
-                    message: Invalid phone number
-                unsupportedSearch:
-                  value:
-                    error: partner_customer_error
-                    message: Search supports exact phone lookup only
-        '409':
-          description: Customer identity conflict
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerCustomerError'
-              examples:
-                conflict:
-                  value:
-                    error: customer_identity_conflict
-                    message: Multiple customer records share the same normalized phone. Admin resolution is required.
+          description: Success
   /api/partners/{provider}/customers/{customerId}:
     get:
-      summary: Get one customer by ID
-      description: |
-        Fetch one existing Samparka-owned customer within the store linked to
-        the provided Connection Key. Partner customer access is read-only.
-      operationId: getPartnerCustomer
-      security:
-        - PartnerKeyHeader: []
-        - PartnerBearerAuth: []
+      summary: Fetch one customer
       parameters:
-        - $ref: '#/components/parameters/provider'
-        - $ref: '#/components/parameters/integrationKeyHeader'
-        - $ref: '#/components/parameters/customerId'
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [restrox]
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: Customer fetched
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerCustomerResponse'
-        '404':
-          description: Customer not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerCustomerError'
-              examples:
-                notFound:
-                  value:
-                    error: partner_customer_error
-                    message: Customer not found
+          description: Success
   /webhook/restrox/{token}:
     post:
       summary: Receive RestroX webhook events
-      description: |
-        Send RestroX sale, refund, or void webhooks to Samparka.
-        A 200 acknowledgment means the delivery was accepted. It does not guarantee loyalty activity was created.
-      operationId: postRestroxWebhook
       parameters:
         - name: token
           in: path
           required: true
-          description: Webhook token supplied by Samparka.
           schema:
             type: string
       requestBody:
@@ -377,113 +264,59 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RestroxWebhookRequest'
-            examples:
-              saleCompleted:
-                summary: Completed sale
-                value:
-                  event_type: order.completed
-                  order_id: restrox-sale-1001
-                  created_at: '2026-06-08T10:15:00.000Z'
-                  amount: 850
-                  currency: NPR
-                  customer:
-                    phone: '9800000101'
-                  restaurantId: '12345'
-                  restaurantName: Kathmandu Branch
-                  items:
-                    - name: Cappuccino
-                      qty: 1
-                      price: 850
       responses:
         '200':
-          description: Event accepted or duplicate acknowledged
+          description: Accepted or duplicate
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicResponse'
-              examples:
-                eventReceived:
-                  value:
-                    success: true
-                    message: Event received
-                eventAlreadyProcessed:
-                  value:
-                    success: true
-                    message: Event already processed
+                $ref: '#/components/schemas/WebhookSuccessResponse'
         '400':
-          description: Request validation failure
+          description: Invalid request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicError'
-              examples:
-                invalidBody:
-                  value:
-                    success: false
-                    message: Request body must be a JSON object
-                missingEventType:
-                  value:
-                    success: false
-                    message: Missing event_type in payload
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Invalid webhook token
+          description: Invalid token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicError'
-              examples:
-                invalidToken:
-                  value:
-                    success: false
-                    message: Invalid webhook token
-        '500':
-          description: Internal server error
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Binding or lifecycle conflict
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicError'
-              examples:
-                internalServerError:
-                  value:
-                    success: false
-                    message: Internal server error
+                $ref: '#/components/schemas/ErrorResponse'
 components:
-  securitySchemes:
-    PartnerKeyHeader:
-      type: apiKey
-      in: header
-      name: x-partner-key
-    PartnerBearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: API key
-    IntegrationKeyHeader:
-      type: apiKey
-      in: header
-      name: x-integration-key
   parameters:
-    provider:
-      name: provider
-      in: path
-      required: true
-      schema:
-        type: string
-        enum: [restrox]
-    integrationKeyHeader:
-      name: x-integration-key
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Merchant Connection Key used to resolve the store-scoped integration.
-    customerId:
-      name: customerId
+    IntegrationId:
+      name: id
       in: path
       required: true
       schema:
         type: string
   schemas:
-    PartnerConnectRequest:
+    CreateIntegrationRequest:
+      type: object
+      required: [provider, storeId, outletId]
+      properties:
+        provider:
+          type: string
+          enum: [restrox]
+        storeId:
+          type: string
+        outletId:
+          type: string
+    ConnectLocation:
+      type: object
+      properties:
+        restaurantId:
+          type: string
+        restaurantName:
+          type: string
+    ConnectRequest:
       type: object
       required: [integrationKey]
       properties:
@@ -491,255 +324,207 @@ components:
           type: string
         account:
           type: object
-          additionalProperties: true
           properties:
             id:
               type: string
-            accountId:
-              type: string
             name:
-              type: string
-            accountName:
               type: string
         locations:
           type: array
           items:
-            $ref: '#/components/schemas/PartnerLocation'
-    PartnerLocation:
-      type: object
-      additionalProperties: true
-      properties:
-        restaurantId:
-          type: string
-          description: Preferred permanent RestroX restaurant/location identifier. It is unique, stable, never changes, and is the primary mapping key. Internally stored as `external_location_id`.
-        externalLocationId:
-          type: string
-        external_location_id:
-          type: string
-        locationId:
-          type: string
-        branchId:
-          type: string
-        id:
-          type: string
-        restaurantName:
-          type: string
-          description: Preferred human-readable RestroX restaurant/location name. Internally stored as `external_location_name`.
-        externalLocationName:
-          type: string
-        external_location_name:
-          type: string
-        locationName:
-          type: string
-        branchName:
-          type: string
-        name:
-          type: string
-        outletId:
-          type: string
-          description: Samparka outlet identifier. Required when the store has outlets and optional when the store has zero outlets because store-level mappings are supported.
-        outlet_id:
-          type: string
-        samparkaOutletId:
-          type: string
+            $ref: '#/components/schemas/ConnectLocation'
     TestSaleRequest:
       type: object
       required: [integrationKey, payload]
       properties:
         integrationKey:
           type: string
-          description: Connection Key used to resolve the RestroX integration.
-        restaurantId:
-          type: string
-          description: Preferred top-level RestroX location identifier for the test sale request.
         locationId:
           type: string
-          description: Backward-compatible alias for the RestroX location identifier. Must be the RestroX restaurant identifier, not a Samparka internal identifier.
+          nullable: true
         payload:
           $ref: '#/components/schemas/RestroxWebhookRequest'
-    PartnerCustomer:
-      type: object
-      required: [id, phone, points, lifetimePoints]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-          nullable: true
-        phone:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        points:
-          type: number
-        tier:
-          type: string
-          nullable: true
-        lifetimePoints:
-          type: number
-        membershipSince:
-          type: string
-          format: date-time
-          nullable: true
-    PartnerCustomerResponse:
-      type: object
-      required: [customer]
-      properties:
-        customer:
-          $ref: '#/components/schemas/PartnerCustomer'
-    CustomerSearchFound:
-      type: object
-      required: [exists, customer]
-      properties:
-        exists:
-          const: true
-        customer:
-          $ref: '#/components/schemas/PartnerCustomer'
-    CustomerSearchMissing:
-      type: object
-      required: [exists]
-      properties:
-        exists:
-          const: false
-    PartnerSuccessEnvelope:
-      type: object
-      required: [success, message, data]
-      properties:
-        success:
-          type: boolean
-          const: true
-        message:
-          type: string
-        data:
-          type: object
-          additionalProperties: true
-          properties:
-            syncedCount:
-              type: integer
-            reviewIssues:
-              type: array
-              items:
-                type: object
-                additionalProperties: true
-            reviewRequired:
-              type: boolean
-            partnerConnectionStatus:
-              type: string
-              enum: [pending, connected, review_required]
-    TestSaleEnvelope:
-      type: object
-      required: [success, message, data]
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
-          $ref: '#/components/schemas/BasicResponse'
-    PartnerCustomerError:
-      type: object
-      required: [message]
-      properties:
-        error:
-          type: string
-        message:
-          type: string
     RestroxWebhookRequest:
       type: object
-      additionalProperties: true
+      required: [event_type]
       properties:
         event_type:
           type: string
-        type:
-          type: string
         order_id:
-          type: string
-        transaction_id:
-          type: string
-        id:
           type: string
         created_at:
           type: string
-          format: date-time
-        timestamp:
-          type: string
-          format: date-time
         amount:
-          type: number
-        order_total:
-          type: number
-        total:
           type: number
         currency:
           type: string
-        currency_code:
-          type: string
         restaurantId:
-          type: string
-          description: Preferred permanent RestroX restaurant/location identifier. It is unique, stable, never changes, and is the primary mapping key. Internally stored as `external_location_id`.
-        external_location_id:
-          type: string
-        location_id:
-          type: string
-        outlet_id:
-          type: string
-        branch_id:
           type: string
         restaurantName:
           type: string
-          description: Preferred human-readable RestroX restaurant/location name. Internally stored as `external_location_name`.
+        external_location_id:
+          type: string
         external_location_name:
           type: string
-        location_name:
-          type: string
-        branch_name:
-          type: string
-        outlet_name:
-          type: string
-        phone:
-          type: string
-        customer_phone:
-          type: string
-        customer:
-          type: object
-          additionalProperties: true
-          properties:
-            phone:
-              type: string
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/LineItem'
-        line_items:
-          type: array
-          items:
-            $ref: '#/components/schemas/LineItem'
-    LineItem:
+    IntegrationData:
       type: object
-      additionalProperties: true
       properties:
-        name:
+        id:
           type: string
-        qty:
-          type: number
-        price:
-          type: number
-    BasicResponse:
+        provider:
+          type: string
+        storeId:
+          type: string
+        outletId:
+          type: string
+          nullable: true
+        ownershipMode:
+          type: string
+          enum: [OUTLET_OWNED]
+        status:
+          type: string
+        connectionStatus:
+          type: string
+          enum: [CREATED, CONNECTED, ACTIVE, DISCONNECTED]
+        integrationKey:
+          type: string
+        webhookUrl:
+          type: string
+          nullable: true
+        webhookUrlMasked:
+          type: string
+          nullable: true
+        externalLocationId:
+          type: string
+          nullable: true
+        externalLocationName:
+          type: string
+          nullable: true
+        healthStatus:
+          type: string
+          enum: [HEALTHY, WARNING, ERROR]
+        partnerConnectionStatus:
+          type: string
+          enum: [pending, connected, review_required]
+    IntegrationEnvelope:
       type: object
-      required: [success, message]
       properties:
         success:
           type: boolean
         message:
           type: string
-    BasicError:
+        data:
+          $ref: '#/components/schemas/IntegrationData'
+    DisconnectEnvelope:
       type: object
-      required: [success, message]
       properties:
         success:
           type: boolean
-          const: false
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            disconnected:
+              type: boolean
+            deleted:
+              type: boolean
+            id:
+              type: string
+    StatusEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            overallStatus:
+              type: string
+            connectionStatus:
+              type: string
+            healthStatus:
+              type: string
+            currentStep:
+              type: string
+    VerifyEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            readyForProduction:
+              type: boolean
+            currentStep:
+              type: string
+    ConnectEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            connected:
+              type: boolean
+            idempotent:
+              type: boolean
+            integrationId:
+              type: string
+            externalLocationId:
+              type: string
+            externalLocationName:
+              type: string
+              nullable: true
+            status:
+              type: string
+              enum: [CONNECTED, ACTIVE, DISCONNECTED, CREATED]
+    SyncLocationsEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            connected:
+              type: boolean
+            skipped:
+              type: boolean
+            integrationId:
+              type: string
+            message:
+              type: string
+    TestSaleEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/WebhookSuccessResponse'
+    WebhookSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
         message:
           type: string

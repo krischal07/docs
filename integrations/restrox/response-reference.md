@@ -1,105 +1,28 @@
 ---
 title: Response Reference
-description: Reference the webhook acknowledgment and error responses returned by Samparka.
+description: Partner-visible responses for RestroX webhook and partner flows.
 sidebarTitle: Response Reference
 ---
 
-These are the partner-visible responses for the canonical RestroX webhook path.
+## Webhook Responses
 
-See also: [Troubleshooting](./troubleshooting).
+| Status | Message | Meaning |
+| ------ | ------- | ------- |
+| `200` | `Event received` | Valid event accepted. |
+| `200` | `Event already processed` | Duplicate request accepted idempotently. |
+| `400` | `Request body must be a JSON object` | Invalid body shape. |
+| `400` | `Missing event_type in payload` | Required event type absent. |
+| `404` | `Invalid webhook token` | Token did not resolve to a RestroX integration. |
+| `409` | `Integration disconnected` | Integration lifecycle status is `DISCONNECTED`. |
+| `409` | `Integration is not connected to a restaurant` | Integration has no stored restaurant binding. |
+| `409` | `Restaurant binding mismatch` | Payload restaurant identifier does not match the stored binding. |
 
-## `200 Event received`
+## Partner API Responses
 
-```json
-{
-  "success": true,
-  "message": "Event received"
-}
-```
-
-Meaning: Samparka accepted the delivery.
-
-Recommended sender behavior: record the delivery as acknowledged. Do not retry unless you later confirm the request did not reach Samparka.
-
-### What 200 Does Not Mean
-
-HTTP 200 confirms the event was received and accepted. It does not indicate the outcome of loyalty processing. All of the following scenarios return HTTP 200:
-
-| Scenario | Internal Result |
-|----------|-----------------|
-| Sale processed, loyalty awarded | loyalty earned |
-| Sale received, no customer phone supplied | skipped — no_phone |
-| Sale received, location identifier absent from payload | blocked — `missing_external_location_id` |
-| Sale received, location identifier does not match any mapped location | blocked — `unmapped_location` |
-| Sale received, matched location is STALE (outlet removed from store) | blocked — `stale_location_mapping` |
-| Sale received, location participation is disabled | blocked — `participation_disabled` |
-| Sale received, location mapping is inactive | blocked — `inactive_location_mapping` |
-| Duplicate sale resent | Event already processed |
-| Refund received, no matching original sale | failed_terminal — original_event_not_found |
-
-All blocked events are stored internally with `blocked_unmapped_location` status. No loyalty is awarded in any blocked scenario. To diagnose which blocked reason applies, contact Samparka or check the location state in the merchant integration panel.
-
-## `200 Event already processed`
-
-```json
-{
-  "success": true,
-  "message": "Event already processed"
-}
-```
-
-Meaning: the same webhook was sent before, and Samparka handled it safely.
-
-Recommended sender behavior: stop retrying the same payload.
-
-## `400 Request body must be a JSON object`
-
-```json
-{
-  "success": false,
-  "message": "Request body must be a JSON object"
-}
-```
-
-Meaning: the request body was missing, not JSON, or was an array instead of an object.
-
-Recommended sender behavior: correct the request body and resend.
-
-## `400 Missing event_type in payload`
-
-```json
-{
-  "success": false,
-  "message": "Missing event_type in payload"
-}
-```
-
-Meaning: the payload did not include `event_type` or `type`.
-
-Recommended sender behavior: add the event type and resend.
-
-## `404 Invalid webhook token`
-
-```json
-{
-  "success": false,
-  "message": "Invalid webhook token"
-}
-```
-
-Meaning: the token in the URL did not match a configured RestroX webhook location.
-
-Recommended sender behavior: verify the webhook URL with Samparka before retrying.
-
-## `500 Internal server error`
-
-```json
-{
-  "success": false,
-  "message": "Internal server error"
-}
-```
-
-Meaning: Samparka encountered an unexpected error while handling the request.
-
-Recommended sender behavior: retry later with the same payload.
+| Route | Status | Meaning |
+| ------ | ------ | ------- |
+| `connect` | `200` | RestroX connected successfully. |
+| `connect` | `409` | Duplicate binding or rebind attempted before disconnect. |
+| `sync-locations` | `200` | Route exists but returns skipped for outlet-owned RestroX. |
+| `test-sale` | `200` | Test sale accepted into webhook pipeline. |
+| `test-sale` | `409` | Stored restaurant binding is missing or does not match. |

@@ -1,172 +1,23 @@
 ---
 title: Customer API
-description: Implement the read-only RestroX partner customer endpoints for search and retrieval using Samparka's store-scoped customer identity rules.
+description: Use the read-only RestroX customer lookup endpoints.
 sidebarTitle: Customer API
 ---
 
-Samparka exposes read-only partner customer APIs for RestroX. Partners can search and retrieve customers, but customer creation is not exposed through partner APIs.
+RestroX customer routes are read-only.
 
-## Purpose
+## Supported Routes
 
-Use this page to implement:
+- `GET /api/partners/{provider}/customers/search?phone=9801234567`
+- `GET /api/partners/{provider}/customers/{customerId}`
 
-- customer search
-- customer retrieval
+## Authentication
 
-## Concepts
-
-All customer partner routes require:
-
-- partner authentication
+- `x-partner-key`
 - `x-integration-key`
-- provider path parameter
 
-The current implementation supports provider `restrox`.
+## Behavior
 
-Customers are managed by Samparka.
-
-## Authentication Requirements
-
-Customer API requests require **both** of the following headers:
-
-```http
-x-partner-key: <partner-key>
-x-integration-key: <integration-key>
-```
-
-Requests that omit either credential are rejected before customer lookup occurs.
-
-You can also send the partner key as:
-
-```http
-Authorization: Bearer your-partner-key
-x-integration-key: <integration-key>
-```
-
-## Customer Identity Notes
-
-These endpoints depend on the identity outcomes documented in [Customer Identity](./customer-identity):
-
-- `found`
-- `missing`
-- `conflict`
-- `invalid_phone`
-
-## Endpoints
-
-### Search Customer
-
-```http
-GET /api/partners/{provider}/customers/search?phone=9801234567
-```
-
-Supported query:
-
-- `phone`
-
-No other search keys are accepted by the verified implementation.
-
-Example success response when found:
-
-```json
-{
-  "exists": true,
-  "customer": {
-    "id": "687000000000000000000001",
-    "name": "Asha",
-    "phone": "9801234567",
-    "email": "asha@example.com",
-    "points": 45,
-    "tier": "Bronze Tier",
-    "lifetimePoints": 45,
-    "membershipSince": "2026-06-08T10:15:00.000Z"
-  }
-}
-```
-
-Example success response when missing:
-
-```json
-{
-  "exists": false
-}
-```
-
-Failure responses:
-
-```json
-// 400 — phone parameter missing
-{
-  "error": "partner_customer_error",
-  "message": "Phone is required"
-}
-```
-
-```json
-// 400 — phone fails validation
-{
-  "error": "partner_customer_error",
-  "message": "Invalid phone number"
-}
-```
-
-```json
-// 409 — multiple records share the same normalized phone
-{
-  "error": "customer_identity_conflict",
-  "message": "Multiple customer records share the same normalized phone. Admin resolution is required."
-}
-```
-
-### Get Customer
-
-```http
-GET /api/partners/{provider}/customers/{customerId}
-```
-
-Example response:
-
-```json
-{
-  "customer": {
-    "id": "687000000000000000000001",
-    "name": "Asha",
-    "phone": "9801234567",
-    "email": "asha@example.com",
-    "points": 45,
-    "tier": "Bronze Tier",
-    "lifetimePoints": 45,
-    "membershipSince": "2026-06-08T10:15:00.000Z"
-  }
-}
-```
-
-Failure response:
-
-```json
-// 404 — customer not found in the store resolved by the supplied integration key
-{
-  "error": "partner_customer_error",
-  "message": "Customer not found"
-}
-```
-
-## Operational Notes
-
-- Customer APIs are read-only in the current backend implementation.
-- Customer creation is not exposed through partner APIs.
-- Use [Customer Loyalty Award Flow](./customer-loyalty-award-flow) for the cashier and bill-association workflow that sits above these APIs.
-
-## Troubleshooting Notes
-
-- If search fails with `Invalid phone number`, normalize and validate the phone before retrying.
-- If search returns conflict, manual customer cleanup is required before automated partner flows can rely on that phone identity.
-- If get-by-id returns `Customer not found`, confirm the customer belongs to the store resolved by the supplied `x-integration-key`.
-
-## Related Documentation
-
-- [Customer Identity](./customer-identity)
-- [Customer Loyalty Award Flow](./customer-loyalty-award-flow)
-- [Authentication](./authentication)
-- [Partner API](./partner-api)
-- [Loyalty Processing](./loyalty-processing)
+- provider must be `restrox`
+- customer search supports exact phone lookup only
+- the Integration Key determines which store is searched

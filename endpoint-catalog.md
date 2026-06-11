@@ -1,11 +1,10 @@
 ---
 title: Endpoint Catalog
-description: Endpoint inventory for the RestroX webhook integration.
+description: Root-level endpoint summary for RestroX.
 sidebarTitle: Endpoint Catalog
 ---
 
-# Endpoint Catalog
-
-| Method | Path | Purpose | Auth | Status |
-| ------ | ---- | ------- | ---- | ------ |
-| `POST` | `/webhook/restrox/{token}` | Receive RestroX sale, refund, and void webhooks | Token in URL path | Active |
+- `POST /api/pos-integrations`
+- `POST /api/partners/restrox/connect`
+- `POST /api/partners/restrox/test-sale`
+- `POST /webhook/restrox/{token}`

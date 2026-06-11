@@ -1,26 +1,20 @@
 ---
-title: Examples Overview
-description: Explore example RestroX webhook requests and responses for common integration scenarios.
-sidebarTitle: Overview
+title: Examples
+description: Explore example outlet-owned RestroX requests and outcomes.
+sidebarTitle: Examples
 ---
-
-These examples show how the reviewed fixtures and responses appear across common success and edge-case deliveries.
 
 <Columns cols={2}>
   <Card title="Sale Completed" icon="shopping-bag" href="/integrations/restrox/examples/sale-completed">
-    Happy-path completed sale accepted by Samparka.
+    Valid sale for the bound restaurant.
   </Card>
   <Card title="Refund Created" icon="rotate-ccw" href="/integrations/restrox/examples/refund-created">
-    Refund webhook using the original sale identifier.
+    Refund on the same restaurant binding.
   </Card>
   <Card title="Duplicate Webhook" icon="copy" href="/integrations/restrox/examples/duplicate-webhook">
-    Replay the same payload and confirm duplicate-safe acknowledgment.
+    Safe replay using the same payload.
   </Card>
-  <Card title="Blocked Location" icon="map-pin" href="/integrations/restrox/examples/blocked-location">
-    Accepted delivery that still requires location setup review.
+  <Card title="Binding Mismatch" icon="alert-triangle" href="/integrations/restrox/examples/blocked-location">
+    Transport failure when the restaurant identifier does not match.
   </Card>
 </Columns>
-
-<Tip>
-Use these examples alongside the [Testing Guide](/integrations/restrox/testing-guide) and the shared fixture file in `examples/payloads.json`.
-</Tip>

@@ -1,153 +1,19 @@
 ---
 title: Error Codes
-description: Review the currently observable partner-facing native integration errors and note the gaps where symbolic error catalogs are not yet implemented.
+description: Review the partner-visible RestroX error responses documented in the current implementation.
 sidebarTitle: Error Codes
 ---
 
-The current RestroX native integration exposes partner-visible error messages, but it does not consistently expose a stable symbolic error code for every route family.
-
-## Purpose
-
-Use this page to understand:
-
-- what partner-visible errors are currently observable
-- which surfaces return symbolic error codes
-- which gaps still require clarification
-
-## Current Behavior
-
-### Partner Routes
-
-RestroX partner routes use:
-
-```json
-{
-  "success": false,
-  "message": "..."
-}
-```
-
-### Partner Customer Routes
-
-Partner customer routes use two distinct error envelopes depending on which layer fails.
-
-**Authentication failures** (handled before customer lookup occurs) use:
-
-```json
-{
-  "error": "unauthorized",
-  "message": "..."
-}
-```
-
-**Business validation failures** (phone, customer not found) use:
-
-```json
-{
-  "error": "partner_customer_error",
-  "message": "..."
-}
-```
-
-**Identity conflict** uses:
-
-```json
-{
-  "error": "customer_identity_conflict",
-  "message": "Multiple customer records share the same normalized phone. Admin resolution is required."
-}
-```
-
-## Error Catalog
-
-| Route Family | HTTP | Error Code | Message | Notes |
-| --- | --- | --- | --- | --- |
-| Partner API | `503` | not exposed | `RestroX partner API is not configured` | Partner key env var not set — `{"success":false,"message":"..."}` envelope |
-| Partner API | `401` | not exposed | `Unauthorized partner request` | Partner key mismatch — `{"success":false,"message":"..."}` envelope |
-| Partner API | `404` | not exposed | `Invalid Integration Key` | Connection Key not found |
-| Partner Customer API | `401` | `unauthorized` | `Unauthorized partner request` | Partner key wrong — `{"error":"unauthorized","message":"..."}` envelope |
-| Partner Customer API | `401` | `unauthorized` | `Missing integration key` | `x-integration-key` header absent |
-| Partner Customer API | `401` | `unauthorized` | `Invalid integration key` | Connection Key not recognized |
-| Partner Customer API | `403` | `forbidden` | `Integration is inactive` | Integration not active |
-| Partner Customer API | `400` | `partner_customer_error` | `Invalid phone number` | Identity validation failed |
-| Partner Customer API | `404` | `partner_customer_error` | `Customer not found` | Missing customer record |
-| Partner Customer API | `409` | `customer_identity_conflict` | `Multiple customer records share the same normalized phone. Admin resolution is required.` | Conflict state |
-| Webhook API | `404` | not exposed | `Invalid webhook token` | Token route validation |
-| Webhook API | `400` | not exposed | `Missing event_type in payload` | Payload validation |
-| Webhook API | `400` | not exposed | `Request body must be a JSON object` | Request validation |
-| Webhook API | `500` | not exposed | `Internal server error` | Unexpected processing failure |
-
-## Requested Symbolic Codes
-
-The following symbolic labels are useful for integrators, but they are not all implemented as stable partner-facing codes today:
-
-- `INVALID_CONNECTION_KEY`
-- `PARTNER_NOT_CONNECTED`
-- `LOCATION_NOT_MAPPED`
-- `CUSTOMER_CONFLICT`
-- `INVALID_PHONE`
-- `CUSTOMER_NOT_FOUND`
-- `INTEGRATION_NOT_READY`
-
-Current mapping:
-
-- `CUSTOMER_CONFLICT` is partially represented by `customer_identity_conflict`
-- `INVALID_PHONE` is currently exposed through message text only
-- `CUSTOMER_NOT_FOUND` is currently exposed through message text only
-
-Implementation detail requires clarification.
-
-The current partner/public routes do not publish a complete stable symbolic error catalog for all native integration scenarios.
-
-## Failure Scenarios
-
-### Invalid Connection Key
-
-Observed as:
-
-```json
-{
-  "success": false,
-  "message": "Invalid Integration Key"
-}
-```
-
-### Customer Conflict
-
-Observed as:
-
-```json
-{
-  "error": "customer_identity_conflict",
-  "message": "Multiple customer records share the same normalized phone. Admin resolution is required."
-}
-```
-
-### Invalid Phone
-
-Observed as:
-
-```json
-{
-  "error": "partner_customer_error",
-  "message": "Invalid phone number"
-}
-```
-
-## Operational Notes
-
-- Route families do not currently share one unified symbolic error format.
-- If you need stable machine-level error classification, use HTTP status plus message and the available partner customer `error` field.
-
-## Troubleshooting Notes
-
-- If you rely on symbolic error codes, build defensive handling around current messages until a formal cross-route error catalog is published.
-- Distinguish partner route failures from partner customer failures because their response shapes differ.
-
-## Related Documentation
-
-- [Authentication](./authentication)
-- [Connection Keys](./connection-keys)
-- [Customer Identity](./customer-identity)
-- [Customer API](./customer-api)
-- [Webhook Endpoint](../webhook-endpoint)
+| Route Family | Status | Message |
+| ------ | ------ | ------- |
+| Partner auth | `503` | `RestroX partner API is not configured` |
+| Partner connect | `404` | `Invalid Integration Key` |
+| Partner connect | `400` | `RestroX restaurant identifier is required to connect` |
+| Partner connect / rebind | `409` | `Disconnect the integration before rebinding it to another restaurant` |
+| Partner connect duplicate | `409` | `This RestroX restaurant is already bound to another Samparka outlet` |
+| Test sale | `409` | `This RestroX integration is not connected to a restaurant yet` |
+| Test sale | `409` | `The provided restaurant identifier does not match the connected outlet` |
+| Webhook | `404` | `Invalid webhook token` |
+| Webhook | `409` | `Integration disconnected` |
+| Webhook | `409` | `Integration is not connected to a restaurant` |
+| Webhook | `409` | `Restaurant binding mismatch` |

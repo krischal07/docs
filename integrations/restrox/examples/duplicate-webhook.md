@@ -1,28 +1,12 @@
 ---
-title: Duplicate Webhook Example
-description: Example showing how Samparka safely acknowledges a repeated RestroX webhook.
+title: Duplicate Webhook
+description: Example showing safe duplicate handling for RestroX webhooks.
 sidebarTitle: Duplicate Webhook
 ---
 
-## Request
+Send the same payload twice to the same webhook token.
 
-Use the `duplicate_sale_request` fixture from [`payloads.json`](./payloads.json). This fixture intentionally matches the earlier sale payload.
-
-```json
-{
-  "event_type": "order.completed",
-  "order_id": "restrox-sale-1001",
-  "created_at": "2026-06-08T10:15:00.000Z",
-  "amount": 850,
-  "currency": "NPR",
-  "customer": { "phone": "9800000101" },
-  "restaurantId": "12345",
-  "restaurantName": "Kathmandu Branch",
-  "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
-}
-```
-
-## Response
+Second response:
 
 ```json
 {
@@ -30,11 +14,3 @@ Use the `duplicate_sale_request` fixture from [`payloads.json`](./payloads.json)
   "message": "Event already processed"
 }
 ```
-
-## What Happened
-
-Samparka recognized the repeated delivery and acknowledged it safely without handling it as a new sale.
-
-## What To Do Next
-
-Treat this response as success and stop retrying that payload.

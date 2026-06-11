@@ -1,171 +1,25 @@
 ---
 title: Customer Identity
-description: Understand the normalized phone strategy, store-scoped customer resolution rules, and conflict behavior used by the RestroX native integration.
+description: Understand the store-scoped customer lookup behavior used by RestroX.
 sidebarTitle: Customer Identity
 ---
 
-The RestroX native integration uses store-scoped, phone-first customer identity. Partner customer operations search and return customers through normalized phone behavior.
+RestroX customer lookup is store-scoped and phone-first.
 
-## Purpose
+## Current Behavior
 
-Use this page to understand:
+- customer APIs are read-only
+- searches are exact phone lookups
+- the Integration Key resolves the merchant store
+- the same phone can exist in different stores without conflict
 
-- how phone numbers are normalized
-- how Samparka resolves customers within a store
-- what happens when conflicts or invalid phone inputs appear
+## Phone Normalization
 
-## Identity Architecture
-
-Customer identity is scoped to a single Samparka store.
-
-- the same phone can exist in different stores
-- customer lookup is not global across all businesses
-- normalized phone identity is the primary partner-facing lookup key
-
-## Normalized Phone Strategy
-
-The backend builds multiple normalized phone representations and stores a normalized local identity when possible.
-
-Examples:
-
-```text
-9801234567
-9779801234567
-+9779801234567
-```
-
-all normalize to:
-
-```text
-9801234567
-```
-
-Implementation note:
-
-- the service tries to derive local and E.164 variants
-- lookup checks `normalized_phone` first and also checks stored `phone` variants
-- phone numbers without a country prefix are assumed to be Nepal (`NP`) by default in the RestroX integration — send the full number including the country prefix (e.g. `9779801234567` or `+9779801234567`) for unambiguous resolution
-
-## Customer Resolution
-
-Verified partner-facing outcomes for the current read-only customer APIs:
-
-- `found`
-- `missing`
-- `conflict`
-- `invalid_phone`
-
-These outcomes come from the identity and customer service logic, even when not every endpoint serializes the outcome using the same explicit field name.
-
-## Customer Lifecycle
+For RestroX payloads and customer lookups, phone numbers without a country prefix default to Nepal (`NP`).
 
 ```mermaid
 flowchart TD
-  A["Search by phone"] --> B{"Identity valid?"}
-  B -- No --> C["invalid_phone"]
-  B -- Yes --> D{"Customer exists?"}
-  D -- Yes, one --> E["found → return existing"]
-  D -- No --> F["missing"]
-  D -- More than one --> G["conflict → manual resolution required"]
+  A["Raw phone input"] --> B["Normalize phone"]
+  B --> C["Resolve store from Integration Key"]
+  C --> D["Search customer inside store scope"]
 ```
-
-## Conflict Detection
-
-A conflict occurs when multiple customer records share the same normalized phone inside one store.
-
-Current partner-facing conflict behavior:
-
-```json
-{
-  "error": "customer_identity_conflict",
-  "message": "Multiple customer records share the same normalized phone. Admin resolution is required."
-}
-```
-
-## Collision Handling
-
-The verified implementation does not publish a partner-facing merge or conflict-resolution API.
-
-When conflict exists:
-
-- search fails with conflict
-- manual resolution is required before automated partner identity operations can continue
-
-## Identity Guarantees
-
-The verified data model enforces store-scoped uniqueness for:
-
-- `phone`
-- `normalized_phone` when present
-
-This gives the partner API a deterministic identity guarantee when the store has zero or one matching customer for a normalized phone.
-
-## Endpoints Affected
-
-Customer identity affects:
-
-- `GET /api/partners/{provider}/customers/search`
-- `GET /api/partners/{provider}/customers/{customerId}`
-- downstream sale-event loyalty resolution
-
-## Examples
-
-### Search Finds Existing Customer
-
-```json
-{
-  "exists": true,
-  "customer": {
-    "id": "687000000000000000000001",
-    "name": "Asha",
-    "phone": "9801234567",
-    "email": "asha@example.com",
-    "points": 45,
-    "tier": "Bronze Tier",
-    "lifetimePoints": 45,
-    "membershipSince": "2026-06-08T10:15:00.000Z"
-  }
-}
-```
-
-### Search Does Not Find Customer
-
-```json
-{
-  "exists": false
-}
-```
-
-### Invalid Phone
-
-```json
-{
-  "error": "partner_customer_error",
-  "message": "Invalid phone number"
-}
-```
-
-### Conflict
-
-```json
-{
-  "error": "customer_identity_conflict",
-  "message": "Multiple customer records share the same normalized phone. Admin resolution is required."
-}
-```
-
-## Operational Notes
-
-- Customer identity for partner APIs is currently exposed through search and get-by-id behavior.
-
-## Troubleshooting Notes
-
-- If search fails with `Invalid phone number`, normalize and validate the phone before retrying.
-- If partner flows stop on conflict, manual cleanup is required before continuing automated sync behavior.
-
-## Related Documentation
-
-- [Customer Loyalty Award Flow](./customer-loyalty-award-flow)
-- [Customer API](./customer-api)
-- [Partner API](./partner-api)
-- [Loyalty Processing](./loyalty-processing)

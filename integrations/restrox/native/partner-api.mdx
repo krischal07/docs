@@ -1,60 +1,18 @@
 ---
 title: Partner API
-description: Implement the RestroX native partner APIs for merchant connection, location sync, and test-sale verification.
+description: Implement the current RestroX partner API contract.
 sidebarTitle: Partner API
 ---
 
-Samparka exposes a small RestroX partner API for native onboarding and readiness verification.
+Samparka exposes three RestroX partner routes:
 
-## Purpose
+- `POST /api/partners/restrox/connect`
+- `POST /api/partners/restrox/sync-locations`
+- `POST /api/partners/restrox/test-sale`
 
-Use this page to implement:
+## Connect
 
-- merchant connect
-- location sync
-- test sale submission
-
-## Concepts
-
-All partner routes:
-
-- are authenticated with a partner key
-- are scoped to provider `restrox`
-- use the merchant Connection Key to resolve the target integration
-
-## Provider Integration Flow
-
-```mermaid
-flowchart TD
-  A["Receive Connection Key"] --> B["Connect merchant"]
-  B --> C["Sync locations"]
-  C --> D{"Review required?"}
-  D -- Yes --> E["Resolve mappings"]
-  D -- No --> F["Submit test sale"]
-  F --> G["Samparka receives event"]
-  G --> H["Production-like loyalty processing"]
-  H --> I["Merchant reaches ready state"]
-```
-
-## Authentication
-
-Accepted credentials:
-
-- `x-partner-key`
-- `Authorization: Bearer {partnerKey}`
-
-See [Authentication](./authentication) for the full matrix.
-
-## Endpoints
-
-### Connect Merchant
-
-```http
-POST /api/partners/restrox/connect
-Content-Type: application/json
-```
-
-Example request:
+Use the Integration Key plus a restaurant identifier. The service stores the binding on `PosIntegration.external_location_id` and `external_location_name`.
 
 ```json
 {
@@ -66,378 +24,40 @@ Example request:
   "locations": [
     {
       "restaurantId": "12345",
-      "restaurantName": "Kathmandu Branch",
-      "outletId": "685000000000000000000001"
+      "restaurantName": "Kathmandu Branch"
     }
   ]
 }
 ```
 
-Example response:
+Successful connect sets the integration lifecycle status to `CONNECTED`.
+
+## Skipped Sync Route
+
+The route still exists, but for outlet-owned RestroX it returns a skipped no-op response:
 
 ```json
 {
-  "success": true,
-  "message": "RestroX connected",
-  "data": {
-    "syncedCount": 1,
-    "reviewIssues": [],
-    "reviewRequired": false,
-    "partnerConnectionStatus": "connected"
-  }
+  "connected": true,
+  "skipped": true,
+  "message": "Outlet-owned RestroX integrations skip this shared route."
 }
 ```
 
-Verified behavior:
+## Test Sale
 
-- resolves the integration by `integrationKey`
-- loads store outlets from the linked store
-- persists the synced location records
-- marks partner connection metadata and sync timestamps
-- returns sync results in the shared success envelope
-
-### Sync Locations
-
-```http
-POST /api/partners/restrox/sync-locations
-Content-Type: application/json
-```
-
-Example request:
+`test-sale` reuses the stored restaurant binding and then forwards the event into the normal webhook pipeline.
 
 ```json
 {
   "integrationKey": "SPK-RX-ABC12345",
-  "account": {
-    "id": "restrox-account-001",
-    "name": "Java Express"
-  },
-  "locations": [
-    {
-      "restaurantId": "12345",
-      "restaurantName": "Kathmandu Branch",
-      "outletId": "685000000000000000000001"
-    }
-  ]
-}
-```
-
-Example response:
-
-```json
-{
-  "success": true,
-  "message": "Location mappings established",
-  "data": {
-    "syncedCount": 1,
-    "reviewIssues": [],
-    "reviewRequired": false,
-    "partnerConnectionStatus": "connected"
-  }
-}
-```
-
-Verified behavior:
-
-- resolves the integration by `integrationKey`
-- uses provider-facing location fields such as `restaurantId` and `restaurantName`
-- attempts outlet matching by outlet hint or normalized name
-- records review issues when a location is missing an external ID, is duplicated, is ambiguous, or cannot be matched
-- updates sync timestamps and partner metadata
-
-Field definitions:
-
-### `restaurantId`
-
-Permanent RestroX restaurant/location identifier.
-
-Used as the primary mapping key between RestroX and Samparka.
-
-Properties:
-
-- unique
-- stable
-- never changes
-- primary mapping key
-
-Internally stored as:
-
-```text
-external_location_id
-```
-
-### `restaurantName`
-
-Human-readable restaurant/location name.
-
-Internally stored as:
-
-```text
-external_location_name
-```
-
-### `outletId`
-
-Samparka outlet ID that the RestroX restaurant should map to.
-
-Required when:
-
-```text
-store has outlets
-```
-
-Optional when:
-
-```text
-store has zero outlets
-```
-
-because store-level mappings are supported.
-
-### Single-Location Example
-
-For merchants without outlets, RestroX can sync a single restaurant without an `outletId`:
-
-```json
-{
-  "integrationKey": "SPK-RX-ABC12345",
-  "account": {
-    "id": "restrox-account-001",
-    "name": "SPD"
-  },
-  "locations": [
-    {
-      "restaurantId": "12345",
-      "restaurantName": "SPD"
-    }
-  ]
-}
-```
-
-Notes:
-
-- no `outletId` is required
-- the `restaurantId` maps directly to the store-level location
-
-### Backward Compatibility
-
-Preferred fields:
-
-- `restaurantId`
-- `restaurantName`
-
-Samparka also accepts the following aliases for compatibility.
-
-Location ID aliases:
-
-- `externalLocationId`
-- `external_location_id`
-- `locationId`
-- `branchId`
-- `id`
-
-Location name aliases:
-
-- `externalLocationName`
-- `external_location_name`
-- `locationName`
-- `branchName`
-- `name`
-
-These aliases remain supported, but new integrations should use:
-
-- `restaurantId`
-- `restaurantName`
-
-### Location Mapping Rules
-
-#### Merchant With Outlets
-
-Example:
-
-```text
-Java Express
-
-Restaurant 1001 -> Kathmandu Outlet
-Restaurant 1002 -> Pokhara Outlet
-```
-
-Mapping requires:
-
-- `outletId`
-- or successful outlet matching during sync review
-
-#### Merchant Without Outlets
-
-Example:
-
-```text
-SPD
-
-Restaurant 12345 -> SPD
-```
-
-No outlet mapping is required.
-
-Store-level mapping is valid.
-
-### Test Sale
-
-```http
-POST /api/partners/restrox/test-sale
-Content-Type: application/json
-```
-
-Example request:
-
-```json
-{
-  "integrationKey": "SPK-RX-ABC12345",
-  "restaurantId": "12345",
   "payload": {
     "event_type": "order.completed",
     "order_id": "restrox-sale-1001",
-    "created_at": "2026-06-08T10:15:00.000Z",
-    "amount": 850,
-    "currency": "NPR",
-    "customer": { "phone": "9801234567" },
     "restaurantId": "12345",
-    "restaurantName": "Kathmandu Branch",
-    "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
+    "amount": 850
   }
 }
 ```
 
-Example response:
-
-```json
-{
-  "success": true,
-  "message": "Test sale submitted",
-  "data": {
-    "success": true,
-    "message": "Event received"
-  }
-}
-```
-
-Request rules:
-
-- `restaurantId` is the preferred field when you already know the RestroX location identifier
-- `restaurantId` is the authoritative RestroX restaurant/location mapping key
-- `restaurantId` must be the RestroX restaurant identifier, not a Samparka internal identifier
-- top-level aliases are also accepted for compatibility:
-  - `locationId`
-  - `branchId`
-  - `id`
-- the payload may still supply the location identifier through:
-  - `restaurantId`
-  - `external_location_id`
-  - `location_id`
-  - `outlet_id`
-  - `branch_id`
-- the payload may still supply the location name through:
-  - `restaurantName`
-  - `external_location_name`
-  - `location_name`
-  - `branch_name`
-  - `outlet_name`
-
-Verified `test-sale` flow:
-
-1. resolve integration using `integrationKey`
-2. determine the requested location identifier from `restaurantId` or supported aliases
-3. reject conflicting top-level and payload identifiers
-4. resolve the mapped location by integration plus the internally stored `external_location_id`
-5. require a valid mapped location with webhook delivery enabled
-6. submit the test event through the same downstream loyalty processing behavior used by production webhook traffic
-
-Verified behavior:
-
-- updates `integration_key_last_used_at` after the test event is submitted successfully
-
-## Expected Responses
-
-All three public partner routes use the shared success wrapper:
-
-```json
-{
-  "success": true,
-  "message": "Human-readable message",
-  "data": {}
-}
-```
-
-Failures use:
-
-```json
-{
-  "success": false,
-  "message": "Human-readable error"
-}
-```
-
-## Error Conditions
-
-Verified partner-visible failures include:
-
-- `503 RestroX partner API is not configured` — the partner key environment variable is not set on the Samparka server
-- `401 Unauthorized partner request` — wrong or missing partner key
-- `404 Invalid Integration Key` — the `integrationKey` body field does not match an active integration
-- `400 restaurantId does not match the payload location identifier`
-- `400 A location identifier is required. Provide restaurantId or a payload location field.`
-- `404 No mapped RestroX location found for the provided location identifier`
-- `409 Ambiguous RestroX location identifier for this integration`
-- `409 The selected RestroX location does not have a webhook token`
-- `409 The selected RestroX location does not have a mapped external location ID`
-- event validation failures such as:
-  - `400 Request body must be a JSON object`
-  - `400 Missing event_type in payload`
-
-## Readiness Requirements
-
-The current onboarding model treats readiness as:
-
-- Connection Key created
-- RestroX connected
-- locations synced without unresolved review state
-- test sale accepted through the supported loyalty processing path
-
-Refund verification is optional in the current merchant checklist model.
-
-## Production Recommendations
-
-- connect the merchant before sending any production events
-- sync locations before relying on sale traffic
-- verify customer lookup behavior before go-live
-- use the native test-sale path to validate the same downstream loyalty processing behavior used by production webhook traffic
-
-## Identity Outcomes In Partner Flow
-
-Customer identity outcomes matter during end-to-end verification:
-
-- `found`: customer can be reused directly
-- `missing`: customer is not currently available through the read-only partner customer APIs
-- `conflict`: manual resolution is required
-- `invalid_phone`: correct the input before customer calls or loyalty expectations
-
-## Operational Notes
-
-- The public partner routes do not expose a disconnect API in the verified implementation.
-- The current implementation does not publish a separate account ownership lock for repeated connect calls.
-
-Implementation detail requires clarification.
-
-## Troubleshooting Notes
-
-- If `connect` returns `reviewRequired: true`, inspect the review issues before testing sales.
-- If `test-sale` succeeds at transport level but readiness does not advance, verify location sync, location state, and customer identity assumptions.
-- If the same connection must be re-established after key rotation, use the new Connection Key rather than retrying the old one.
-
-## Related Documentation
-
-- [Connection Keys](./connection-keys)
-- [Store Linking](./store-linking)
-- [Customer Identity](./customer-identity)
-- [Customer API](./customer-api)
-- [Loyalty Processing](./loyalty-processing)
+If the payload restaurant identifier disagrees with the stored binding, the route returns `409`.

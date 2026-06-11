@@ -1,52 +1,52 @@
 ---
 title: RestroX Integration Guide
-description: Implement the RestroX native integration with Samparka and use webhook delivery as the event transport layer.
+description: Implement the outlet-owned RestroX integration with Samparka.
 sidebarTitle: Overview
 mode: wide
 hideFooterPagination: true
 ---
 
-Use this guide to connect merchants, validate customer flows, and move from onboarding to production webhook delivery.
+RestroX is an outlet-owned POS provider in Samparka. Each outlet gets exactly one RestroX integration, one Integration Key, one webhook token, and one restaurant binding.
 
 <Info>
-This package is now organized as a native-first integration guide. Webhook delivery remains part of the integration model and is still documented in the Events and Reference sections.
+RestroX launches directly on the outlet-owned architecture. There is no RestroX migration path, no dual-mode setup, and no RestroX-specific compatibility layer.
 </Info>
 
 <Columns cols={2}>
   <Card title="Native Overview" icon="compass" href="/integrations/restrox/native/overview">
-    Start with the native integration model, intended audience, and reading order.
+    Start with the architecture, lifecycle, and required setup order.
   </Card>
   <Card title="Architecture" icon="blocks" href="/integrations/restrox/native/architecture">
-    Understand how Connection Keys, partner APIs, customer identity, and webhook processing fit together.
+    See how merchant APIs, partner APIs, and webhook delivery fit together.
   </Card>
   <Card title="Partner API" icon="plug-zap" href="/integrations/restrox/native/partner-api">
-    Implement merchant connect, location sync, and test-sale verification.
+    Implement connect, test-sale, and customer lookup behavior.
   </Card>
-  <Card title="Customer API" icon="users" href="/integrations/restrox/native/customer-api">
-    Implement customer search and retrieval with normalized phone identity.
+  <Card title="Testing Guide" icon="flask-conical" href="/integrations/restrox/testing-guide">
+    Validate create, connect, webhook, disconnect, reconnect, and mismatch flows.
   </Card>
 </Columns>
 
-## Native Onboarding Flow
+## Outlet-Owned Flow
 
 <Steps>
-  <Step title="Receive Connection Key">
-    The merchant creates a RestroX integration in Samparka and shares the Connection Key with RestroX.
+  <Step title="Create Integration">
+    Merchant creates the RestroX integration with `provider`, `storeId`, and `outletId`.
   </Step>
-  <Step title="Connect Merchant">
-    RestroX calls the native partner connect route using the Connection Key and partner credentials.
+  <Step title="Copy Integration Key">
+    Samparka generates an Integration Key and webhook token immediately.
   </Step>
-  <Step title="Sync Locations">
-    RestroX syncs external locations so Samparka can match them to merchant outlets.
+  <Step title="Connect Restaurant">
+    RestroX calls the partner connect route and binds one restaurant to the outlet.
   </Step>
-  <Step title="Verify Customer Flow">
-    RestroX verifies customer lookup behavior using normalized phone identity.
+  <Step title="Bind Restaurant Identity">
+    Samparka stores the binding on `PosIntegration.external_location_id` and `external_location_name`.
   </Step>
-  <Step title="Send Test Sale">
-    RestroX sends a test sale through the native partner API and confirms the webhook-backed event engine accepts it.
+  <Step title="Send First Sale">
+    A valid sale to `POST /webhook/restrox/{token}` activates the integration.
   </Step>
   <Step title="Go Live">
-    Once the integration is ready, production sales, refunds, and voids continue through the webhook-backed event flow.
+    Refunds and future sales continue on the same outlet-owned binding.
   </Step>
 </Steps>
 
@@ -54,15 +54,15 @@ This package is now organized as a native-first integration guide. Webhook deliv
 
 <Columns cols={2}>
   <Card title="Partner Handoff" icon="handshake" href="/integrations/restrox/PARTNER-HANDOFF">
-    Follow the recommended implementation route from onboarding through production readiness.
+    Share the implementation order, required credentials, and activation rule.
   </Card>
-  <Card title="Readiness Checklist" icon="clipboard-list" href="/integrations/restrox/native/readiness-checklist">
-    Confirm the integration is connected, validated, and ready for production traffic.
+  <Card title="Quick Start" icon="rocket" href="/integrations/restrox/quick-start">
+    Use the shortest path from create to first valid sale.
   </Card>
-  <Card title="Testing Guide" icon="flask-conical" href="/integrations/restrox/testing-guide">
-    Validate native onboarding, customer behavior, and webhook delivery.
+  <Card title="Reference" icon="book-open" href="/integrations/restrox/reference/overview">
+    Download the OpenAPI and Postman assets for the current contract.
   </Card>
-  <Card title="Technical Reference" icon="book-open" href="/integrations/restrox/reference/overview">
-    Use the OpenAPI, Postman collection, and endpoint catalog for machine-readable reference.
+  <Card title="Compatibility Notes" icon="info" href="/integrations/restrox/location-mapping">
+    Review retired concepts that are not applicable to RestroX.
   </Card>
 </Columns>

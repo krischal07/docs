@@ -1,51 +1,52 @@
 ---
 title: RestroX Partner Guide
-description: Canonical overview of the RestroX native integration with Samparka and the webhook-backed event pipeline it uses.
+description: Canonical overview of the outlet-owned RestroX integration with Samparka.
 sidebarTitle: Guide Overview
 ---
 
-Samparka supports RestroX through a native integration flow for merchant onboarding, location sync, and customer operations. The native flow works alongside the supported webhook delivery model for sale, refund, and void events.
+# RestroX Partner Guide
 
-## Integration Flow
+RestroX integrates with Samparka as an outlet-owned provider. One outlet owns one RestroX integration, one Integration Key, one webhook token, and one restaurant binding.
 
-1. Merchant creates a RestroX integration in Samparka.
-2. Merchant shares the Samparka Connection Key with RestroX.
-3. RestroX connects the merchant through the partner API.
-4. RestroX syncs locations.
-5. RestroX verifies customer behavior through partner customer APIs.
-6. RestroX sends a test sale.
-7. Samparka marks the integration ready when onboarding checks are satisfied.
+## Core Rules
 
-## Architecture Note
+1. `provider = restrox`
+2. `ownership_mode = OUTLET_OWNED`
+3. Creation requires `storeId` and `outletId`
+4. Restaurant binding is stored directly on `PosIntegration`
+5. Webhooks route with `POST /webhook/restrox/{token}`
 
-The native integration is an onboarding and partner API layer. It does not replace the supported webhook delivery model.
+## Lifecycle
 
-```mermaid
-flowchart TD
-  A["Merchant + Connection Key"] --> B["Partner APIs"]
-  B --> C["Merchant POS Integration Layer"]
-  C --> D["Webhook Routing + Event Processing"]
-  D --> E["Loyalty, rewards, and receipts"]
+Integration lifecycle:
+
+```text
+CREATED -> CONNECTED -> ACTIVE -> DISCONNECTED
 ```
+
+Health is tracked separately:
+
+```text
+HEALTHY | WARNING | ERROR
+```
+
+## Activation Rule
+
+RestroX becomes `ACTIVE` after:
+
+1. the integration is connected to a restaurant
+2. the first valid `sale.completed` event is received
+
+## Not Used By RestroX
+
+RestroX does not rely on store-owned location workflows. Compatibility pages are kept only so existing URLs remain valid.
 
 ## Quick Links
 
-- [Native Overview](./native/overview)
 - [Architecture](./native/architecture)
-- [Environments](./native/environments)
-- [Native Authentication](./native/authentication)
-- [Connection Keys](./native/connection-keys)
-- [Merchant Onboarding](./native/merchant-onboarding)
-- [Customer Identity](./native/customer-identity)
-- [Customer API](./native/customer-api)
 - [Partner API](./native/partner-api)
-- [Store Linking](./native/store-linking)
-- [Loyalty Processing](./native/loyalty-processing)
+- [Merchant Onboarding](./native/merchant-onboarding)
 - [Webhook Endpoint](./webhook-endpoint)
 - [Payload Reference](./payload-reference)
 - [Testing Guide](./testing-guide)
-- [Readiness Checklist](./native/readiness-checklist)
-
-## Important Integration Note
-
-A successful native onboarding flow does not bypass webhook processing. Event delivery still uses the existing RestroX event pipeline, and a `200 Event received` response means Samparka accepted the delivery. It does not guarantee that loyalty activity was created.
+- [Reference Assets](./reference/overview)

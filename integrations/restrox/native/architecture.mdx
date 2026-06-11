@@ -1,54 +1,30 @@
 ---
 title: Architecture
-description: Understand how RestroX connects to Samparka through partner APIs, customer APIs, and sale event submission.
+description: Understand how RestroX connects to Samparka through merchant APIs, partner APIs, and webhook delivery.
 sidebarTitle: Architecture
 ---
 
-The RestroX native integration connects RestroX to Samparka through onboarding APIs, customer lookup APIs, and sale-event submission.
-
-This page focuses on how the systems and public interfaces fit together. For cashier workflow and loyalty participation behavior, use the dedicated workflow pages.
-
-## Purpose
-
-Use this page to understand:
-
-- which APIs RestroX calls directly
-- where Connection Keys fit
-- how onboarding, customer lookup, and sale events fit together
-- how customer identity relates to loyalty participation
+RestroX uses one outlet-owned integration record per outlet.
 
 ## System Flow
 
 ```mermaid
 flowchart TD
-  A["Merchant"] --> B["Connection Key"]
-  B --> C["RestroX partner APIs"]
-  C --> D["Customer APIs"]
-  D --> E["Sale events"]
-  E --> F["Samparka loyalty processing"]
-  F --> G["Rewards and customer benefits"]
+  A["Merchant creates integration"] --> B["Integration Key generated"]
+  B --> C["Webhook token generated"]
+  C --> D["RestroX partner connect"]
+  D --> E["Restaurant binding stored on PosIntegration"]
+  E --> F["Webhook sale received"]
+  F --> G["Integration becomes ACTIVE"]
 ```
 
-## Event Processing Path
+## Public RestroX Surfaces
 
-```mermaid
-flowchart TD
-  A["Test sale"] --> B["Samparka receives event"]
-  B --> C["Same processing path as production traffic"]
-  C --> D["Loyalty processing"]
-```
-
-`test-sale` validates integration behavior before go-live.
-
-Production webhooks follow the same downstream loyalty processing behavior after Samparka receives the event.
-
-Partners should expect consistent loyalty outcomes between testing and production when the input conditions are the same.
-
-## External Partner Touchpoints
-
-RestroX uses these public partner-facing surfaces:
-
-- Connection Key handoff
+- `POST /api/pos-integrations`
+- `GET /api/pos-integrations/{id}`
+- `PATCH /api/pos-integrations/{id}`
+- `DELETE /api/pos-integrations/{id}`
+- `GET /api/pos-integrations/{id}/status`
 - `POST /api/partners/restrox/connect`
 - `POST /api/partners/restrox/sync-locations`
 - `POST /api/partners/restrox/test-sale`
@@ -56,45 +32,29 @@ RestroX uses these public partner-facing surfaces:
 - `GET /api/partners/{provider}/customers/{customerId}`
 - `POST /webhook/restrox/{token}`
 
-## Internal Processing Boundaries
+## Ownership Model
 
-Samparka performs internal validation, routing, loyalty evaluation, and reward processing after receiving events. These internal services are not partner-facing APIs and may change without affecting the public integration contract.
+One outlet owns:
 
-## Customer Identity In The Flow
+```text
+1 outlet
+-> 1 RestroX integration
+-> 1 integration key
+-> 1 webhook token
+-> 1 restaurant binding
+```
 
-Customer identity is store-scoped and phone-first.
+## Routing Model
 
-- partner customer APIs search and retrieve customers using normalized phone identity
-- webhook sale events may still be accepted even when loyalty cannot be awarded immediately
-- customer identity affects loyalty participation and customer association
+For outlet-owned RestroX, the webhook token resolves directly to `PosIntegration.webhook_token`.
 
-See [Customer Identity](./customer-identity) for the exact outcomes used by the implementation.
+The token identifies:
 
-## Credential Roles
+- provider `restrox`
+- one outlet-owned integration
+- one outlet
+- one bound restaurant
 
-| Credential | Purpose |
-| ------ | ------- |
-| Partner Key | Authenticate partner APIs |
-| Integration Key | Resolve merchant integrations |
-| Webhook Token | Route webhook traffic |
+## Activation Rule
 
-## Operational Notes
-
-- The native partner `test-sale` API and production webhook traffic follow the same downstream processing behavior.
-- Native onboarding and customer preparation influence loyalty outcomes.
-- Location sync can place an integration into a review-required state before any live traffic is sent.
-
-## Troubleshooting Notes
-
-- If a merchant appears connected but is not ready, check the native onboarding state before investigating event delivery.
-- If locations were synced but not auto-matched, the integration can require review before testing.
-- If a sale is accepted but loyalty is missing, review location readiness, customer identity, and loyalty participation assumptions.
-
-## Related Documentation
-
-- [Customer Loyalty Award Flow](./customer-loyalty-award-flow)
-- [Loyalty Processing](./loyalty-processing)
-- [Customer Identity](./customer-identity)
-- [Partner API](./partner-api)
-- [Store Linking](./store-linking)
-- [Webhook Endpoint](../webhook-endpoint)
+When the integration is already `CONNECTED`, the first valid `sale.completed` webhook changes the integration status to `ACTIVE` and resets health to `HEALTHY`.

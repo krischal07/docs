@@ -1,40 +1,45 @@
 ---
 title: Endpoint Catalog
-description: Endpoint inventory for the RestroX native integration and webhook-backed event delivery flow.
+description: Endpoint inventory for the current RestroX contract.
 sidebarTitle: Endpoint Catalog
 ---
 
-This catalog lists the externally relevant RestroX routes documented in this package.
+## Merchant Integration APIs
 
-## Native Partner APIs
+| Method | Path | Purpose |
+| ------ | ---- | ------- |
+| `POST` | `/api/pos-integrations` | Create outlet-owned RestroX integration |
+| `GET` | `/api/pos-integrations/{id}` | Fetch integration detail |
+| `PATCH` | `/api/pos-integrations/{id}` | Update integration metadata or outlet before connect / after disconnect |
+| `DELETE` | `/api/pos-integrations/{id}` | Disconnect outlet-owned RestroX integration |
+| `GET` | `/api/pos-integrations/{id}/status` | Fetch derived status and readiness summary |
+| `POST` | `/api/pos-integrations/{id}/verify` | Fetch production-readiness summary |
+| `GET` | `/api/pos-integrations/{id}/webhook-url` | Fetch integration webhook URL |
+| `POST` | `/api/pos-integrations/{id}/integration-key/rotate` | Rotate Integration Key |
 
-| Method | Path | Purpose | Auth | Status |
-| ------ | ---- | ------- | ---- | ------ |
-| `POST` | `/api/partners/restrox/connect` | Connect a merchant using a Connection Key and optionally sync locations | Partner key | Active |
-| `POST` | `/api/partners/restrox/sync-locations` | Sync RestroX locations into the merchant integration | Partner key | Active |
-| `POST` | `/api/partners/restrox/test-sale` | Submit a test sale that validates mapped location behavior and loyalty processing readiness | Partner key | Active |
+## Merchant APIs Not Used By Outlet-Owned RestroX
 
-## Partner Customer APIs
+These routes still exist in the shared POS surface, but outlet-owned RestroX treats them as not applicable and returns `409` when they require store-owned behavior:
 
-| Method | Path | Purpose | Auth | Status |
-| ------ | ---- | ------- | ---- | ------ |
-| `GET` | `/api/partners/{provider}/customers/search` | Search for a Samparka-owned customer by exact phone within the merchant store | Partner key + Connection Key | Active |
-| `GET` | `/api/partners/{provider}/customers/{customerId}` | Retrieve one Samparka-owned customer by ID | Partner key + Connection Key | Active |
+| Method | Path |
+| ------ | ---- |
+| `GET` | `/api/pos-integrations/{id}/locations` |
+| `PUT` | `/api/pos-integrations/{id}/locations` |
+| `POST` | `/api/pos-integrations/{id}/sync-outlets` |
 
-Customers are owned by Samparka. Partners may search and retrieve customers only. Partner customer APIs are read-only.
+## Partner APIs
 
-## Webhook And Event Transport
+| Method | Path | Purpose |
+| ------ | ---- | ------- |
+| `POST` | `/api/partners/restrox/connect` | Bind a restaurant to the outlet-owned integration |
+| `POST` | `/api/partners/restrox/sync-locations` | Returns skipped for outlet-owned RestroX |
+| `POST` | `/api/partners/restrox/test-sale` | Submit a test sale into the webhook processing path |
+| `GET` | `/api/partners/{provider}/customers/search` | Search customer by exact phone |
+| `GET` | `/api/partners/{provider}/customers/{customerId}` | Fetch one customer |
 
-| Method | Path | Purpose | Auth | Status |
-| ------ | ---- | ------- | ---- | ------ |
-| `POST` | `/webhook/restrox/{token}` | Receive RestroX sale, refund, and void webhooks | Token in URL path | Active |
-| `POST` | `/integrations/pos/restrox/{token}` | Verified alias — executes the same pipeline as `/webhook/restrox/{token}` and produces identical outcomes | Token in URL path | Active |
+## Webhook
 
-## Legacy Routes
-
-These routes exist in code but are feature-flag gated and return HTTP 410 by default. They are not active for new integrations.
-
-| Method | Path | Notes |
-| ------ | ---- | ----- |
-| `POST` | `/webhook/:provider/events` | Feature-flag gated. Returns HTTP 410 by default. |
-| `POST` | `/integrations/pos/:provider/events` | Feature-flag gated. Returns HTTP 410 by default. |
+| Method | Path | Purpose |
+| ------ | ---- | ------- |
+| `POST` | `/webhook/restrox/{token}` | Receive sale, refund, and void events |
+| `POST` | `/integrations/pos/restrox/{token}` | Verified alias that runs the same token-routed pipeline |

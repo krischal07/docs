@@ -1,24 +1,261 @@
 openapi: 3.1.0
 info:
-  title: Samparka RestroX Partner Webhook API
+  title: Samparka RestroX Outlet-Owned API
   version: 1.0.0
-  description: |
-    External partner guide for RestroX webhook delivery into Samparka.
+  description: >
+    Reference for the current outlet-owned RestroX implementation in Samparka.
 servers:
   - url: https://your-domain
 paths:
+  /api/pos-integrations:
+    post:
+      summary: Create a RestroX integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIntegrationRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationEnvelope'
+  /api/pos-integrations/{id}:
+    get:
+      summary: Get a RestroX integration
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationEnvelope'
+    patch:
+      summary: Update a RestroX integration
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                outletId:
+                  type: string
+                status:
+                  type: string
+                  enum: [CREATED, CONNECTED, ACTIVE, DISCONNECTED]
+                health_status:
+                  type: string
+                  enum: [HEALTHY, WARNING, ERROR]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationEnvelope'
+    delete:
+      summary: Disconnect an outlet-owned RestroX integration
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Disconnected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisconnectEnvelope'
+  /api/pos-integrations/{id}/status:
+    get:
+      summary: Get derived RestroX status
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusEnvelope'
+  /api/pos-integrations/{id}/verify:
+    post:
+      summary: Verify production readiness
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyEnvelope'
+  /api/pos-integrations/{id}/webhook-url:
+    get:
+      summary: Get integration webhook URL
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      webhookUrl:
+                        type: string
+  /api/pos-integrations/{id}/locations:
+    get:
+      summary: Shared POS route not applicable to outlet-owned RestroX
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '409':
+          description: Not applicable to outlet-owned RestroX
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Shared POS route not applicable to outlet-owned RestroX
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '409':
+          description: Not applicable to outlet-owned RestroX
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/pos-integrations/{id}/sync-outlets:
+    post:
+      summary: Shared POS route not applicable to outlet-owned RestroX
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '409':
+          description: Not applicable to outlet-owned RestroX
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/partners/restrox/connect:
+    post:
+      summary: Connect a RestroX restaurant to an outlet-owned integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectRequest'
+      responses:
+        '200':
+          description: Connected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectEnvelope'
+        '409':
+          description: Duplicate bind or invalid rebind
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/partners/restrox/sync-locations:
+    post:
+      summary: No-op response for outlet-owned RestroX
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectRequest'
+      responses:
+        '200':
+          description: Skipped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncLocationsEnvelope'
+  /api/partners/restrox/test-sale:
+    post:
+      summary: Submit a test sale through the webhook pipeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestSaleRequest'
+      responses:
+        '200':
+          description: Accepted into webhook processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestSaleEnvelope'
+        '409':
+          description: Restaurant binding missing or mismatched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/partners/{provider}/customers/search:
+    get:
+      summary: Search customers by exact phone
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [restrox]
+        - name: phone
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+  /api/partners/{provider}/customers/{customerId}:
+    get:
+      summary: Fetch one customer
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [restrox]
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
   /webhook/restrox/{token}:
     post:
       summary: Receive RestroX webhook events
-      description: |
-        Send RestroX sale, refund, or void webhooks to Samparka.
-        A 200 acknowledgment means the delivery was accepted. It does not guarantee loyalty activity was created.
-      operationId: postRestroxWebhook
       parameters:
         - name: token
           in: path
           required: true
-          description: Webhook token supplied by Samparka.
           schema:
             type: string
       requestBody:
@@ -27,237 +264,265 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RestroxWebhookRequest'
-            examples:
-              saleCompleted:
-                summary: Completed sale
-                x-source-fixture: examples/payloads.json#/sale_completed_request
-                value:
-                  event_type: order.completed
-                  order_id: restrox-sale-1001
-                  created_at: '2026-06-08T10:15:00.000Z'
-                  amount: 850
-                  currency: NPR
-                  customer:
-                    phone: '9800000101'
-                  restaurantId: '12345'
-                  restaurantName: Kathmandu Branch
-                  items:
-                    - name: Cappuccino
-                      qty: 1
-                      price: 850
-              refundCreated:
-                summary: Refund for original sale
-                x-source-fixture: examples/payloads.json#/refund_created_request
-                value:
-                  event_type: refund.created
-                  order_id: restrox-sale-1001
-                  created_at: '2026-06-08T11:30:00.000Z'
-                  amount: 850
-                  currency: NPR
-                  customer:
-                    phone: '9800000101'
-                  restaurantId: '12345'
-                  restaurantName: Kathmandu Branch
-                  items:
-                    - name: Cappuccino
-                      qty: 1
-                      price: 850
-              voidedSale:
-                summary: Voided sale
-                x-source-fixture: examples/payloads.json#/voided_sale_request
-                value:
-                  event_type: order.voided
-                  order_id: restrox-sale-1002
-                  created_at: '2026-06-08T12:00:00.000Z'
-                  amount: 450
-                  currency: NPR
-                  customer:
-                    phone: '9800000102'
-                  restaurantId: '12345'
-                  restaurantName: Kathmandu Branch
-                  items:
-                    - name: Americano
-                      qty: 1
-                      price: 450
-              blockedLocation:
-                summary: Unknown location example
-                x-source-fixture: examples/payloads.json#/blocked_location_request
-                value:
-                  event_type: order.completed
-                  order_id: restrox-sale-2001
-                  created_at: '2026-06-08T13:10:00.000Z'
-                  amount: 600
-                  currency: NPR
-                  customer:
-                    phone: '9800000103'
-                  restaurantId: '99999'
-                  restaurantName: Unknown Branch
-                  items:
-                    - name: Latte
-                      qty: 1
-                      price: 600
-              missingEventType:
-                summary: Validation failure example
-                x-source-fixture: examples/payloads.json#/missing_event_type_request
-                value:
-                  order_id: restrox-sale-3001
-                  created_at: '2026-06-08T14:00:00.000Z'
-                  amount: 300
-                  currency: NPR
-                  restaurantId: '12345'
       responses:
         '200':
-          description: Event accepted or duplicate acknowledged
+          description: Accepted or duplicate
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicResponse'
-              examples:
-                eventReceived:
-                  summary: Accepted
-                  x-source-fixture: examples/payloads.json#/event_received_response
-                  value:
-                    success: true
-                    message: Event received
-                eventAlreadyProcessed:
-                  summary: Duplicate acknowledged
-                  x-source-fixture: examples/payloads.json#/event_already_processed_response
-                  value:
-                    success: true
-                    message: Event already processed
+                $ref: '#/components/schemas/WebhookSuccessResponse'
         '400':
-          description: Request validation failure
+          description: Invalid request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicResponse'
-              examples:
-                invalidBody:
-                  summary: Body must be a JSON object
-                  x-source-fixture: examples/payloads.json#/invalid_body_response
-                  value:
-                    success: false
-                    message: Request body must be a JSON object
-                missingEventType:
-                  summary: Event type missing
-                  x-source-fixture: examples/payloads.json#/validation_failure_response
-                  value:
-                    success: false
-                    message: Missing event_type in payload
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Invalid webhook token
+          description: Invalid token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicResponse'
-              examples:
-                invalidToken:
-                  summary: Unknown token
-                  x-source-fixture: examples/payloads.json#/invalid_token_response
-                  value:
-                    success: false
-                    message: Invalid webhook token
-        '500':
-          description: Internal server error
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Binding or lifecycle conflict
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicResponse'
-              examples:
-                internalServerError:
-                  summary: Unexpected failure
-                  x-source-fixture: examples/payloads.json#/internal_server_error_response
-                  value:
-                    success: false
-                    message: Internal server error
+                $ref: '#/components/schemas/ErrorResponse'
 components:
+  parameters:
+    IntegrationId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
-    RestroxWebhookRequest:
+    CreateIntegrationRequest:
       type: object
-      additionalProperties: true
+      required: [provider, storeId, outletId]
       properties:
-        event_type:
+        provider:
           type: string
-        type:
+          enum: [restrox]
+        storeId:
           type: string
-        order_id:
+        outletId:
           type: string
-        transaction_id:
-          type: string
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        timestamp:
-          type: string
-          format: date-time
-        amount:
-          type: number
-        order_total:
-          type: number
-        total:
-          type: number
-        currency:
-          type: string
-        currency_code:
-          type: string
+    ConnectLocation:
+      type: object
+      properties:
         restaurantId:
-          type: string
-          description: Preferred permanent RestroX restaurant/location identifier. It is unique, stable, never changes, and is the primary mapping key. Internally stored as `external_location_id`.
-        external_location_id:
-          type: string
-        location_id:
-          type: string
-        outlet_id:
-          type: string
-        branch_id:
           type: string
         restaurantName:
           type: string
-          description: Preferred human-readable RestroX restaurant/location name. Internally stored as `external_location_name`.
+    ConnectRequest:
+      type: object
+      required: [integrationKey]
+      properties:
+        integrationKey:
+          type: string
+        account:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectLocation'
+    TestSaleRequest:
+      type: object
+      required: [integrationKey, payload]
+      properties:
+        integrationKey:
+          type: string
+        locationId:
+          type: string
+          nullable: true
+        payload:
+          $ref: '#/components/schemas/RestroxWebhookRequest'
+    RestroxWebhookRequest:
+      type: object
+      required: [event_type]
+      properties:
+        event_type:
+          type: string
+        order_id:
+          type: string
+        created_at:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        restaurantId:
+          type: string
+        restaurantName:
+          type: string
+        external_location_id:
+          type: string
         external_location_name:
           type: string
-        location_name:
-          type: string
-        branch_name:
-          type: string
-        outlet_name:
-          type: string
-        phone:
-          type: string
-        customer_phone:
-          type: string
-        customer:
-          type: object
-          additionalProperties: true
-          properties:
-            phone:
-              type: string
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/LineItem'
-        line_items:
-          type: array
-          items:
-            $ref: '#/components/schemas/LineItem'
-      description: Request payload fields consumed by Samparka for the RestroX webhook. Preferred RestroX fields are `restaurantId` and `restaurantName`; alias fields remain supported for backward compatibility.
-    LineItem:
+    IntegrationData:
       type: object
-      additionalProperties: true
       properties:
-        name:
+        id:
           type: string
-        qty:
-          type: number
-        price:
-          type: number
-    BasicResponse:
+        provider:
+          type: string
+        storeId:
+          type: string
+        outletId:
+          type: string
+          nullable: true
+        ownershipMode:
+          type: string
+          enum: [OUTLET_OWNED]
+        status:
+          type: string
+        connectionStatus:
+          type: string
+          enum: [CREATED, CONNECTED, ACTIVE, DISCONNECTED]
+        integrationKey:
+          type: string
+        webhookUrl:
+          type: string
+          nullable: true
+        webhookUrlMasked:
+          type: string
+          nullable: true
+        externalLocationId:
+          type: string
+          nullable: true
+        externalLocationName:
+          type: string
+          nullable: true
+        healthStatus:
+          type: string
+          enum: [HEALTHY, WARNING, ERROR]
+        partnerConnectionStatus:
+          type: string
+          enum: [pending, connected, review_required]
+    IntegrationEnvelope:
       type: object
-      required:
-        - success
-        - message
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/IntegrationData'
+    DisconnectEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            disconnected:
+              type: boolean
+            deleted:
+              type: boolean
+            id:
+              type: string
+    StatusEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            overallStatus:
+              type: string
+            connectionStatus:
+              type: string
+            healthStatus:
+              type: string
+            currentStep:
+              type: string
+    VerifyEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            readyForProduction:
+              type: boolean
+            currentStep:
+              type: string
+    ConnectEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            connected:
+              type: boolean
+            idempotent:
+              type: boolean
+            integrationId:
+              type: string
+            externalLocationId:
+              type: string
+            externalLocationName:
+              type: string
+              nullable: true
+            status:
+              type: string
+              enum: [CONNECTED, ACTIVE, DISCONNECTED, CREATED]
+    SyncLocationsEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            connected:
+              type: boolean
+            skipped:
+              type: boolean
+            integrationId:
+              type: string
+            message:
+              type: string
+    TestSaleEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/WebhookSuccessResponse'
+    WebhookSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    ErrorResponse:
+      type: object
       properties:
         success:
           type: boolean

@@ -1,136 +1,74 @@
 ---
 title: Quick Start
-description: Connect a merchant, sync locations, verify customer behavior, and submit a test sale through the RestroX native integration.
+description: Configure RestroX with Samparka using the outlet-owned architecture.
 sidebarTitle: Quick Start
 ---
 
-This is the fastest path to a working RestroX native integration.
+This is the fastest path to a working RestroX integration.
 
-See also: [Partner API](./native/partner-api), [Customer API](./native/customer-api), and [Readiness Checklist](./native/readiness-checklist).
+## 1. Create The Integration
 
-## 1. Receive The Connection Key
-
-Get the merchant's Samparka Connection Key from the Samparka integration setup.
-
-Example:
-
-```text
-SPK-RX-ABC12345
+```json
+{
+  "provider": "restrox",
+  "storeId": "685000000000000000000010",
+  "outletId": "685000000000000000000001"
+}
 ```
 
-## 2. Connect The Merchant
+If the store has no outlets, create an outlet before connecting RestroX.
 
-```bash
-curl -X POST "https://your-domain/api/partners/restrox/connect" \
-  -H "Content-Type: application/json" \
-  -H "x-partner-key: your-partner-key" \
-  --data '{
-    "integrationKey": "SPK-RX-ABC12345",
-    "account": {
-      "id": "restrox-account-001",
-      "name": "Java Express"
-    },
-    "locations": []
-  }'
-```
+## 2. Share The Integration Key
 
-## 3. Sync Locations
+Creation returns an Integration Key and an integration-level webhook URL.
 
-```bash
-curl -X POST "https://your-domain/api/partners/restrox/sync-locations" \
-  -H "Content-Type: application/json" \
-  -H "x-partner-key: your-partner-key" \
-  --data '{
-    "integrationKey": "SPK-RX-ABC12345",
-    "account": {
-      "id": "restrox-account-001",
-      "name": "Java Express"
-    },
-    "locations": [
-      {
-        "restaurantId": "12345",
-        "restaurantName": "Kathmandu Branch"
-      }
-    ]
-  }'
-```
-
-If the response includes `reviewRequired: true`, resolve the location review issues before moving on.
-
-## 4. Verify Customer Flow
-
-Search for an existing customer using the partner customer API:
-
-```bash
-curl "https://your-domain/api/partners/restrox/customers/search?phone=9801234567" \
-  -H "x-partner-key: your-partner-key" \
-  -H "x-integration-key: SPK-RX-ABC12345"
-```
-
-If the customer is missing, note that customer creation is not exposed through the partner customer API.
-
-## 5. Submit A Test Sale
-
-```bash
-curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
-  -H "Content-Type: application/json" \
-  -H "x-partner-key: your-partner-key" \
-  --data '{
-    "integrationKey": "SPK-RX-ABC12345",
-    "restaurantId": "12345",
-    "payload": {
-      "event_type": "order.completed",
-      "order_id": "restrox-sale-1001",
-      "created_at": "2026-06-08T10:15:00.000Z",
-      "amount": 850,
-      "currency": "NPR",
-      "customer": { "phone": "9801234567" },
-      "restaurantId": "12345",
-      "restaurantName": "Kathmandu Branch",
-      "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
-    }
-  }'
-```
-
-For merchants without outlets, you can sync a single location without `outletId`:
+## 3. Connect The Restaurant
 
 ```json
 {
   "integrationKey": "SPK-RX-ABC12345",
   "account": {
     "id": "restrox-account-001",
-    "name": "SPD"
+    "name": "Java Express"
   },
   "locations": [
     {
       "restaurantId": "12345",
-      "restaurantName": "SPD"
+      "restaurantName": "Kathmandu Branch"
     }
   ]
 }
 ```
 
-Expected response:
+Samparka stores the restaurant binding on:
+
+- `external_location_id`
+- `external_location_name`
+
+## 4. Send The First Sale
+
+`POST /webhook/restrox/{token}`
 
 ```json
 {
-  "success": true,
-  "message": "Test sale submitted",
-  "data": {
-    "success": true,
-    "message": "Event received"
-  }
+  "event_type": "order.completed",
+  "order_id": "restrox-sale-1001",
+  "created_at": "2026-06-08T10:15:00.000Z",
+  "amount": 850,
+  "currency": "NPR",
+  "customer": {
+    "phone": "9800000101"
+  },
+  "restaurantId": "12345",
+  "restaurantName": "Kathmandu Branch",
+  "items": [
+    {
+      "name": "Cappuccino",
+      "qty": 1,
+      "price": 850
+    }
+  ]
 }
 ```
 
-## 6. Confirm Readiness
-
-Use the readiness checklist and merchant onboarding model to confirm the integration is ready for production.
-
-## Webhook Transport Note
-
-The native test-sale path validates the same downstream loyalty processing behavior used by production webhook traffic. If you also need to validate raw webhook delivery directly, continue with:
-
-- [Webhook Endpoint](./webhook-endpoint)
-- [Payload Reference](./payload-reference)
-- [Testing Guide](./testing-guide)
+The first valid sale moves the integration from `CONNECTED` to `ACTIVE`.

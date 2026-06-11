@@ -1,204 +1,533 @@
 {
   "info": {
-    "name": "Samparka RestroX Partner Guide",
-    "_postman_id": "4d6d2f90-7f4c-4eb2-a3e2-2f1d61dcb001",
-    "description": "Partner testing collection for RestroX webhook delivery into Samparka.",
+    "name": "Samparka RestroX Outlet-Owned Integration",
+    "_postman_id": "2d2f5780-b514-4d64-a63c-restrox-outlet-owned",
+    "description": "Merchant API, partner API, and webhook verification for the outlet-owned RestroX contract.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "https://your-domain"
-    },
-    {
-      "key": "token",
-      "value": "replace-with-valid-token"
-    },
-    {
-      "key": "invalidToken",
-      "value": "invalid-token"
-    }
+    { "key": "baseUrl", "value": "https://your-domain" },
+    { "key": "merchantToken", "value": "replace-with-merchant-auth-token" },
+    { "key": "partnerKey", "value": "replace-with-partner-key" },
+    { "key": "storeId", "value": "685000000000000000000010" },
+    { "key": "outletId", "value": "685000000000000000000001" },
+    { "key": "integrationId", "value": "" },
+    { "key": "integrationKey", "value": "" },
+    { "key": "token", "value": "" },
+    { "key": "expectedRestaurantId", "value": "12345" },
+    { "key": "expectedRestaurantName", "value": "Kathmandu Branch" },
+    { "key": "rebindRestaurantId", "value": "54321" },
+    { "key": "rebindRestaurantName", "value": "Pokhara Branch" },
+    { "key": "mismatchRestaurantId", "value": "99999" }
   ],
   "item": [
     {
-      "name": "Sale Completed",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"restaurantId\": \"12345\",\n  \"restaurantName\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
-          "host": [
-            "{{baseUrl}}"
+      "name": "Merchant API",
+      "item": [
+        {
+          "name": "Create Integration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created', function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test('ownership mode is outlet owned', function () { pm.expect(body.data.ownershipMode).to.eql('OUTLET_OWNED'); });",
+                  "pm.test('status is CREATED after create', function () { pm.expect(body.data.connectionStatus).to.eql('CREATED'); });",
+                  "pm.test('integration key exists', function () { pm.expect(body.data.integrationKey).to.be.a('string').and.not.empty; });",
+                  "pm.test('webhook url exists', function () { pm.expect(body.data.webhookUrl).to.be.a('string').and.not.empty; });",
+                  "pm.collectionVariables.set('integrationId', body.data.id);",
+                  "pm.collectionVariables.set('integrationKey', body.data.integrationKey);",
+                  "pm.collectionVariables.set('token', body.data.webhookUrl.split('/').pop());",
+                  "pm.collectionVariables.set('createdIntegrationKey', body.data.integrationKey);",
+                  "pm.collectionVariables.set('createdWebhookToken', body.data.webhookUrl.split('/').pop());"
+                ]
+              }
+            }
           ],
-          "path": [
-            "webhook",
-            "restrox",
-            "{{token}}"
-          ]
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"restrox\",\n  \"storeId\": \"{{storeId}}\",\n  \"outletId\": \"{{outletId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations"]
+            }
+          }
         },
-        "description": "Business purpose: send a completed sale to Samparka.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/sale-completed.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
-      },
-      "response": []
+        {
+          "name": "Get Integration",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Integration After Connect",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('status is CONNECTED after connect', function () { pm.expect(body.data.connectionStatus).to.eql('CONNECTED'); });",
+                  "pm.test('restaurant binding stored', function () { pm.expect(body.data.externalLocationId).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Integration After First Sale",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('status is ACTIVE after first valid sale', function () { pm.expect(body.data.connectionStatus).to.eql('ACTIVE'); });",
+                  "pm.test('health is healthy after valid sale', function () { pm.expect(body.data.healthStatus).to.eql('HEALTHY'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Integration After Mismatch",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('health status is ERROR after mismatch webhook', function () { pm.expect(body.data.healthStatus).to.eql('ERROR'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Disconnect Integration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('disconnect returns 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('disconnect flag is true', function () { pm.expect(body.data.disconnected).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Integration After Disconnect",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('status is DISCONNECTED after disconnect', function () { pm.expect(body.data.connectionStatus).to.eql('DISCONNECTED'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Integration After Reconnect",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('status is CONNECTED after reconnect', function () { pm.expect(body.data.connectionStatus).to.eql('CONNECTED'); });",
+                  "pm.test('webhook token unchanged after reconnect', function () { pm.expect(body.data.webhookUrl.split('/').pop()).to.eql(pm.collectionVariables.get('createdWebhookToken')); });",
+                  "pm.test('integration key unchanged after reconnect', function () { pm.expect(body.data.integrationKey).to.eql(pm.collectionVariables.get('createdIntegrationKey')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Integration After Rebind",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('webhook token unchanged after rebind', function () { pm.expect(body.data.webhookUrl.split('/').pop()).to.eql(pm.collectionVariables.get('createdWebhookToken')); });",
+                  "pm.test('integration key unchanged after rebind', function () { pm.expect(body.data.integrationKey).to.eql(pm.collectionVariables.get('createdIntegrationKey')); });",
+                  "pm.test('restaurant identity changed', function () { pm.expect(body.data.externalLocationId).to.eql(pm.collectionVariables.get('rebindRestaurantId')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Unsupported Locations Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns 409 for outlet-owned integration', function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}/locations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}", "locations"]
+            }
+          }
+        },
+        {
+          "name": "Unsupported Sync Outlets Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns 409 for outlet-owned integration', function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{merchantToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pos-integrations/{{integrationId}}/sync-outlets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pos-integrations", "{{integrationId}}", "sync-outlets"]
+            }
+          }
+        }
+      ]
     },
     {
-      "name": "Refund Created",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"event_type\": \"refund.created\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T11:30:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"restaurantId\": \"12345\",\n  \"restaurantName\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
-          "host": [
-            "{{baseUrl}}"
+      "name": "Partner API",
+      "item": [
+        {
+          "name": "Connect Restaurant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('connect succeeds', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('status is CONNECTED after connect', function () { pm.expect(body.data.status).to.eql('CONNECTED'); });",
+                  "pm.test('restaurant binding stored in response', function () { pm.expect(body.data.externalLocationId).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });"
+                ]
+              }
+            }
           ],
-          "path": [
-            "webhook",
-            "restrox",
-            "{{token}}"
-          ]
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-partner-key", "value": "{{partnerKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"account\": {\n    \"id\": \"restrox-account-001\",\n    \"name\": \"Java Express\"\n  },\n  \"locations\": [\n    {\n      \"restaurantId\": \"{{expectedRestaurantId}}\",\n      \"restaurantName\": \"{{expectedRestaurantName}}\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/restrox/connect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partners", "restrox", "connect"]
+            }
+          }
         },
-        "description": "Business purpose: send a refund that references the original sale identifier.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/refund-created.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Missing event_type in payload\"}"
-      },
-      "response": []
+        {
+          "name": "Skipped Sync Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('skipped sync route returns skipped', function () { pm.expect(body.data.skipped).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-partner-key", "value": "{{partnerKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/restrox/sync-locations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partners", "restrox", "sync-locations"]
+            }
+          }
+        },
+        {
+          "name": "Submit Test Sale",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-partner-key", "value": "{{partnerKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"payload\": {\n    \"event_type\": \"order.completed\",\n    \"order_id\": \"restrox-sale-1001\",\n    \"created_at\": \"2026-06-08T10:15:00.000Z\",\n    \"amount\": 850,\n    \"currency\": \"NPR\",\n    \"restaurantId\": \"{{expectedRestaurantId}}\",\n    \"restaurantName\": \"{{expectedRestaurantName}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/restrox/test-sale",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partners", "restrox", "test-sale"]
+            }
+          }
+        },
+        {
+          "name": "Reconnect Restaurant",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-partner-key", "value": "{{partnerKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"locations\": [\n    {\n      \"restaurantId\": \"{{expectedRestaurantId}}\",\n      \"restaurantName\": \"{{expectedRestaurantName}}\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/restrox/connect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partners", "restrox", "connect"]
+            }
+          }
+        },
+        {
+          "name": "Rebind While Connected Fails",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('rebind while connected returns conflict', function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-partner-key", "value": "{{partnerKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"locations\": [\n    {\n      \"restaurantId\": \"{{rebindRestaurantId}}\",\n      \"restaurantName\": \"{{rebindRestaurantName}}\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/restrox/connect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partners", "restrox", "connect"]
+            }
+          }
+        },
+        {
+          "name": "Rebind After Disconnect",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-partner-key", "value": "{{partnerKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"locations\": [\n    {\n      \"restaurantId\": \"{{rebindRestaurantId}}\",\n      \"restaurantName\": \"{{rebindRestaurantName}}\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/restrox/connect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partners", "restrox", "connect"]
+            }
+          }
+        }
+      ]
     },
     {
-      "name": "Voided Sale",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
+      "name": "Webhook",
+      "item": [
+        {
+          "name": "Valid Sale Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"restaurantId\": \"{{expectedRestaurantId}}\",\n  \"restaurantName\": \"{{expectedRestaurantName}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhook", "restrox", "{{token}}"]
+            }
           }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"event_type\": \"order.voided\",\n  \"order_id\": \"restrox-sale-1002\",\n  \"created_at\": \"2026-06-08T12:00:00.000Z\",\n  \"amount\": 450,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000102\"\n  },\n  \"restaurantId\": \"12345\",\n  \"restaurantName\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Americano\",\n      \"qty\": 1,\n      \"price\": 450\n    }\n  ]\n}"
         },
-        "url": {
-          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
-          "host": [
-            "{{baseUrl}}"
+        {
+          "name": "Mismatch Webhook",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('mismatch returns conflict', function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test('mismatch message', function () { pm.expect(body.message).to.eql('Restaurant binding mismatch'); });"
+                ]
+              }
+            }
           ],
-          "path": [
-            "webhook",
-            "restrox",
-            "{{token}}"
-          ]
-        },
-        "description": "Business purpose: send a voided sale using the original sale identifier.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/refunds.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
-      },
-      "response": []
-    },
-    {
-      "name": "Duplicate Sale",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-2001\",\n  \"created_at\": \"2026-06-08T13:10:00.000Z\",\n  \"amount\": 600,\n  \"currency\": \"NPR\",\n  \"restaurantId\": \"{{mismatchRestaurantId}}\",\n  \"restaurantName\": \"Wrong Branch\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhook", "restrox", "{{token}}"]
+            }
           }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"restaurantId\": \"12345\",\n  \"restaurantName\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "webhook",
-            "restrox",
-            "{{token}}"
-          ]
-        },
-        "description": "Business purpose: confirm that reposting the same sale is safe.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/duplicate-webhook.md\nExample success response: {\"success\":true,\"message\":\"Event already processed\"}\nExample failure response: {\"success\":false,\"message\":\"Internal server error\"}"
-      },
-      "response": []
-    },
-    {
-      "name": "Invalid Token",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"restaurantId\": \"12345\",\n  \"restaurantName\": \"Kathmandu Branch\",\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/webhook/restrox/{{invalidToken}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "webhook",
-            "restrox",
-            "{{invalidToken}}"
-          ]
-        },
-        "description": "Business purpose: confirm token validation before go-live.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/authentication.md\nExample success response: not applicable\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
-      },
-      "response": []
-    },
-    {
-      "name": "Location Mismatch",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-2001\",\n  \"created_at\": \"2026-06-08T13:10:00.000Z\",\n  \"amount\": 600,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000103\"\n  },\n  \"restaurantId\": \"99999\",\n  \"restaurantName\": \"Unknown Branch\",\n  \"items\": [\n    {\n      \"name\": \"Latte\",\n      \"qty\": 1,\n      \"price\": 600\n    }\n  ]\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "webhook",
-            "restrox",
-            "{{token}}"
-          ]
-        },
-        "description": "Business purpose: verify the partner team's location-mapping test case.\nHeaders: Content-Type: application/json\nLinked documentation page: docs/restrox-partner-guide/examples/blocked-location.md\nExample success response: {\"success\":true,\"message\":\"Event received\"}\nExample failure response: {\"success\":false,\"message\":\"Invalid webhook token\"}"
-      },
-      "response": []
+        }
+      ]
     }
   ]
 }
