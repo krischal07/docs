@@ -6,7 +6,7 @@ sidebarTitle: Quick Start
 
 # Quick Start
 
-This is the fastest path to a working RestroX integration.
+This is the fastest path to a verified RestroX integration.
 
 See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integration-checklist).
 
@@ -80,7 +80,10 @@ Use the canonical sale fixture from [`examples/payloads.json`](./examples/payloa
   "created_at": "2026-06-08T10:15:00.000Z",
   "amount": 850,
   "currency": "NPR",
-  "customer": { "phone": "9800000101" },
+  "customer": {
+    "phone": "9800000101",
+    "email": "restrox-sale-1001@example.com"
+  },
   "external_location_id": "ktm-branch-01",
   "external_location_name": "Kathmandu Branch",
   "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
@@ -101,7 +104,48 @@ samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61
 samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
 samparka-backend/src/integrations/pos/controller.js:351-365
 
-## 5. Repost The Same Payload Once
+## 5. Verify The Integration Became ACTIVE
+
+Fetch the merchant integration after the first valid sale and confirm the connection status is `ACTIVE`.
+
+Minimum verification:
+
+- `connectionStatus = ACTIVE`
+- `healthStatus = HEALTHY`
+
+`ACTIVE` confirms the integration activated, but it does not prove the loyalty workflow finished successfully.
+
+## 6. Verify The Customer Exists
+
+Search for the customer created or resolved by the sale:
+
+`GET /api/customers/search?phone={{customerPhone}}&email={{customerEmail}}`
+
+Confirm:
+
+- the response is `200`
+- a customer record exists
+- the returned customer matches the phone or email used in the sale
+- the customer belongs to the expected store or business
+
+## 7. Verify Customer Details And Points
+
+Fetch the resolved customer:
+
+`GET /api/customers/{customerId}`
+
+Confirm:
+
+- the response is `200`
+- the expected customer is returned
+- loyalty fields are populated
+- points reflect the processed sale
+
+## 8. Verify Loyalty Transaction Exists
+
+Use merchant tooling or the customer details response to confirm a loyalty transaction was created for the test sale before go-live.
+
+## 9. Repost The Same Payload Once
 
 Send the exact same body again. Samparka should acknowledge the duplicate safely.
 
@@ -117,7 +161,7 @@ Expected response:
 Source:
 samparka-backend/src/integrations/pos/controller.js:293-312
 
-## 6. Send A Test Refund
+## 10. Send A Test Refund
 
 Use a `refund.created` payload that reuses the original sale identifier.
 
@@ -125,7 +169,7 @@ Source:
 samparka-backend/src/integrations/pos/providers/restrox/mapper.js:27-29
 samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
 
-## 7. Complete Go-Live Validation
+## 11. Complete Go-Live Validation
 
 Run the checks in [Integration Checklist](./integration-checklist) before switching to production traffic.
 

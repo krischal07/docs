@@ -30,6 +30,9 @@ flowchart TD
   B --> C["CONNECTED"]
   C --> D["Receive Sale"]
   D --> E["ACTIVE"]
+  E --> F["Verify Customer Exists"]
+  F --> G["Verify Loyalty Transaction"]
+  G --> H["Verify Points Awarded"]
 ```
 
 Source:
@@ -60,6 +63,8 @@ samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
 ## Testing Checklist
 
 Use [Integration Checklist](./integration-checklist) for go-live validation.
+
+`ACTIVE` only proves the integration activated. Do not sign off until customer verification, loyalty transaction verification, and points verification are complete.
 
 ## OpenAPI
 

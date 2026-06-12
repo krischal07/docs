@@ -1,13 +1,75 @@
 openapi: 3.1.0
 info:
-  title: Samparka RestroX Partner API
-  version: 1.1.0
+  title: Samparka RestroX Integration API
+  version: 1.2.0
   description: |
-    External partner guide for the RestroX connect and webhook flow into Samparka.
+    Merchant lifecycle, partner connect, webhook verification, customer verification, and compatibility routes
+    for the RestroX integration with Samparka.
     Source fixtures for examples: docs/restrox-partner-guide/examples/payloads.json
 servers:
   - url: https://your-domain
 paths:
+  /api/pos-integrations:
+    post:
+      summary: Create an outlet-owned RestroX integration
+      operationId: createRestroxIntegration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIntegrationRequest'
+      responses:
+        '201':
+          description: Integration created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationEnvelope'
+  /api/pos-integrations/{id}:
+    get:
+      summary: Get a RestroX integration
+      operationId: getRestroxIntegration
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Integration fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationEnvelope'
+    delete:
+      summary: Disconnect a RestroX integration
+      operationId: deleteRestroxIntegration
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '200':
+          description: Integration disconnected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisconnectEnvelope'
+  /api/pos-integrations/{id}/locations:
+    get:
+      summary: Compatibility-only locations route for outlet-owned RestroX
+      operationId: getRestroxLocationsCompatibility
+      parameters:
+        - $ref: '#/components/parameters/IntegrationId'
+      responses:
+        '409':
+          description: Not supported for outlet-owned RestroX
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unsupported:
+                  x-source-fixture: examples/payloads.json#/locations_route_response
+                  value:
+                    success: false
+                    message: Locations route is not supported for outlet-owned RestroX
   /api/partners/restrox/connect:
     post:
       summary: Connect one RestroX restaurant to one outlet-owned Samparka integration
@@ -55,17 +117,6 @@ paths:
                     externalLocationId: ktm-branch-01
                     externalLocationName: Kathmandu Branch
                     status: CONNECTED
-                idempotent:
-                  summary: Idempotent reconnect
-                  value:
-                    success: true
-                    message: RestroX connected
-                    connected: true
-                    idempotent: true
-                    integrationId: 684915c401ec340433d84ee2
-                    externalLocationId: ktm-branch-01
-                    externalLocationName: Kathmandu Branch
-                    status: CONNECTED
         '400':
           description: Request validation failure
           content:
@@ -97,6 +148,166 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/partners/restrox/test-sale:
+    post:
+      summary: Submit a partner-side test sale
+      description: |
+        Push a sale-shaped payload into the webhook processing pipeline using the integration key instead of
+        posting directly to the tokenized webhook URL.
+      operationId: postRestroxTestSale
+      parameters:
+        - name: x-partner-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestSaleRequest'
+            examples:
+              testSale:
+                x-source-fixture: examples/payloads.json#/test_sale_request
+                value:
+                  integrationKey: restrox-key-001
+                  payload:
+                    event_type: order.completed
+                    order_id: restrox-sale-1001
+                    created_at: '2026-06-08T10:15:00.000Z'
+                    amount: 850
+                    currency: NPR
+                    customer:
+                      phone: '9800000101'
+                      email: restrox-sale-1001@example.com
+                    external_location_id: ktm-branch-01
+                    external_location_name: Kathmandu Branch
+                    items:
+                      - name: Cappuccino
+                        qty: 1
+                        price: 850
+      responses:
+        '200':
+          description: Test sale accepted into webhook processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicResponse'
+              examples:
+                accepted:
+                  x-source-fixture: examples/payloads.json#/event_received_response
+                  value:
+                    success: true
+                    message: Event received
+        '409':
+          description: Restaurant binding missing or mismatched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/partners/restrox/sync-locations:
+    post:
+      summary: Compatibility-only sync route for outlet-owned RestroX
+      operationId: postRestroxSyncLocations
+      parameters:
+        - name: x-partner-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - integrationKey
+              properties:
+                integrationKey:
+                  type: string
+      responses:
+        '200':
+          description: Compatibility route skipped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeprecatedSyncLocationsResponse'
+              examples:
+                skipped:
+                  x-source-fixture: examples/payloads.json#/sync_locations_response
+                  value:
+                    success: true
+                    message: Sync skipped for outlet-owned RestroX
+                    data:
+                      skipped: true
+  /api/customers/search:
+    get:
+      summary: Search customers after the first sale
+      description: Verify a valid RestroX sale resulted in customer resolution or creation.
+      operationId: searchCustomers
+      parameters:
+        - name: phone
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Matching customers fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerSearchResponse'
+              examples:
+                customerFound:
+                  x-source-fixture: examples/payloads.json#/customer_search_response
+                  value:
+                    success: true
+                    message: Customers fetched
+                    data:
+                      - id: 684a00000000000000001001
+                        phone: '9800000101'
+                        email: restrox-sale-1001@example.com
+                        storeId: 685000000000000000000010
+                        businessId: 685000000000000000000010
+  /api/customers/{customerId}:
+    get:
+      summary: Fetch customer details after loyalty processing
+      description: Verify loyalty data is populated and points reflect the processed sale.
+      operationId: getCustomer
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+      responses:
+        '200':
+          description: Customer fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetailsResponse'
+              examples:
+                customerDetails:
+                  x-source-fixture: examples/payloads.json#/customer_detail_response
+                  value:
+                    success: true
+                    message: Customer fetched
+                    data:
+                      id: 684a00000000000000001001
+                      phone: '9800000101'
+                      email: restrox-sale-1001@example.com
+                      storeId: 685000000000000000000010
+                      businessId: 685000000000000000000010
+                      pointsBalance: 85
+                      lifetimePointsEarned: 85
+                      loyaltySummary:
+                        lastTransactionType: SALE
+                        lastTransactionReference: restrox-sale-1001
   /webhook/restrox/{token}:
     post:
       summary: Receive RestroX webhook events
@@ -105,12 +316,7 @@ paths:
         A 200 acknowledgment means the delivery was accepted. It does not guarantee loyalty activity was created.
       operationId: postRestroxWebhook
       parameters:
-        - name: token
-          in: path
-          required: true
-          description: Webhook token supplied by Samparka.
-          schema:
-            type: string
+        - $ref: '#/components/parameters/WebhookToken'
       requestBody:
         required: true
         content:
@@ -129,46 +335,13 @@ paths:
                   currency: NPR
                   customer:
                     phone: '9800000101'
+                    email: restrox-sale-1001@example.com
                   external_location_id: ktm-branch-01
                   external_location_name: Kathmandu Branch
                   items:
                     - name: Cappuccino
                       qty: 1
                       price: 850
-              refundCreated:
-                summary: Refund for original sale
-                x-source-fixture: examples/payloads.json#/refund_created_request
-                value:
-                  event_type: refund.created
-                  order_id: restrox-sale-1001
-                  created_at: '2026-06-08T11:30:00.000Z'
-                  amount: 850
-                  currency: NPR
-                  customer:
-                    phone: '9800000101'
-                  external_location_id: ktm-branch-01
-                  external_location_name: Kathmandu Branch
-                  items:
-                    - name: Cappuccino
-                      qty: 1
-                      price: 850
-              voidedSale:
-                summary: Voided sale
-                x-source-fixture: examples/payloads.json#/voided_sale_request
-                value:
-                  event_type: order.voided
-                  order_id: restrox-sale-1002
-                  created_at: '2026-06-08T12:00:00.000Z'
-                  amount: 450
-                  currency: NPR
-                  customer:
-                    phone: '9800000102'
-                  external_location_id: ktm-branch-01
-                  external_location_name: Kathmandu Branch
-                  items:
-                    - name: Americano
-                      qty: 1
-                      price: 450
               blockedLocation:
                 summary: Unknown location example
                 x-source-fixture: examples/payloads.json#/blocked_location_request
@@ -186,15 +359,6 @@ paths:
                     - name: Latte
                       qty: 1
                       price: 600
-              missingEventType:
-                summary: Validation failure example
-                x-source-fixture: examples/payloads.json#/missing_event_type_request
-                value:
-                  order_id: restrox-sale-3001
-                  created_at: '2026-06-08T14:00:00.000Z'
-                  amount: 300
-                  currency: NPR
-                  external_location_id: ktm-branch-01
       responses:
         '200':
           description: Event accepted or duplicate acknowledged
@@ -204,13 +368,11 @@ paths:
                 $ref: '#/components/schemas/BasicResponse'
               examples:
                 eventReceived:
-                  summary: Accepted
                   x-source-fixture: examples/payloads.json#/event_received_response
                   value:
                     success: true
                     message: Event received
                 eventAlreadyProcessed:
-                  summary: Duplicate acknowledged
                   x-source-fixture: examples/payloads.json#/event_already_processed_response
                   value:
                     success: true
@@ -223,13 +385,11 @@ paths:
                 $ref: '#/components/schemas/BasicResponse'
               examples:
                 invalidBody:
-                  summary: Body must be a JSON object
                   x-source-fixture: examples/payloads.json#/invalid_body_response
                   value:
                     success: false
                     message: Request body must be a JSON object
                 missingEventType:
-                  summary: Event type missing
                   x-source-fixture: examples/payloads.json#/validation_failure_response
                   value:
                     success: false
@@ -242,7 +402,6 @@ paths:
                 $ref: '#/components/schemas/BasicResponse'
               examples:
                 invalidToken:
-                  summary: Unknown token
                   x-source-fixture: examples/payloads.json#/invalid_token_response
                   value:
                     success: false
@@ -255,13 +414,102 @@ paths:
                 $ref: '#/components/schemas/BasicResponse'
               examples:
                 internalServerError:
-                  summary: Unexpected failure
                   x-source-fixture: examples/payloads.json#/internal_server_error_response
                   value:
                     success: false
                     message: Internal server error
 components:
+  parameters:
+    IntegrationId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    CustomerId:
+      name: customerId
+      in: path
+      required: true
+      schema:
+        type: string
+    WebhookToken:
+      name: token
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
+    CreateIntegrationRequest:
+      type: object
+      required:
+        - provider
+        - storeId
+        - outletId
+      properties:
+        provider:
+          type: string
+          enum: [restrox]
+        storeId:
+          type: string
+        outletId:
+          type: string
+    IntegrationData:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        storeId:
+          type: string
+        outletId:
+          type: string
+        ownershipMode:
+          type: string
+          enum: [OUTLET_OWNED]
+        connectionStatus:
+          type: string
+          enum: [CREATED, CONNECTED, ACTIVE, DISCONNECTED]
+        healthStatus:
+          type: string
+          enum: [HEALTHY, WARNING, ERROR]
+        integrationKey:
+          type: string
+        webhookUrl:
+          type: string
+        externalLocationId:
+          type:
+            - string
+            - 'null'
+        externalLocationName:
+          type:
+            - string
+            - 'null'
+    IntegrationEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/IntegrationData'
+    DisconnectEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            disconnected:
+              type: boolean
+            deleted:
+              type: boolean
+            id:
+              type: string
     RestroxConnectRequest:
       type: object
       additionalProperties: false
@@ -304,6 +552,16 @@ components:
             - 'null'
         status:
           type: string
+    TestSaleRequest:
+      type: object
+      required:
+        - integrationKey
+        - payload
+      properties:
+        integrationKey:
+          type: string
+        payload:
+          $ref: '#/components/schemas/RestroxWebhookRequest'
     RestroxWebhookRequest:
       type: object
       additionalProperties: true
@@ -360,6 +618,8 @@ components:
           properties:
             phone:
               type: string
+            email:
+              type: string
         items:
           type: array
           items:
@@ -379,6 +639,76 @@ components:
           type: number
         price:
           type: number
+    CustomerRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        phone:
+          type:
+            - string
+            - 'null'
+        email:
+          type:
+            - string
+            - 'null'
+        storeId:
+          type:
+            - string
+            - 'null'
+        businessId:
+          type:
+            - string
+            - 'null'
+        pointsBalance:
+          type:
+            - number
+            - 'null'
+        lifetimePointsEarned:
+          type:
+            - number
+            - 'null'
+        loyaltySummary:
+          type:
+            - object
+            - 'null'
+          properties:
+            lastTransactionType:
+              type: string
+            lastTransactionReference:
+              type: string
+    CustomerSearchResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerRecord'
+    CustomerDetailsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/CustomerRecord'
+    DeprecatedSyncLocationsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            skipped:
+              type: boolean
     BasicResponse:
       type: object
       required:

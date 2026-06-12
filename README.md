@@ -14,3 +14,5 @@ RestroX is an outlet-owned integration in Samparka:
 - connect one restaurant per outlet
 - route webhooks with `POST /webhook/restrox/{token}`
 - activate on the first valid sale
+- verify customer creation or resolution before signoff
+- verify loyalty outcome and awarded points before signoff

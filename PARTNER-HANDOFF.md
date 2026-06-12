@@ -13,4 +13,7 @@ flowchart TD
   C --> D["Store restaurant binding"]
   D --> E["Send first sale"]
   E --> F["Integration ACTIVE"]
+  F --> G["Verify customer exists"]
+  G --> H["Verify loyalty transaction"]
+  H --> I["Verify points awarded"]
 ```

@@ -1,16 +1,16 @@
 ---
 title: Postman Collection
-description: Download, import, and run the reviewed RestroX Postman collection for both connect and webhook testing.
+description: Download, import, and run the reviewed RestroX Postman collection for merchant lifecycle, customer verification, and webhook testing.
 sidebarTitle: Postman Collection
 ---
 
 # Postman Collection
 
-Use the reviewed Postman collection for hands-on connect and webhook testing without changing the underlying request definitions.
+Use the reviewed Postman collection for hands-on merchant lifecycle, partner API, webhook, and customer-verification testing without changing the underlying request definitions.
 
 <Columns cols={2}>
   <Card title="Download Collection" icon="download" href="/postman-collection.json">
-    Download the canonical `postman-collection.json` file used for partner testing.
+    Download the canonical `postman-collection.json` file used for lifecycle and customer-verification testing.
   </Card>
   <Card title="Testing Guide" icon="flask-conical" href="/testing-guide">
     Pair the collection with the documented response expectations and fixture order.
@@ -27,30 +27,39 @@ Use the reviewed Postman collection for hands-on connect and webhook testing wit
     In Postman, choose import and select the unchanged collection file.
   </Step>
   <Step title="Fill Environment Values">
-    Set `baseUrl`, `partnerKey`, `integrationKey`, `expectedRestaurantId`, `expectedRestaurantName`, and `token`.
+    Set `baseUrl`, `merchantToken`, `partnerKey`, `storeId`, `outletId`, `integrationKey`, `expectedRestaurantId`, `expectedRestaurantName`, `customerPhone`, `customerEmail`, and `token`.
   </Step>
 </Steps>
+
+## Collection Sections
+
+- `Merchant API`
+- `Partner API`
+- `Webhook Verification`
+- `Customer API`
+- `Verification`
+- `Deprecated / Compatibility`
 
 ## Recommended Testing Order
 
 <Steps>
-  <Step title="Connect">
-    Bind the restaurant first and confirm the response status is `CONNECTED`.
+  <Step title="Create And Connect">
+    Create the integration, connect the restaurant, and confirm the integration reaches `CONNECTED`.
   </Step>
-  <Step title="Completed Sale">
-    Confirm the first happy-path `order.completed` delivery is accepted.
+  <Step title="Submit Test Sale">
+    Send the first valid sale and confirm the integration reaches `ACTIVE`.
   </Step>
-  <Step title="Duplicate Replay">
-    Re-send the same sale request once to confirm duplicate-safe behavior.
+  <Step title="Verify Customer Outcome">
+    Search for the customer, fetch customer details, and verify loyalty data and points were populated.
   </Step>
-  <Step title="Refund">
-    Send the refund request that references the original sale identifier.
+  <Step title="Verify Failure Cases">
+    Send the mismatch webhook and confirm the integration health moves to `ERROR` without changing the active contract.
   </Step>
-  <Step title="Failure Cases">
-    Validate legacy connect rejection, invalid token, and wrong-location behavior before go-live.
+  <Step title="Exercise Lifecycle">
+    Run disconnect, reconnect, and rebind checks, then use the verification folder to confirm the expected states.
   </Step>
 </Steps>
 
 <Info>
-The collection includes the active singular connect contract. The legacy `account + locations[]` payload is intentionally not included.
+The collection only uses the active singular connect contract. No request in the active collection uses the legacy `account + locations[]` payload.
 </Info>

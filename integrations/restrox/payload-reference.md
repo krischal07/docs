@@ -68,6 +68,7 @@ samparka-backend/src/integrations/pos/providers/restrox/parser.js:43-48
 | `amount` or `order_total` or `total` | number | No | Transaction amount. | `850` |
 | `currency` or `currency_code` | string | No | Currency code. Defaults to `NPR` if omitted. | `NPR` |
 | `customer.phone` or `phone` or `customer_phone` | string | No | Customer phone number. | `9800000101` |
+| `customer.email` or `email` | string | No | Customer email used for downstream customer verification when available. | `restrox-sale-1001@example.com` |
 | `items` or `line_items` | array | No | Line items for the sale or refund. | `[{ "name": "Cappuccino", "qty": 1, "price": 850 }]` |
 | `external_location_name` or `location_name` or `branch_name` or `outlet_name` | string | No | Human-readable outlet name. | `Kathmandu Branch` |
 

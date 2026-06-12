@@ -14,7 +14,7 @@ See also: [Testing Guide](./testing-guide).
 - [ ] `integrationKey` verified
 - [ ] `restaurantId` verified
 - [ ] Response status is `CONNECTED`
-- [ ] Legacy `locations[]` payload rejected
+- [ ] Only the singular connect payload is used in active tooling and tests
 
 Source:
 samparka-backend/src/index.js:146-155
@@ -43,6 +43,15 @@ samparka-backend/src/integrations/pos/controller.js:200-205
 
 Source:
 samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
+
+## Business Outcome Verification
+
+- [ ] First valid sale moves the integration to `ACTIVE`
+- [ ] Customer can be found by the phone or email used in the test sale
+- [ ] Customer belongs to the expected store or business
+- [ ] Customer detail response includes loyalty data
+- [ ] Loyalty transaction exists for the verified sale
+- [ ] Points awarded reflect successful sale processing
 
 ## Restaurant Binding
 
@@ -79,6 +88,7 @@ samparka-backend/src/loyalty/handlers/reversalEventHandler.js:158-160
 - [ ] Connected restaurant binding verified
 - [ ] Token stored securely
 - [ ] Monitoring enabled
+- [ ] Customer verification and points verification completed
 
 Source:
 samparka-backend/src/integrations/pos/controller.js:285-365

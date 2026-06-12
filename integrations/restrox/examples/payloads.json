@@ -4,15 +4,6 @@
     "restaurantId": "ktm-branch-01",
     "restaurantName": "Kathmandu Branch"
   },
-  "legacy_connect_request": {
-    "integrationKey": "restrox-key-001",
-    "locations": [
-      {
-        "restaurantId": "ktm-branch-01",
-        "restaurantName": "Kathmandu Branch"
-      }
-    ]
-  },
   "connect_response": {
     "success": true,
     "message": "RestroX connected",
@@ -26,6 +17,29 @@
     "success": false,
     "message": "restaurantId is required"
   },
+  "test_sale_request": {
+    "integrationKey": "restrox-key-001",
+    "payload": {
+      "event_type": "order.completed",
+      "order_id": "restrox-sale-1001",
+      "created_at": "2026-06-08T10:15:00.000Z",
+      "amount": 850,
+      "currency": "NPR",
+      "customer": {
+        "phone": "9800000101",
+        "email": "restrox-sale-1001@example.com"
+      },
+      "external_location_id": "ktm-branch-01",
+      "external_location_name": "Kathmandu Branch",
+      "items": [
+        {
+          "name": "Cappuccino",
+          "qty": 1,
+          "price": 850
+        }
+      ]
+    }
+  },
   "sale_completed_request": {
     "event_type": "order.completed",
     "order_id": "restrox-sale-1001",
@@ -33,7 +47,8 @@
     "amount": 850,
     "currency": "NPR",
     "customer": {
-      "phone": "9800000101"
+      "phone": "9800000101",
+      "email": "restrox-sale-1001@example.com"
     },
     "external_location_id": "ktm-branch-01",
     "external_location_name": "Kathmandu Branch",
@@ -52,7 +67,8 @@
     "amount": 850,
     "currency": "NPR",
     "customer": {
-      "phone": "9800000101"
+      "phone": "9800000101",
+      "email": "restrox-sale-1001@example.com"
     },
     "external_location_id": "ktm-branch-01",
     "external_location_name": "Kathmandu Branch",
@@ -90,7 +106,8 @@
     "amount": 850,
     "currency": "NPR",
     "customer": {
-      "phone": "9800000101"
+      "phone": "9800000101",
+      "email": "restrox-sale-1001@example.com"
     },
     "external_location_id": "ktm-branch-01",
     "external_location_name": "Kathmandu Branch",
@@ -127,6 +144,47 @@
     "amount": 300,
     "currency": "NPR",
     "external_location_id": "ktm-branch-01"
+  },
+  "customer_search_response": {
+    "success": true,
+    "message": "Customers fetched",
+    "data": [
+      {
+        "id": "684a00000000000000001001",
+        "phone": "9800000101",
+        "email": "restrox-sale-1001@example.com",
+        "storeId": "685000000000000000000010",
+        "businessId": "685000000000000000000010"
+      }
+    ]
+  },
+  "customer_detail_response": {
+    "success": true,
+    "message": "Customer fetched",
+    "data": {
+      "id": "684a00000000000000001001",
+      "phone": "9800000101",
+      "email": "restrox-sale-1001@example.com",
+      "storeId": "685000000000000000000010",
+      "businessId": "685000000000000000000010",
+      "pointsBalance": 85,
+      "lifetimePointsEarned": 85,
+      "loyaltySummary": {
+        "lastTransactionType": "SALE",
+        "lastTransactionReference": "restrox-sale-1001"
+      }
+    }
+  },
+  "sync_locations_response": {
+    "success": true,
+    "message": "Sync skipped for outlet-owned RestroX",
+    "data": {
+      "skipped": true
+    }
+  },
+  "locations_route_response": {
+    "success": false,
+    "message": "Locations route is not supported for outlet-owned RestroX"
   },
   "event_received_response": {
     "success": true,

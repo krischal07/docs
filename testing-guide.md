@@ -10,5 +10,8 @@ Test in this order:
 2. connect restaurant
 3. send first valid sale
 4. verify `ACTIVE`
-5. send mismatch webhook
-6. verify `ERROR`
+5. verify customer exists
+6. verify loyalty transaction exists
+7. verify points awarded
+8. send mismatch webhook
+9. verify `ERROR`

@@ -7,9 +7,11 @@ sidebarTitle: Payload Reference
 Required for transport:
 
 - `event_type`
+- `order_id`
 
 Recommended for correct outlet-owned routing:
 
-- `restaurantId`
-- `restaurantName`
-- `order_id`
+- `external_location_id`
+- `external_location_name`
+- `customer.phone`
+- `customer.email`

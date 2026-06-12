@@ -1,6 +1,6 @@
 ---
 title: Testing Guide
-description: Validate connect, sales, refunds, duplicates, tokens, and restaurant binding before go-live.
+description: Validate connect, lifecycle, customer verification, refunds, duplicates, and compatibility checks before go-live.
 sidebarTitle: Testing Guide
 ---
 
@@ -16,6 +16,24 @@ samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
 samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61
 samparka-backend/src/integrations/pos/controller.js:200-205
 samparka-backend/src/integrations/pos/controller.js:301-365
+
+## Integration Verification Flow
+
+```txt
+Create Integration
+↓
+Connect Restaurant
+↓
+Submit Test Sale
+↓
+Verify Integration Became ACTIVE
+↓
+Verify Customer Exists
+↓
+Verify Loyalty Transaction Exists
+↓
+Verify Points Awarded
+```
 
 ## Connect Test
 
@@ -44,31 +62,6 @@ Expected response:
 }
 ```
 
-## Legacy Connect Rejection Test
-
-```bash
-curl -X POST "https://your-domain/api/partners/restrox/connect" \
-  -H "Content-Type: application/json" \
-  -H "x-partner-key: {{partnerKey}}" \
-  --data '{
-    "integrationKey": "{{integrationKey}}",
-    "locations": [
-      {
-        "restaurantId": "abc"
-      }
-    ]
-  }'
-```
-
-Expected response:
-
-```json
-{
-  "success": false,
-  "message": "restaurantId is required"
-}
-```
-
 ## Sale Test
 
 ```bash
@@ -80,7 +73,10 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "created_at": "2026-06-08T10:15:00.000Z",
     "amount": 850,
     "currency": "NPR",
-    "customer": { "phone": "9800000101" },
+    "customer": {
+      "phone": "9800000101",
+      "email": "restrox-sale-1001@example.com"
+    },
     "external_location_id": "ktm-branch-01",
     "external_location_name": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
@@ -101,6 +97,47 @@ Use the `sale_completed_request` fixture values from [`examples/payloads.json`](
 Source:
 samparka-backend/src/integrations/pos/controller.js:351-365
 
+## Verify ACTIVE
+
+After the first valid sale, fetch the merchant integration and confirm:
+
+- `connectionStatus = ACTIVE`
+- `healthStatus = HEALTHY`
+
+`ACTIVE` only proves the integration activated. It does not prove business processing succeeded.
+
+## Customer Search After First Sale
+
+```bash
+curl -X GET "https://your-domain/api/customers/search?phone=9800000101&email=restrox-sale-1001@example.com" \
+  -H "Authorization: Bearer {{merchantToken}}"
+```
+
+Assertions:
+
+- response `200`
+- customer exists
+- customer is returned by the phone or email used in the test sale
+- customer belongs to the expected store or business
+
+## Customer Details Verification
+
+```bash
+curl -X GET "https://your-domain/api/customers/{customerId}" \
+  -H "Authorization: Bearer {{merchantToken}}"
+```
+
+Assertions:
+
+- response `200`
+- correct customer returned
+- loyalty data populated
+- points reflect sale processing
+
+## Loyalty Transaction Verification
+
+After customer lookup succeeds, confirm the test sale created a loyalty transaction in merchant tooling or in the customer detail response fields used by your deployment.
+
 ## Refund Test
 
 ```bash
@@ -112,7 +149,10 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "created_at": "2026-06-08T11:30:00.000Z",
     "amount": 850,
     "currency": "NPR",
-    "customer": { "phone": "9800000101" },
+    "customer": {
+      "phone": "9800000101",
+      "email": "restrox-sale-1001@example.com"
+    },
     "external_location_id": "ktm-branch-01",
     "external_location_name": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
@@ -237,9 +277,14 @@ Expected response:
 }
 ```
 
-What this means: Samparka accepted the delivery, but location setup should be verified before go-live.
-What this means: Samparka accepted the delivery, but the webhook restaurant identifier does not match the connected binding.
+What this means: Samparka accepted the delivery, but the webhook restaurant identifier does not match the connected binding. Verify the integration health transitions to `ERROR` and resolve the binding before go-live.
 
 Source:
 samparka-backend/src/integrations/pos/controller.js:246-349
 samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
+
+## Deprecated Compatibility Checks
+
+- `POST /api/partners/restrox/sync-locations` is a compatibility-only check.
+- `GET /api/pos-integrations/{id}/locations` is a compatibility-only check.
+- Neither route is part of the active onboarding or verification flow.

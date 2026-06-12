@@ -6,7 +6,7 @@ sidebarTitle: Verification Report
 
 # Final Verification Report
 
-This report is the acceptance gate for the RestroX partner package after the outlet-owned connect cleanup.
+This report is the acceptance gate for the RestroX partner package after the outlet-owned connect cleanup and customer-verification completion pass.
 
 ## Files Updated
 
@@ -50,26 +50,28 @@ Removed from the active connect contract:
 
 ## Postman Requests Updated
 
-- Added `Connect Restaurant`
-- Added `Reject Legacy Connect Payload`
-- Added assertions for `status = CONNECTED`
-- Added assertions for persisted `externalLocationId`
+- Added merchant lifecycle folders and verification checks
+- Added customer search and customer details requests
+- Added lifecycle verification requests for `CONNECTED`, `ACTIVE`, `ERROR`, `DISCONNECTED`, `RECONNECTED`, and `REBOUND`
+- Confirmed no active Postman request uses the legacy `account + locations[]` payload
 
 ## OpenAPI Examples Updated
 
 - Added `POST /api/partners/restrox/connect`
+- Added customer search and customer detail endpoints
 - Added singular connect request example
 - Added connect success example
-- Added connect validation failure example
+- Added customer-verification response examples
 
 ## OpenAPI Schemas Updated
 
 - Added `RestroxConnectRequest`
 - Added `RestroxConnectResponse`
+- Added customer search and customer detail response schemas
 - Confirmed `integrationKey` required
 - Confirmed `restaurantId` required
 - Confirmed `restaurantName` optional
-- Confirmed the connect schema does not expose `account`, `locations`, `locationList`, `restaurantList`, or `branches`
+- Confirmed the active connect schema does not expose `account`, `locations`, `locationList`, `restaurantList`, or `branches`
 
 ## Diagrams Updated
 
@@ -81,6 +83,9 @@ Connect
 -> CONNECTED
 -> Receive Sale
 -> ACTIVE
+-> Verify Customer Exists
+-> Verify Loyalty Transaction
+-> Verify Points Awarded
 ```
 
 ## Legacy Persistence Review
@@ -125,3 +130,4 @@ Search targets reviewed in RestroX docs and artifacts:
 Result:
 
 - No active RestroX connect contract requires or documents array-based restaurant selection.
+- No active request, schema, example, diagram, or Postman request uses the legacy array payload.
