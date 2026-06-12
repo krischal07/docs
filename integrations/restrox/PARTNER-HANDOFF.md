@@ -6,7 +6,7 @@ sidebarTitle: Partner Handoff Source
 
 # RestroX Partner Handoff
 
-This package is the shareable entry point for the RestroX connect and webhook integration with Samparka. Connect uses a singular restaurant-binding contract. There is no location sync, location review, or location selection step in the active RestroX connect path.
+This package is the shareable entry point for the RestroX connect and webhook integration with Samparka. Connect uses a singular restaurant-binding contract. The active RestroX path does not use any legacy multi-step restaurant onboarding or payload-side attribution checks.
 
 Source:
 samparka-backend/src/index.js:146-155
@@ -26,13 +26,12 @@ samparka-backend/src/integrations/pos/routes.js:11-15
 
 ```mermaid
 flowchart TD
-  A["Connect"] --> B["Bind Restaurant"]
-  B --> C["CONNECTED"]
-  C --> D["Receive Sale"]
-  D --> E["ACTIVE"]
-  E --> F["Verify Customer Exists"]
-  F --> G["Verify Loyalty Transaction"]
-  G --> H["Verify Points Awarded"]
+  A["Merchant Creates Integration"] --> B["Partner Connects Restaurant"]
+  B --> C["System Stores Restaurant Binding"]
+  C --> D["Webhook Resolves Token"]
+  D --> E["System Resolves Integration"]
+  E --> F["System Attributes Sale To Bound Restaurant"]
+  F --> G["System Awards Loyalty"]
 ```
 
 Source:
@@ -55,6 +54,24 @@ Validation:
 - `restaurantId` is required.
 - `restaurantName` is optional.
 - The request fails with `400` if `restaurantId` is missing.
+
+## Webhook Contract
+
+Send webhook events to `/webhook/restrox/{token}` with transaction data and a customer phone:
+
+```json
+{
+  "event_type": "order.completed",
+  "order_id": "restrox-sale-1001",
+  "amount": 850,
+  "customer": {
+    "phone": "+97798XXXXXXXX"
+  }
+}
+```
+
+`customer.email` is optional metadata.
+Payload restaurant fields such as `restaurantId`, `restaurantName`, `external_location_id`, and `external_location_name` are optional non-canonical fields for outlet-owned attribution.
 
 Source:
 samparka-backend/src/integrations/pos/partners/restrox/controller.js:9-28

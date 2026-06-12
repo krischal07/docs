@@ -26,11 +26,8 @@
       "amount": 850,
       "currency": "NPR",
       "customer": {
-        "phone": "9800000101",
-        "email": "restrox-sale-1001@example.com"
+        "phone": "9800000101"
       },
-      "external_location_id": "ktm-branch-01",
-      "external_location_name": "Kathmandu Branch",
       "items": [
         {
           "name": "Cappuccino",
@@ -47,11 +44,8 @@
     "amount": 850,
     "currency": "NPR",
     "customer": {
-      "phone": "9800000101",
-      "email": "restrox-sale-1001@example.com"
+      "phone": "9800000101"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
     "items": [
       {
         "name": "Cappuccino",
@@ -67,11 +61,8 @@
     "amount": 850,
     "currency": "NPR",
     "customer": {
-      "phone": "9800000101",
-      "email": "restrox-sale-1001@example.com"
+      "phone": "9800000101"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
     "items": [
       {
         "name": "Cappuccino",
@@ -89,8 +80,6 @@
     "customer": {
       "phone": "9800000102"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
     "items": [
       {
         "name": "Americano",
@@ -106,11 +95,8 @@
     "amount": 850,
     "currency": "NPR",
     "customer": {
-      "phone": "9800000101",
-      "email": "restrox-sale-1001@example.com"
+      "phone": "9800000101"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
     "items": [
       {
         "name": "Cappuccino",
@@ -119,7 +105,7 @@
       }
     ]
   },
-  "blocked_location_request": {
+  "missing_binding_request": {
     "event_type": "order.completed",
     "order_id": "restrox-sale-2001",
     "created_at": "2026-06-08T13:10:00.000Z",
@@ -128,8 +114,6 @@
     "customer": {
       "phone": "9800000103"
     },
-    "external_location_id": "unknown-branch-99",
-    "external_location_name": "Unknown Branch",
     "items": [
       {
         "name": "Latte",
@@ -142,8 +126,7 @@
     "order_id": "restrox-sale-3001",
     "created_at": "2026-06-08T14:00:00.000Z",
     "amount": 300,
-    "currency": "NPR",
-    "external_location_id": "ktm-branch-01"
+    "currency": "NPR"
   },
   "customer_search_response": {
     "success": true,

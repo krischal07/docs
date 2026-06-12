@@ -81,11 +81,8 @@ Use the canonical sale fixture from [`examples/payloads.json`](./examples/payloa
   "amount": 850,
   "currency": "NPR",
   "customer": {
-    "phone": "9800000101",
-    "email": "restrox-sale-1001@example.com"
+    "phone": "9800000101"
   },
-  "external_location_id": "ktm-branch-01",
-  "external_location_name": "Kathmandu Branch",
   "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
 }
 ```
@@ -104,6 +101,8 @@ samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61
 samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
 samparka-backend/src/integrations/pos/controller.js:351-365
 
+Restaurant identity comes from the integration that owns `{token}`. Do not rely on payload restaurant fields for outlet-owned attribution.
+
 ## 5. Verify The Integration Became ACTIVE
 
 Fetch the merchant integration after the first valid sale and confirm the connection status is `ACTIVE`.
@@ -119,13 +118,13 @@ Minimum verification:
 
 Search for the customer created or resolved by the sale:
 
-`GET /api/customers/search?phone={{customerPhone}}&email={{customerEmail}}`
+`GET /api/customers/search?phone={{customerPhone}}`
 
 Confirm:
 
 - the response is `200`
 - a customer record exists
-- the returned customer matches the phone or email used in the sale
+- the returned customer matches the phone used in the sale
 - the customer belongs to the expected store or business
 
 ## 7. Verify Customer Details And Points

@@ -42,10 +42,10 @@ This portal organizes the reviewed RestroX integration documents into a cleaner 
     Point RestroX at the Samparka webhook endpoint after the integration status is `CONNECTED`.
   </Step>
   <Step title="Send Test Sale">
-    Use the documented sale fixture to verify that an accepted request returns a `200` acknowledgment.
+    Use the documented phone-first sale fixture to verify that an accepted request returns a `200` acknowledgment.
   </Step>
   <Step title="Verify Response">
-    Confirm the expected success message and resend the same payload once to validate idempotency.
+    Confirm the expected success message, verify customer lookup by phone, and resend the same payload once to validate idempotency.
   </Step>
   <Step title="Test Refund">
     Send a `refund.created` payload that references the original sale identifier.

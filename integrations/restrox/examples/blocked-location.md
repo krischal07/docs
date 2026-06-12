@@ -1,14 +1,14 @@
 ---
-title: Blocked Location Example
-description: Example showing a webhook accepted for delivery while location setup still needs review.
-sidebarTitle: Blocked Location
+title: Missing Binding Example
+description: Example showing a webhook accepted for delivery while the integration still needs a restaurant binding.
+sidebarTitle: Missing Binding
 ---
 
-# Blocked Location Example
+# Missing Binding Example
 
 ## Request
 
-Use the `blocked_location_request` fixture from [`payloads.json`](./payloads.json).
+Use the `missing_binding_request` fixture from [`payloads.json`](./payloads.json).
 
 ```json
 {
@@ -18,8 +18,6 @@ Use the `blocked_location_request` fixture from [`payloads.json`](./payloads.jso
   "amount": 600,
   "currency": "NPR",
   "customer": { "phone": "9800000103" },
-  "external_location_id": "unknown-branch-99",
-  "external_location_name": "Unknown Branch",
   "items": [{ "name": "Latte", "qty": 1, "price": 600 }]
 }
 ```
@@ -35,7 +33,7 @@ Use the `blocked_location_request` fixture from [`payloads.json`](./payloads.jso
 
 ## What Happened
 
-Samparka accepted the delivery, but the outlet mapping should be reviewed because the payload location did not match a processable configured location.
+Samparka accepted the delivery, but the integration still needs a bound restaurant before the event can be attributed correctly.
 
 Source:
 samparka-backend/src/integrations/pos/controller.js:246-349
@@ -43,4 +41,4 @@ samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
 
 ## What To Do Next
 
-Confirm the correct `external_location_id` with Samparka and resend future events with the mapped location value.
+Connect the restaurant first, confirm the binding is stored on the integration, and then resend future events.

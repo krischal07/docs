@@ -1,7 +1,45 @@
 ---
-title: Refund Created
-description: Root-level mirror of the RestroX refund example.
+title: Refund Created Example
+description: Example of a refund webhook request and successful acknowledgment.
 sidebarTitle: Refund Created
 ---
 
-See `/integrations/restrox/examples/refund-created`.
+# Refund Created Example
+
+## Request
+
+Use the `refund_created_request` fixture from [`payloads.json`](./payloads.json).
+
+```json
+{
+  "event_type": "refund.created",
+  "order_id": "restrox-sale-1001",
+  "created_at": "2026-06-08T11:30:00.000Z",
+  "amount": 850,
+  "currency": "NPR",
+  "customer": { "phone": "9800000101" },
+  "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
+}
+```
+
+## Response
+
+```json
+{
+  "success": true,
+  "message": "Event received"
+}
+```
+
+## What Happened
+
+Samparka accepted the refund webhook and used the sale identifier to match the original sale.
+
+Source:
+samparka-backend/src/integrations/pos/providers/restrox/mapper.js:27-29
+samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
+samparka-backend/src/integrations/pos/controller.js:351-365
+
+## What To Do Next
+
+If you plan to retry refund deliveries, resend the exact same payload once and confirm the duplicate acknowledgment.

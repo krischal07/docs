@@ -1,17 +1,278 @@
 ---
 title: Testing Guide
-description: Root-level testing summary for the outlet-owned RestroX flow.
+description: Validate connect, lifecycle, customer verification, refunds, duplicates, and compatibility checks before go-live.
 sidebarTitle: Testing Guide
 ---
 
-Test in this order:
+# Testing Guide
 
-1. create integration
-2. connect restaurant
-3. send first valid sale
-4. verify `ACTIVE`
-5. verify customer exists
-6. verify loyalty transaction exists
-7. verify points awarded
-8. send mismatch webhook
-9. verify `ERROR`
+This guide uses the shared fixtures in [`examples/payloads.json`](./examples/payloads.json).
+
+See also: [Refunds](./refunds) and [Troubleshooting](./troubleshooting).
+
+Source:
+samparka-backend/src/integrations/pos/partners/restrox/controller.js:9-28
+samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
+samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61
+samparka-backend/src/integrations/pos/controller.js:200-205
+samparka-backend/src/integrations/pos/controller.js:301-365
+
+## Integration Verification Flow
+
+```txt
+Create Integration
+↓
+Connect Restaurant
+↓
+Submit Test Sale
+↓
+Verify Integration Became ACTIVE
+↓
+Verify Customer Exists
+↓
+Verify Loyalty Transaction Exists
+↓
+Verify Points Awarded
+```
+
+Webhook attribution for outlet-owned RestroX is:
+
+```txt
+Webhook Token
+-> Resolve PosIntegration
+-> Resolve Bound Restaurant
+-> Process Sale Or Refund
+```
+
+## Connect Test
+
+```bash
+curl -X POST "https://your-domain/api/partners/restrox/connect" \
+  -H "Content-Type: application/json" \
+  -H "x-partner-key: {{partnerKey}}" \
+  --data '{
+    "integrationKey": "{{integrationKey}}",
+    "restaurantId": "{{expectedRestaurantId}}",
+    "restaurantName": "{{expectedRestaurantName}}"
+  }'
+```
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "RestroX connected",
+  "connected": true,
+  "integrationId": "replace-with-real-id",
+  "externalLocationId": "{{expectedRestaurantId}}",
+  "externalLocationName": "{{expectedRestaurantName}}",
+  "status": "CONNECTED"
+}
+```
+
+## Sale Test
+
+```bash
+curl -X POST "https://your-domain/webhook/restrox/{token}" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "event_type": "order.completed",
+    "order_id": "restrox-sale-1001",
+    "created_at": "2026-06-08T10:15:00.000Z",
+    "amount": 850,
+    "currency": "NPR",
+    "customer": {
+      "phone": "9800000101"
+    },
+    "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
+  }'
+```
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Event received"
+}
+```
+
+Use the `sale_completed_request` fixture values from [`examples/payloads.json`](./examples/payloads.json).
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:351-365
+
+## Verify ACTIVE
+
+After the first valid sale, fetch the merchant integration and confirm:
+
+- `connectionStatus = ACTIVE`
+- `healthStatus = HEALTHY`
+
+`ACTIVE` only proves the integration activated. It does not prove business processing succeeded.
+
+## Customer Search After First Sale
+
+```bash
+curl -X GET "https://your-domain/api/customers/search?phone=9800000101" \
+  -H "Authorization: Bearer {{merchantToken}}"
+```
+
+Assertions:
+
+- response `200`
+- customer exists
+- phone matches the sale payload
+- customer belongs to the expected store or business
+
+## Customer Details Verification
+
+```bash
+curl -X GET "https://your-domain/api/customers/{customerId}" \
+  -H "Authorization: Bearer {{merchantToken}}"
+```
+
+Assertions:
+
+- response `200`
+- correct customer returned
+- loyalty data populated
+- points reflect sale processing
+
+## Loyalty Transaction Verification
+
+After customer lookup succeeds, confirm the test sale created a loyalty transaction in merchant tooling or in the customer detail response fields used by your deployment.
+
+## Refund Test
+
+```bash
+curl -X POST "https://your-domain/webhook/restrox/{token}" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "event_type": "refund.created",
+    "order_id": "restrox-sale-1001",
+    "created_at": "2026-06-08T11:30:00.000Z",
+    "amount": 850,
+    "currency": "NPR",
+    "customer": {
+      "phone": "9800000101"
+    },
+    "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
+  }'
+```
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Event received"
+}
+```
+
+Source:
+samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
+samparka-backend/src/integrations/pos/controller.js:351-365
+
+## Void Test
+
+```bash
+curl -X POST "https://your-domain/webhook/restrox/{token}" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "event_type": "order.voided",
+    "order_id": "restrox-sale-1002",
+    "created_at": "2026-06-08T12:00:00.000Z",
+    "amount": 450,
+    "currency": "NPR",
+    "customer": { "phone": "9800000102" },
+    "items": [{ "name": "Americano", "qty": 1, "price": 450 }]
+  }'
+```
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Event received"
+}
+```
+
+Source:
+samparka-backend/src/integrations/pos/providers/restrox/mapper.js:23-26
+samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
+samparka-backend/src/integrations/pos/controller.js:351-365
+
+## Duplicate Webhook Test
+
+Resend the sale test payload exactly as-is.
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Event already processed"
+}
+```
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:293-312
+
+## Invalid Token Test
+
+```bash
+curl -X POST "https://your-domain/webhook/restrox/{invalid-token}" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "event_type": "order.completed",
+    "order_id": "restrox-sale-1001",
+    "created_at": "2026-06-08T10:15:00.000Z",
+    "amount": 850,
+    "currency": "NPR",
+    "customer": { "phone": "9800000101" },
+    "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
+  }'
+```
+
+Expected response:
+
+```json
+{
+  "success": false,
+  "message": "Invalid webhook token"
+}
+```
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:200-205
+
+## Disconnected Integration Check
+
+```bash
+curl -X DELETE "https://your-domain/api/pos-integrations/{integrationId}" \
+  -H "Authorization: Bearer {{merchantToken}}"
+```
+
+Then fetch the integration and confirm:
+
+- `connectionStatus = DISCONNECTED`
+- the integration is not active for webhook processing until it is connected again
+
+## Missing Restaurant Binding Check
+
+Before connect, fetch the created integration and confirm:
+
+- `connectionStatus = CREATED`
+- `externalLocationId` is empty or null
+- no restaurant has been bound yet
+
+This is the only supported missing-binding check for outlet-owned RestroX. Do not test payload-side restaurant attribution scenarios, because restaurant identity does not come from webhook payload fields.
+
+## Deprecated Compatibility Checks
+
+- `POST /api/partners/restrox/sync-locations` is a compatibility-only check.
+- `GET /api/pos-integrations/{id}/locations` is a compatibility-only check.
+- Neither route is part of the active onboarding or verification flow.

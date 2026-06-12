@@ -35,6 +35,15 @@ Verify Loyalty Transaction Exists
 Verify Points Awarded
 ```
 
+Webhook attribution for outlet-owned RestroX is:
+
+```txt
+Webhook Token
+-> Resolve PosIntegration
+-> Resolve Bound Restaurant
+-> Process Sale Or Refund
+```
+
 ## Connect Test
 
 ```bash
@@ -74,11 +83,8 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "amount": 850,
     "currency": "NPR",
     "customer": {
-      "phone": "9800000101",
-      "email": "restrox-sale-1001@example.com"
+      "phone": "9800000101"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
   }'
 ```
@@ -109,7 +115,7 @@ After the first valid sale, fetch the merchant integration and confirm:
 ## Customer Search After First Sale
 
 ```bash
-curl -X GET "https://your-domain/api/customers/search?phone=9800000101&email=restrox-sale-1001@example.com" \
+curl -X GET "https://your-domain/api/customers/search?phone=9800000101" \
   -H "Authorization: Bearer {{merchantToken}}"
 ```
 
@@ -117,7 +123,7 @@ Assertions:
 
 - response `200`
 - customer exists
-- customer is returned by the phone or email used in the test sale
+- phone matches the sale payload
 - customer belongs to the expected store or business
 
 ## Customer Details Verification
@@ -150,11 +156,8 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "amount": 850,
     "currency": "NPR",
     "customer": {
-      "phone": "9800000101",
-      "email": "restrox-sale-1001@example.com"
+      "phone": "9800000101"
     },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
   }'
 ```
@@ -184,8 +187,6 @@ curl -X POST "https://your-domain/webhook/restrox/{token}" \
     "amount": 450,
     "currency": "NPR",
     "customer": { "phone": "9800000102" },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
     "items": [{ "name": "Americano", "qty": 1, "price": 450 }]
   }'
 ```
@@ -232,8 +233,6 @@ curl -X POST "https://your-domain/webhook/restrox/{invalid-token}" \
     "amount": 850,
     "currency": "NPR",
     "customer": { "phone": "9800000101" },
-    "external_location_id": "ktm-branch-01",
-    "external_location_name": "Kathmandu Branch",
     "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
   }'
 ```
@@ -250,38 +249,27 @@ Expected response:
 Source:
 samparka-backend/src/integrations/pos/controller.js:200-205
 
-## Wrong Location Test
+## Disconnected Integration Check
 
 ```bash
-curl -X POST "https://your-domain/webhook/restrox/{token}" \
-  -H "Content-Type: application/json" \
-  --data '{
-    "event_type": "order.completed",
-    "order_id": "restrox-sale-2001",
-    "created_at": "2026-06-08T13:10:00.000Z",
-    "amount": 600,
-    "currency": "NPR",
-    "customer": { "phone": "9800000103" },
-    "external_location_id": "unknown-branch-99",
-    "external_location_name": "Unknown Branch",
-    "items": [{ "name": "Latte", "qty": 1, "price": 600 }]
-  }'
+curl -X DELETE "https://your-domain/api/pos-integrations/{integrationId}" \
+  -H "Authorization: Bearer {{merchantToken}}"
 ```
 
-Expected response:
+Then fetch the integration and confirm:
 
-```json
-{
-  "success": true,
-  "message": "Event received"
-}
-```
+- `connectionStatus = DISCONNECTED`
+- the integration is not active for webhook processing until it is connected again
 
-What this means: Samparka accepted the delivery, but the webhook restaurant identifier does not match the connected binding. Verify the integration health transitions to `ERROR` and resolve the binding before go-live.
+## Missing Restaurant Binding Check
 
-Source:
-samparka-backend/src/integrations/pos/controller.js:246-349
-samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
+Before connect, fetch the created integration and confirm:
+
+- `connectionStatus = CREATED`
+- `externalLocationId` is empty or null
+- no restaurant has been bound yet
+
+This is the only supported missing-binding check for outlet-owned RestroX. Do not test payload-side restaurant attribution scenarios, because restaurant identity does not come from webhook payload fields.
 
 ## Deprecated Compatibility Checks
 

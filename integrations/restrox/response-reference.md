@@ -7,6 +7,7 @@ sidebarTitle: Response Reference
 # Response Reference
 
 These are the partner-visible responses for the canonical RestroX webhook path.
+For outlet-owned RestroX, restaurant attribution is resolved from the integration bound to the webhook token.
 
 See also: [Troubleshooting](./troubleshooting).
 

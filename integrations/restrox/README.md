@@ -24,16 +24,17 @@ samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
 
 1. Receive the Samparka Integration Key for the outlet-owned RestroX integration.
 2. Call `POST /api/partners/restrox/connect` with `integrationKey`, `restaurantId`, and optional `restaurantName`.
-3. Samparka resolves `PosIntegration`, validates `ownership_mode = OUTLET_OWNED`, and persists `external_location_id`.
+3. Samparka resolves `PosIntegration`, validates `ownership_mode = OUTLET_OWNED`, and persists the bound restaurant as `external_location_id` and `external_location_name`.
 4. Confirm the response returns `status = CONNECTED`.
 5. Send a test `order.completed` webhook to `/webhook/restrox/{token}`.
-6. Verify the integration becomes `ACTIVE`.
-7. Search the customer with `GET /api/customers/search` using the phone or email from the test sale.
-8. Fetch the customer with `GET /api/customers/{customerId}` and confirm loyalty fields are populated.
-9. Verify a loyalty transaction exists for the sale and the awarded points reflect successful processing.
-10. Repost the same sale payload once to confirm duplicate safety.
-11. Send a `refund.created` webhook that references the original sale identifier.
-12. Complete the go-live checklist.
+6. Samparka resolves the webhook token, resolves the `PosIntegration`, resolves the bound restaurant from the integration, and processes the event.
+7. Verify the integration becomes `ACTIVE`.
+8. Search the customer with `GET /api/customers/search?phone=...` using the phone from the test sale.
+9. Fetch the customer with `GET /api/customers/{customerId}` and confirm loyalty fields are populated.
+10. Verify a loyalty transaction exists for the sale and the awarded points reflect successful processing.
+11. Repost the same sale payload once to confirm duplicate safety.
+12. Send a `refund.created` webhook that references the original sale identifier.
+13. Complete the go-live checklist.
 
 Source:
 samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
@@ -53,7 +54,7 @@ samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
 - [Response Reference](./response-reference)
 - [Refunds](./refunds)
 - [Idempotency](./idempotency)
-- [Location Mapping](./location-mapping)
+- [Restaurant Binding Reference](./location-mapping)
 - [Testing Guide](./testing-guide)
 - [Troubleshooting](./troubleshooting)
 - [Integration Checklist](./integration-checklist)
@@ -70,9 +71,22 @@ samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
 }
 ```
 
+## Canonical Webhook Attribution
+
+For outlet-owned RestroX, restaurant identity is resolved from the integration binding:
+
+```txt
+Webhook Token
+-> PosIntegration
+-> Outlet
+-> Bound Restaurant
+```
+
+Webhook payload restaurant fields are optional, non-canonical metadata. They are not the source of truth for restaurant attribution.
+
 ## Important Delivery Note
 
-A `200 Event received` response means Samparka accepted the webhook delivery. It does not guarantee that loyalty activity was created, because customer and restaurant requirements are checked after the request is accepted.
+A `200 Event received` response means Samparka accepted the webhook delivery. It does not guarantee that loyalty activity was created, because customer and integration-state requirements are checked after the request is accepted.
 
 `ACTIVE` only proves integration activation. Business success is confirmed only after:
 

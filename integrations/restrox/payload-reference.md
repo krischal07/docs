@@ -54,11 +54,9 @@ samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
 | ----- | ---- | -------- | ----------- | ------- |
 | `event_type` | string | Yes | RestroX event name. `type` is also accepted if `event_type` is missing. | `order.completed` |
 | `order_id` or `transaction_id` or `id` | string | Yes | Sale or refund identifier used as the transaction reference. | `restrox-sale-1001` |
-| `external_location_id` or `location_id` or `outlet_id` or `branch_id` | string | Yes | Restaurant identifier that must match the connected integration binding. | `ktm-branch-01` |
 
 Source:
 samparka-backend/src/integrations/pos/providers/restrox/parser.js:20-27
-samparka-backend/src/integrations/pos/providers/restrox/parser.js:43-48
 
 ### Optional Fields
 
@@ -67,17 +65,37 @@ samparka-backend/src/integrations/pos/providers/restrox/parser.js:43-48
 | `created_at` or `timestamp` | string | No | Event time from RestroX. | `2026-06-08T10:15:00.000Z` |
 | `amount` or `order_total` or `total` | number | No | Transaction amount. | `850` |
 | `currency` or `currency_code` | string | No | Currency code. Defaults to `NPR` if omitted. | `NPR` |
-| `customer.phone` or `phone` or `customer_phone` | string | No | Customer phone number. | `9800000101` |
-| `customer.email` or `email` | string | No | Customer email used for downstream customer verification when available. | `restrox-sale-1001@example.com` |
+| `customer.phone` or `phone` or `customer_phone` | string | No | Primary customer identifier for search and loyalty attribution. | `9800000101` |
+| `customer.email` or `email` | string | No | Optional customer metadata when available. | `restrox-sale-1001@example.com` |
 | `items` or `line_items` | array | No | Line items for the sale or refund. | `[{ "name": "Cappuccino", "qty": 1, "price": 850 }]` |
-| `external_location_name` or `location_name` or `branch_name` or `outlet_name` | string | No | Human-readable outlet name. | `Kathmandu Branch` |
+| `external_location_id` or `location_id` or `outlet_id` or `branch_id` | string | No | Optional non-canonical restaurant metadata. Outlet-owned attribution is resolved from the integration binding instead. | `ktm-branch-01` |
+| `external_location_name` or `location_name` or `branch_name` or `outlet_name` | string | No | Optional non-canonical restaurant label. | `Kathmandu Branch` |
 
 Source:
 samparka-backend/src/integrations/pos/providers/restrox/parser.js:29-61
 
+## Restaurant Attribution Source Of Truth
+
+For outlet-owned RestroX:
+
+```txt
+Webhook Token
+-> PosIntegration
+-> Outlet
+-> Bound Restaurant
+```
+
+Restaurant identity is resolved from:
+
+- `integration.external_location_id`
+- `integration.external_location_name`
+
+not from webhook payload fields.
+
 ## Ignored By Samparka If Present
 
 Any fields outside the parser mappings above are not required for the canonical webhook flow.
+Webhook payload restaurant identity fields are optional, non-canonical metadata for outlet-owned integrations.
 
 Source:
 samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61

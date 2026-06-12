@@ -1,22 +1,65 @@
 ---
 title: Postman Collection
-description: Root-level mirror of the current RestroX Postman collection.
+description: Download, import, and run the reviewed RestroX Postman collection for merchant lifecycle, customer verification, and webhook testing.
 sidebarTitle: Postman Collection
 ---
 
 # Postman Collection
 
-Use this root-level download when you need the current RestroX lifecycle and customer-verification collection from a stable public URL.
+Use the reviewed Postman collection for hands-on merchant lifecycle, partner API, webhook, and customer-verification testing without changing the underlying request definitions.
 
 <Columns cols={2}>
   <Card title="Download Collection" icon="download" href="/postman-collection.json">
-    Download the mirrored JSON collection for merchant lifecycle, webhook verification, and customer verification.
+    Download the canonical `postman-collection.json` file used for lifecycle and customer-verification testing.
   </Card>
-  <Card title="Canonical Guide" icon="book-open" href="/integrations/restrox/reference/postman-collection">
-    Open the full RestroX Postman guide with testing order and setup details.
+  <Card title="Testing Guide" icon="flask-conical" href="/testing-guide">
+    Pair the collection with the documented response expectations and fixture order.
   </Card>
 </Columns>
 
+## Import Instructions
+
+<Steps>
+  <Step title="Download The JSON File">
+    Save the raw `postman-collection.json` file directly from this documentation portal.
+  </Step>
+  <Step title="Import Into Postman">
+    In Postman, choose import and select the unchanged collection file.
+  </Step>
+  <Step title="Fill Environment Values">
+    Set `baseUrl`, `merchantToken`, `partnerKey`, `storeId`, `outletId`, `integrationKey`, `expectedRestaurantId`, `expectedRestaurantName`, `customerPhone`, and `token`.
+  </Step>
+</Steps>
+
+## Collection Sections
+
+- `Merchant API`
+- `Partner API`
+- `Webhook Verification`
+- `Customer API`
+- `Verification`
+- `Deprecated / Compatibility`
+
+## Recommended Testing Order
+
+<Steps>
+  <Step title="Create And Connect">
+    Create the integration, connect the restaurant, and confirm the integration reaches `CONNECTED`.
+  </Step>
+  <Step title="Submit Test Sale">
+    Send the first valid sale and confirm the integration reaches `ACTIVE`.
+  </Step>
+  <Step title="Verify Customer Outcome">
+    Search for the customer, fetch customer details, and verify loyalty data and points were populated.
+  </Step>
+  <Step title="Verify Failure Cases">
+    Confirm invalid webhook token handling, disconnected integration state, and missing restaurant binding before connect.
+  </Step>
+  <Step title="Exercise Lifecycle">
+    Run disconnect, reconnect, and rebind checks, then use the verification folder to confirm the expected states.
+  </Step>
+</Steps>
+
 <Info>
-The root-level `postman-collection.json` file now mirrors the current `integrations/restrox/postman-collection.json` contract so both URLs serve the same collection, including the new customer-verification requests.
+The collection only uses the active singular connect contract and phone-first webhook examples. No request in the active collection uses the legacy `account + locations[]` payload or payload-side restaurant mismatch checks.
 </Info>

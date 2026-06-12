@@ -27,7 +27,7 @@ Use the reviewed Postman collection for hands-on merchant lifecycle, partner API
     In Postman, choose import and select the unchanged collection file.
   </Step>
   <Step title="Fill Environment Values">
-    Set `baseUrl`, `merchantToken`, `partnerKey`, `storeId`, `outletId`, `integrationKey`, `expectedRestaurantId`, `expectedRestaurantName`, `customerPhone`, `customerEmail`, and `token`.
+    Set `baseUrl`, `merchantToken`, `partnerKey`, `storeId`, `outletId`, `integrationKey`, `expectedRestaurantId`, `expectedRestaurantName`, `customerPhone`, and `token`.
   </Step>
 </Steps>
 
@@ -53,7 +53,7 @@ Use the reviewed Postman collection for hands-on merchant lifecycle, partner API
     Search for the customer, fetch customer details, and verify loyalty data and points were populated.
   </Step>
   <Step title="Verify Failure Cases">
-    Send the mismatch webhook and confirm the integration health moves to `ERROR` without changing the active contract.
+    Confirm invalid webhook token handling, disconnected integration state, and missing restaurant binding before connect.
   </Step>
   <Step title="Exercise Lifecycle">
     Run disconnect, reconnect, and rebind checks, then use the verification folder to confirm the expected states.
@@ -61,5 +61,5 @@ Use the reviewed Postman collection for hands-on merchant lifecycle, partner API
 </Steps>
 
 <Info>
-The collection only uses the active singular connect contract. No request in the active collection uses the legacy `account + locations[]` payload.
+The collection only uses the active singular connect contract and phone-first webhook examples. No request in the active collection uses the legacy `account + locations[]` payload or payload-side restaurant mismatch checks.
 </Info>

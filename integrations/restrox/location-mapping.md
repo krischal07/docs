@@ -1,10 +1,10 @@
 ---
-title: Location Mapping
+title: Restaurant Binding Reference
 description: Understand how the connected restaurant binding is used during webhook delivery.
-sidebarTitle: Location Mapping
+sidebarTitle: Restaurant Binding
 ---
 
-# Location Mapping
+# Restaurant Binding Reference
 
 RestroX connect is outlet-owned and singular:
 
@@ -21,7 +21,7 @@ The `connect` step persists:
 - `external_location_id`
 - `external_location_name`
 
-Webhook delivery must then send the same restaurant identifier so the inbound event matches the connected outlet.
+Webhook delivery then resolves the bound restaurant from the integration that owns the webhook token.
 
 Source:
 samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
@@ -35,25 +35,39 @@ integrationKey
 -> external_location_id
 ```
 
-There is no location sync, location review, location selection, or location approval step in the active connect path.
+There is no legacy multi-step restaurant onboarding step in the active connect path.
 
-## What Webhook Delivery Needs To Send
+## Canonical Webhook Attribution
 
-Send one of these location fields:
+```txt
+Webhook Token
+-> PosIntegration
+-> Bound Restaurant
+```
+
+Restaurant identity is derived from the integration binding.
+
+## Optional Payload Restaurant Fields
+
+Webhook payloads may still include:
 
 - `external_location_id`
 - `location_id`
 - `outlet_id`
 - `branch_id`
+- `external_location_name`
+- `location_name`
+- `branch_name`
+- `outlet_name`
 
-`external_location_name`, `location_name`, `branch_name`, or `outlet_name` can also be sent as an optional label.
+These fields are optional, non-canonical metadata for outlet-owned integrations.
 
 Source:
 samparka-backend/src/integrations/pos/providers/restrox/parser.js:43-54
 
 ## What Response To Expect
 
-If the token is valid, Samparka can still return `200 Event received` even when the location payload does not match a valid outlet mapping. That acknowledgment means the delivery was accepted, not necessarily credited.
+If the token is valid, Samparka can still return `200 Event received` even when the integration is not yet in a processable state. That acknowledgment means the delivery was accepted, not necessarily credited.
 
 Source:
 samparka-backend/src/integrations/pos/controller.js:246-349
@@ -63,9 +77,9 @@ samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
 
 If a sale is accepted but expected loyalty activity is missing, verify:
 
-1. The payload includes a location identifier.
-2. The location identifier matches the already connected restaurant binding.
-3. The integration was connected before the webhook was sent.
+1. The integration was connected before the webhook was sent.
+2. The integration still has a bound restaurant.
+3. The payload includes a valid customer phone and transaction reference.
 
 Source:
 samparka-backend/src/integrations/pos/controller.js:285-365

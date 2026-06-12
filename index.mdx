@@ -1,49 +1,67 @@
 ---
-title: Samparka Docs
-description: Welcome to Samparka Docs. Choose an integration guide and start onboarding with the right workflow.
+title: RestroX Integration Guide
+description: Integrate RestroX with Samparka Loyalty using secure webhooks.
 sidebarTitle: Home
 mode: wide
 hideFooterPagination: true
 ---
 
-# Welcome to Samparka Docs
+# RestroX Integration Guide
 
-Choose the integration guide you need and follow the onboarding path for that product.
+Integrate RestroX with Samparka Loyalty using a singular connect contract and secure webhooks.
 
 <Info>
-This portal is designed to host multiple Samparka integration guides. RestroX is available now, and more integrations can be added alongside it later.
+This portal organizes the reviewed RestroX integration documents into a cleaner onboarding path. The underlying Markdown guides remain the canonical source of truth.
 </Info>
 
 <Columns cols={2}>
-  <Card title="RestroX" icon="webhook" href="/integrations/restrox">
-    Open the full RestroX integration guide, including onboarding, testing, examples, and reference materials.
+  <Card title="Quick Start" icon="rocket" href="/quick-start">
+    Connect the restaurant, configure the webhook, and reach a working baseline quickly.
   </Card>
-  <Card title="More Integrations Soon" icon="layers">
-    Future partner integrations will appear here as additional documentation packages are published.
+  <Card title="Event Types" icon="radio" href="/event-types">
+    Review the sale, refund, and void events accepted by Samparka.
+  </Card>
+  <Card title="Testing Guide" icon="flask-conical" href="/testing-guide">
+    Validate delivery, duplicate handling, refunds, and common failure paths.
+  </Card>
+  <Card title="Integration Checklist" icon="clipboard-list" href="/integration-checklist">
+    Complete the production-readiness checks before enabling live traffic.
   </Card>
 </Columns>
 
-## How To Use This Portal
+## Onboarding Flow
 
 <Steps>
-  <Step title="Choose An Integration">
-    Start from the integration card that matches the platform you are connecting to Samparka.
+  <Step title="Receive Integration Key">
+    Confirm the Samparka Integration Key for the outlet-owned RestroX integration.
   </Step>
-  <Step title="Follow The Guide">
-    Each integration section can include its own getting-started flow, payload requirements, test cases, and reference assets.
+  <Step title="Connect Restaurant">
+    Call the connect endpoint with `integrationKey`, `restaurantId`, and optional `restaurantName`.
   </Step>
-  <Step title="Use Canonical Assets">
-    Download the integration-specific OpenAPI, Postman, and example payload assets from within that integration section.
+  <Step title="Configure Webhook">
+    Point RestroX at the Samparka webhook endpoint after the integration status is `CONNECTED`.
   </Step>
-  <Step title="Return Here For New Guides">
-    As more Samparka integrations are published, they will be added to this homepage.
+  <Step title="Send Test Sale">
+    Use the documented phone-first sale fixture to verify that an accepted request returns a `200` acknowledgment.
+  </Step>
+  <Step title="Verify Response">
+    Confirm the expected success message, verify customer lookup by phone, and resend the same payload once to validate idempotency.
+  </Step>
+  <Step title="Test Refund">
+    Send a `refund.created` payload that references the original sale identifier.
+  </Step>
+  <Step title="Go Live">
+    Finish the integration checklist, then promote the connection to production traffic.
   </Step>
 </Steps>
 
-## Available Now
+## Start With
 
-<Columns cols={1}>
-  <Card title="RestroX Integration Guide" icon="book-open" href="/integrations/restrox">
-    Go to the RestroX landing page to access the complete guide, test flow, examples, and machine-readable references.
+<Columns cols={2}>
+  <Card title="Partner Handoff" icon="handshake" href="/PARTNER-HANDOFF">
+    Follow the recommended partner flow from handoff through go-live.
+  </Card>
+  <Card title="Technical Reference" icon="book-open" href="/reference/overview">
+    Jump into endpoint, API, and Postman reference materials.
   </Card>
 </Columns>

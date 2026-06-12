@@ -13,6 +13,7 @@ See also: [Testing Guide](./testing-guide).
 - [ ] `POST /api/partners/restrox/connect` tested
 - [ ] `integrationKey` verified
 - [ ] `restaurantId` verified
+- [ ] Bound restaurant stored on the integration
 - [ ] Response status is `CONNECTED`
 - [ ] Only the singular connect payload is used in active tooling and tests
 
@@ -47,7 +48,7 @@ samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
 ## Business Outcome Verification
 
 - [ ] First valid sale moves the integration to `ACTIVE`
-- [ ] Customer can be found by the phone or email used in the test sale
+- [ ] Customer can be found by the phone used in the test sale
 - [ ] Customer belongs to the expected store or business
 - [ ] Customer detail response includes loyalty data
 - [ ] Loyalty transaction exists for the verified sale
@@ -55,9 +56,9 @@ samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
 
 ## Restaurant Binding
 
-- [ ] `external_location_id` matches the connected restaurant
-- [ ] Unknown location tested
-- [ ] Blocked-location scenario verified
+- [ ] Restaurant binding was established through connect
+- [ ] Integration shows the expected `externalLocationId`
+- [ ] Missing-binding state verified before connect
 
 Source:
 samparka-backend/src/integrations/pos/controller.js:285-365

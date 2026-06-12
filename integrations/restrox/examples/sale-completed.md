@@ -18,8 +18,6 @@ Use the `sale_completed_request` fixture from [`payloads.json`](./payloads.json)
   "amount": 850,
   "currency": "NPR",
   "customer": { "phone": "9800000101" },
-  "external_location_id": "ktm-branch-01",
-  "external_location_name": "Kathmandu Branch",
   "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
 }
 ```
@@ -35,7 +33,7 @@ Use the `sale_completed_request` fixture from [`payloads.json`](./payloads.json)
 
 ## What Happened
 
-Samparka accepted the sale webhook and continued processing it as a completed sale event.
+Samparka accepted the sale webhook, resolved the integration from the webhook token, and continued processing it as a completed sale event.
 
 Source:
 samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61

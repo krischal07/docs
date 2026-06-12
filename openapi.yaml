@@ -180,9 +180,6 @@ paths:
                     currency: NPR
                     customer:
                       phone: '9800000101'
-                      email: restrox-sale-1001@example.com
-                    external_location_id: ktm-branch-01
-                    external_location_name: Kathmandu Branch
                     items:
                       - name: Cappuccino
                         qty: 1
@@ -200,12 +197,6 @@ paths:
                   value:
                     success: true
                     message: Event received
-        '409':
-          description: Restaurant binding missing or mismatched
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
   /api/partners/restrox/sync-locations:
     post:
       summary: Compatibility-only sync route for outlet-owned RestroX
@@ -249,11 +240,6 @@ paths:
       operationId: searchCustomers
       parameters:
         - name: phone
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: email
           in: query
           required: false
           schema:
@@ -314,6 +300,7 @@ paths:
       description: |
         Send RestroX sale, refund, or void webhooks to Samparka after the integration is connected.
         A 200 acknowledgment means the delivery was accepted. It does not guarantee loyalty activity was created.
+        For outlet-owned RestroX, restaurant attribution is resolved from the integration bound to the webhook token.
       operationId: postRestroxWebhook
       parameters:
         - $ref: '#/components/parameters/WebhookToken'
@@ -335,30 +322,10 @@ paths:
                   currency: NPR
                   customer:
                     phone: '9800000101'
-                    email: restrox-sale-1001@example.com
-                  external_location_id: ktm-branch-01
-                  external_location_name: Kathmandu Branch
                   items:
                     - name: Cappuccino
                       qty: 1
                       price: 850
-              blockedLocation:
-                summary: Unknown location example
-                x-source-fixture: examples/payloads.json#/blocked_location_request
-                value:
-                  event_type: order.completed
-                  order_id: restrox-sale-2001
-                  created_at: '2026-06-08T13:10:00.000Z'
-                  amount: 600
-                  currency: NPR
-                  customer:
-                    phone: '9800000103'
-                  external_location_id: unknown-branch-99
-                  external_location_name: Unknown Branch
-                  items:
-                    - name: Latte
-                      qty: 1
-                      price: 600
       responses:
         '200':
           description: Event accepted or duplicate acknowledged
@@ -594,20 +561,28 @@ components:
           type: string
         external_location_id:
           type: string
+          description: Optional non-canonical restaurant metadata for outlet-owned attribution.
         location_id:
           type: string
+          description: Optional non-canonical restaurant metadata for outlet-owned attribution.
         outlet_id:
           type: string
+          description: Optional non-canonical restaurant metadata for outlet-owned attribution.
         branch_id:
           type: string
+          description: Optional non-canonical restaurant metadata for outlet-owned attribution.
         external_location_name:
           type: string
+          description: Optional non-canonical restaurant label.
         location_name:
           type: string
+          description: Optional non-canonical restaurant label.
         branch_name:
           type: string
+          description: Optional non-canonical restaurant label.
         outlet_name:
           type: string
+          description: Optional non-canonical restaurant label.
         phone:
           type: string
         customer_phone:
@@ -620,6 +595,7 @@ components:
               type: string
             email:
               type: string
+              description: Optional customer metadata.
         items:
           type: array
           items:
@@ -628,7 +604,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LineItem'
-      description: Request payload fields consumed by Samparka for the RestroX webhook.
+      description: Request payload fields consumed by Samparka for the RestroX webhook. Restaurant identity is resolved from the integration binding, not from payload restaurant fields.
     LineItem:
       type: object
       additionalProperties: true

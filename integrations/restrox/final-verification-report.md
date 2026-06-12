@@ -6,128 +6,72 @@ sidebarTitle: Verification Report
 
 # Final Verification Report
 
-This report is the acceptance gate for the RestroX partner package after the outlet-owned connect cleanup and customer-verification completion pass.
+This report captures the documentation-only migration for the outlet-owned RestroX webhook simplification.
 
 ## Files Updated
 
-- `samparka-backend/src/integrations/pos/partners/restrox/controller.js`
-- `samparka-backend/src/integrations/pos/partners/restrox/service.js`
-- `samparka-backend/__tests__/integrations/partner.routes.test.js`
-- `samparka-backend/src/integrations/pos/merchant/constants.js`
-- `samparka-frontend/src/components/integrations/IntegrationKeyCard.jsx`
-- `docs/restrox-partner-guide/README.md`
-- `docs/restrox-partner-guide/PARTNER-HANDOFF.md`
-- `docs/restrox-partner-guide/quick-start.md`
-- `docs/restrox-partner-guide/payload-reference.md`
-- `docs/restrox-partner-guide/location-mapping.md`
-- `docs/restrox-partner-guide/testing-guide.md`
-- `docs/restrox-partner-guide/troubleshooting.md`
-- `docs/restrox-partner-guide/endpoint-catalog.md`
-- `docs/restrox-partner-guide/reference/postman-collection.mdx`
-- `docs/restrox-partner-guide/openapi.yaml`
-- `docs/restrox-partner-guide/postman-collection.json`
-- `docs/restrox-partner-guide/examples/payloads.json`
+- `README.md`
+- `PARTNER-HANDOFF.md`
+- `quick-start.md`
+- `testing-guide.md`
+- `payload-reference.md`
+- `location-mapping.md`
+- `troubleshooting.md`
+- `response-reference.md`
+- `refunds.md`
+- `integration-checklist.md`
+- `index.mdx`
+- `known-behaviors-and-limitations.md`
+- `reference/postman-collection.mdx`
+- `openapi.yaml`
+- `postman-collection.json`
+- `examples/payloads.json`
+- `examples/sale-completed.md`
+- `examples/refund-created.md`
+- `examples/duplicate-webhook.md`
+- `examples/blocked-location.md`
+- `examples/overview.mdx`
 
-## Connect Payloads Rewritten
+## Contract Summary
 
-Active connect contract:
-
-```json
-{
-  "integrationKey": "string",
-  "restaurantId": "string",
-  "restaurantName": "string"
-}
-```
-
-Removed from the active connect contract:
-
-- `account`
-- `locations`
-- `locationList`
-- `restaurantList`
-- `branches`
-
-## Postman Requests Updated
-
-- Added merchant lifecycle folders and verification checks
-- Added customer search and customer details requests
-- Added lifecycle verification requests for `CONNECTED`, `ACTIVE`, `ERROR`, `DISCONNECTED`, `RECONNECTED`, and `REBOUND`
-- Confirmed no active Postman request uses the legacy `account + locations[]` payload
-
-## OpenAPI Examples Updated
-
-- Added `POST /api/partners/restrox/connect`
-- Added customer search and customer detail endpoints
-- Added singular connect request example
-- Added connect success example
-- Added customer-verification response examples
-
-## OpenAPI Schemas Updated
-
-- Added `RestroxConnectRequest`
-- Added `RestroxConnectResponse`
-- Added customer search and customer detail response schemas
-- Confirmed `integrationKey` required
-- Confirmed `restaurantId` required
-- Confirmed `restaurantName` optional
-- Confirmed the active connect schema does not expose `account`, `locations`, `locationList`, `restaurantList`, or `branches`
-
-## Diagrams Updated
-
-Connect sequence is now:
+Canonical flow:
 
 ```txt
-Connect
--> Bind Restaurant
--> CONNECTED
--> Receive Sale
--> ACTIVE
--> Verify Customer Exists
--> Verify Loyalty Transaction
--> Verify Points Awarded
+Partner Connect
+-> Bind restaurantId
+-> Persist external_location_id
+-> Persist external_location_name
+
+Webhook Event
+-> Resolve webhook token
+-> Resolve PosIntegration
+-> Resolve bound restaurant
+-> Process sale/refund
 ```
 
-## Legacy Persistence Review
+Restaurant attribution now documents the integration binding as the source of truth.
+Webhook payload restaurant identity fields are documented only as optional non-canonical metadata for outlet-owned attribution.
 
-- `partner_metadata.accountId`
-  - action taken: removed from the active connect path
-  - reason: the singular contract no longer accepts account metadata
-- `partner_metadata.accountName`
-  - action taken: removed from the active connect path
-  - reason: the singular contract no longer accepts account metadata
-- `external_location_id`
-  - action taken: retained
-  - reason: it is the required outlet-owned restaurant binding
-- `external_location_name`
-  - action taken: retained
-  - reason: it stores the optional display label for the bound restaurant
-- `partner_metadata.reviewIssues`
-  - action taken: retained
-  - reason: this metadata is still used by merchant readiness flows outside the active RestroX connect path
-- `posIntegrationLocation` mapping rows
-  - action taken: retained
-  - reason: webhook routing and non-connect merchant tooling still depend on these documents outside the active connect path
+## What Changed
 
-## Implementation / Documentation Mismatches
+- Webhook examples now use phone-first customer payloads and no longer require `customer.email`.
+- Active webhook examples no longer require `restaurantId`, `restaurantName`, `external_location_id`, or `external_location_name`.
+- Customer API coverage now documents `GET /customers/search?phone=...` and `GET /customers/{customerId}` with follow-up assertions.
+- Postman coverage now tests invalid webhook token, disconnected integration state, and missing restaurant binding on the integration instead of payload mismatch scenarios.
+- Diagrams and onboarding copy now describe connect-time binding and token-to-integration-to-bound-restaurant attribution.
 
-- None after this cleanup.
+## Search Verification
 
-## Remaining Connect-Flow Risks
-
-- `POST /api/partners/restrox/sync-locations` still exists for compatibility, so future changes must avoid reintroducing it into onboarding or partner-facing connect guidance.
-- Merchant readiness code still contains older review and mapping language for broader POS flows; only the outlet-owned RestroX connect path was normalized here.
-
-## Contract Removal Verification
-
-Search targets reviewed in RestroX docs and artifacts:
-
-- `locations[`
-- `restaurantList`
-- `locationList`
-- `branches`
+Reviewed repository-wide references for the requested legacy customer-email, payload-restaurant, and integration-binding terms.
 
 Result:
 
-- No active RestroX connect contract requires or documents array-based restaurant selection.
-- No active request, schema, example, diagram, or Postman request uses the legacy array payload.
+- No active webhook example requires payload restaurant identity.
+- No active documentation describes payload-side restaurant mismatch validation.
+- Remaining `restaurantId` references are limited to the connect contract.
+- Remaining `external_location_id` and `external_location_name` references describe integration binding or optional non-canonical payload fields.
+
+## Remaining Documentation Risks
+
+- Compatibility endpoints such as `sync-locations` and the deprecated locations route still appear in reference material and must stay clearly marked as non-onboarding paths.
+- The file path `examples/blocked-location.md` is retained for link compatibility even though the page content now documents missing integration binding rather than payload location mismatch.
