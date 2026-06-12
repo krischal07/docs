@@ -590,8 +590,13 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('search returns 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"customer search succeeds\", () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
                   "const body = pm.response.json();",
+                  "pm.test(\"response contains customer data\", () => {",
+                  "  pm.expect(body).to.be.an(\"object\");",
+                  "});",
                   "const customers = Array.isArray(body.data) ? body.data : Array.isArray(body.customers) ? body.customers : Array.isArray(body.results) ? body.results : [];",
                   "pm.test('customer exists', function () { pm.expect(customers.length).to.be.greaterThan(0); });",
                   "const phone = pm.collectionVariables.get('customerPhone');",
@@ -612,17 +617,23 @@
             "method": "GET",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{merchantToken}}"
+                "key": "x-partner-key",
+                "value": "{{partnerKey}}"
+              },
+              {
+                "key": "x-integration-key",
+                "value": "{{integrationKey}}"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/customers/search?phone={{customerPhone}}",
+              "raw": "{{baseUrl}}/api/partners/restrox/customers/search?phone={{customerPhone}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
+                "partners",
+                "restrox",
                 "customers",
                 "search"
               ],

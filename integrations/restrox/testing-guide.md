@@ -115,8 +115,9 @@ After the first valid sale, fetch the merchant integration and confirm:
 ## Customer Search After First Sale
 
 ```bash
-curl -X GET "https://your-domain/api/customers/search?phone=9800000101" \
-  -H "Authorization: Bearer {{merchantToken}}"
+curl -X GET "https://your-domain/api/partners/restrox/customers/search?phone=9800000101" \
+  -H "x-partner-key: {{partnerKey}}" \
+  -H "x-integration-key: {{integrationKey}}"
 ```
 
 Assertions:
@@ -124,7 +125,21 @@ Assertions:
 - response `200`
 - customer exists
 - phone matches the sale payload
-- customer belongs to the expected store or business
+- customer belongs to the store resolved by `integrationKey`
+
+Customer lookup authorization is:
+
+```txt
+Partner Key
++
+Integration Key
+=
+Customer Lookup Authorization
+```
+
+- `x-partner-key` identifies RestroX
+- `x-integration-key` identifies the merchant or store context
+- search results are scoped to that integration's store
 
 ## Customer Details Verification
 

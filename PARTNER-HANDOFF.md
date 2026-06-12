@@ -31,7 +31,8 @@ flowchart TD
   C --> D["Webhook Resolves Token"]
   D --> E["System Resolves Integration"]
   E --> F["System Attributes Sale To Bound Restaurant"]
-  F --> G["System Awards Loyalty"]
+  F --> G["RestroX Calls Partner Customer Search"]
+  G --> H["System Returns Store-Scoped Loyalty Data"]
 ```
 
 Source:
@@ -82,6 +83,18 @@ samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
 Use [Integration Checklist](./integration-checklist) for go-live validation.
 
 `ACTIVE` only proves the integration activated. Do not sign off until customer verification, loyalty transaction verification, and points verification are complete.
+
+## Customer Lookup Contract
+
+Use the partner-authenticated customer lookup route:
+
+```http
+GET /api/partners/restrox/customers/search?phone={{customerPhone}}
+x-partner-key: {{partnerKey}}
+x-integration-key: {{integrationKey}}
+```
+
+`x-partner-key` identifies RestroX. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
 
 ## OpenAPI
 

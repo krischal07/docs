@@ -10,7 +10,7 @@ sidebarTitle: Endpoint Catalog
 - `POST /api/partners/restrox/connect`
 - `POST /api/partners/restrox/test-sale`
 - `POST /webhook/restrox/{token}`
-- `GET /api/customers/search`
+- `GET /api/partners/restrox/customers/search`
 - `GET /api/customers/{customerId}`
 - `POST /api/partners/restrox/sync-locations` (deprecated)
 - `GET /api/pos-integrations/{id}/locations` (deprecated)

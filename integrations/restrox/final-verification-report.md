@@ -6,7 +6,7 @@ sidebarTitle: Verification Report
 
 # Final Verification Report
 
-This report captures the documentation-only migration for the outlet-owned RestroX webhook simplification.
+This report captures the documentation-only correction for RestroX partner-authenticated customer lookup and the existing outlet-owned webhook flow.
 
 ## Files Updated
 
@@ -47,6 +47,11 @@ Webhook Event
 -> Resolve PosIntegration
 -> Resolve bound restaurant
 -> Process sale/refund
+
+Customer Lookup
+-> Authenticate RestroX with partner key
+-> Scope search with integration key
+-> Return loyalty data for that integration's store
 ```
 
 Restaurant attribution now documents the integration binding as the source of truth.
@@ -56,18 +61,19 @@ Webhook payload restaurant identity fields are documented only as optional non-c
 
 - Webhook examples now use phone-first customer payloads and no longer require `customer.email`.
 - Active webhook examples no longer require `restaurantId`, `restaurantName`, `external_location_id`, or `external_location_name`.
-- Customer API coverage now documents `GET /customers/search?phone=...` and `GET /customers/{customerId}` with follow-up assertions.
+- Customer API coverage now documents `GET /api/partners/restrox/customers/search?phone=...` with `x-partner-key` plus `x-integration-key`, and keeps `GET /api/customers/{customerId}` for follow-up detail verification.
 - Postman coverage now tests invalid webhook token, disconnected integration state, and missing restaurant binding on the integration instead of payload mismatch scenarios.
 - Diagrams and onboarding copy now describe connect-time binding and token-to-integration-to-bound-restaurant attribution.
 
 ## Search Verification
 
-Reviewed repository-wide references for the requested legacy customer-email, payload-restaurant, and integration-binding terms.
+Reviewed repository-wide references for legacy RestroX customer-search auth and path examples, including old merchant bearer-auth patterns and the old customer-search route.
 
 Result:
 
-- No active webhook example requires payload restaurant identity.
-- No active documentation describes payload-side restaurant mismatch validation.
+- No active RestroX customer-search example uses merchant bearer auth.
+- No active RestroX customer-search example uses the legacy customer-search path.
+- Active customer-search examples use `/api/partners/restrox/customers/search`, `x-partner-key`, and `x-integration-key`.
 - Remaining `restaurantId` references are limited to the connect contract.
 - Remaining `external_location_id` and `external_location_name` references describe integration binding or optional non-canonical payload fields.
 

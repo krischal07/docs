@@ -233,15 +233,31 @@ paths:
                     message: Sync skipped for outlet-owned RestroX
                     data:
                       skipped: true
-  /api/customers/search:
+  /api/partners/restrox/customers/search:
     get:
       summary: Search customers after the first sale
-      description: Verify a valid RestroX sale resulted in customer resolution or creation.
-      operationId: searchCustomers
+      description: |
+        Verify a valid RestroX sale resulted in customer resolution or creation.
+        Customer lookup is partner-authenticated and integration-scoped.
+        The documented contract uses `x-partner-key` and `x-integration-key`.
+        The backend also supports `Authorization: Bearer {{partnerKey}}` as an alternative to `x-partner-key`.
+      operationId: searchRestroxCustomers
       parameters:
+        - name: x-partner-key
+          in: header
+          required: true
+          description: Partner key that identifies RestroX.
+          schema:
+            type: string
+        - name: x-integration-key
+          in: header
+          required: true
+          description: Integration key that identifies the merchant or store context for the search.
+          schema:
+            type: string
         - name: phone
           in: query
-          required: false
+          required: true
           schema:
             type: string
       responses:

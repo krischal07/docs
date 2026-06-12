@@ -29,7 +29,7 @@ samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
 5. Send a test `order.completed` webhook to `/webhook/restrox/{token}`.
 6. Samparka resolves the webhook token, resolves the `PosIntegration`, resolves the bound restaurant from the integration, and processes the event.
 7. Verify the integration becomes `ACTIVE`.
-8. Search the customer with `GET /api/customers/search?phone=...` using the phone from the test sale.
+8. Search the customer with `GET /api/partners/restrox/customers/search?phone=...` using `x-partner-key` and `x-integration-key` plus the phone from the test sale.
 9. Fetch the customer with `GET /api/customers/{customerId}` and confirm loyalty fields are populated.
 10. Verify a loyalty transaction exists for the sale and the awarded points reflect successful processing.
 11. Repost the same sale payload once to confirm duplicate safety.
@@ -83,6 +83,22 @@ Webhook Token
 ```
 
 Webhook payload restaurant fields are optional, non-canonical metadata. They are not the source of truth for restaurant attribution.
+
+## Customer Lookup Authorization
+
+Customer lookup for RestroX is partner-authenticated and integration-scoped:
+
+```txt
+Partner Key
++ 
+Integration Key
+=
+Customer Lookup Authorization
+```
+
+- the partner key identifies RestroX
+- the integration key identifies the merchant or store context
+- customer search is scoped to the store that owns the integration
 
 ## Important Delivery Note
 

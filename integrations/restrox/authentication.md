@@ -6,7 +6,33 @@ sidebarTitle: Authentication
 
 # Authentication
 
-RestroX webhooks use token-based routing. Samparka provides a unique webhook token for each configured location, and RestroX includes that token in the webhook URL path.
+RestroX uses partner authentication for partner API calls and token-based routing for webhooks. Samparka provides a unique webhook token for each configured location, and RestroX includes that token in the webhook URL path.
+
+## Customer Lookup Authentication
+
+Use the documented customer lookup contract:
+
+```http
+GET /api/partners/restrox/customers/search?phone={{customerPhone}}
+x-partner-key: {{partnerKey}}
+x-integration-key: {{integrationKey}}
+```
+
+Authorization model:
+
+```txt
+Partner Key
++
+Integration Key
+=
+Customer Lookup Authorization
+```
+
+- the partner key identifies RestroX
+- the integration key identifies the merchant or store context
+- customer search is scoped to that integration's store
+
+The backend also supports `Authorization: Bearer {{partnerKey}}` as an alternative to `x-partner-key`, but the documented onboarding contract uses `x-partner-key`.
 
 Canonical path:
 

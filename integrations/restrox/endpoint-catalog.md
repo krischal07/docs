@@ -14,7 +14,7 @@ sidebarTitle: Endpoint Catalog
 | `POST` | `/api/partners/restrox/connect` | Bind one RestroX restaurant to one outlet-owned Samparka integration | `x-partner-key` header | Active |
 | `POST` | `/api/partners/restrox/test-sale` | Submit a partner-side test sale into the webhook pipeline | `x-partner-key` header | Active |
 | `POST` | `/webhook/restrox/{token}` | Receive RestroX sale, refund, and void webhooks | Token in URL path | Active |
-| `GET` | `/api/customers/search` | Search for the customer created or resolved by the test sale | Merchant auth | Active |
+| `GET` | `/api/partners/restrox/customers/search` | Search for the customer created or resolved by the test sale | `x-partner-key` + `x-integration-key` headers | Active |
 | `GET` | `/api/customers/{customerId}` | Verify loyalty data and points after sale processing | Merchant auth | Active |
 | `POST` | `/api/partners/restrox/sync-locations` | Compatibility-only location sync check | `x-partner-key` header | Deprecated |
 | `GET` | `/api/pos-integrations/{id}/locations` | Compatibility-only shared locations route | Merchant auth | Deprecated |

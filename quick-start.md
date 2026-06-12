@@ -116,16 +116,22 @@ Minimum verification:
 
 ## 6. Verify The Customer Exists
 
-Search for the customer created or resolved by the sale:
+RestroX authenticates as a partner, provides `x-partner-key`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
 
-`GET /api/customers/search?phone={{customerPhone}}`
+```bash
+curl -X GET "https://your-domain/api/partners/restrox/customers/search?phone={{customerPhone}}" \
+  -H "x-partner-key: {{partnerKey}}" \
+  -H "x-integration-key: {{integrationKey}}"
+```
 
 Confirm:
 
 - the response is `200`
 - a customer record exists
 - the returned customer matches the phone used in the sale
-- the customer belongs to the expected store or business
+- the customer belongs to the store scoped by `integrationKey`
+
+`x-partner-key` identifies RestroX. `x-integration-key` identifies the merchant or store context used for the search.
 
 ## 7. Verify Customer Details And Points
 
