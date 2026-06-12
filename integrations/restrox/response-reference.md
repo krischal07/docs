@@ -1,28 +1,109 @@
 ---
 title: Response Reference
-description: Partner-visible responses for RestroX webhook and partner flows.
+description: Reference the webhook acknowledgment and error responses returned by Samparka.
 sidebarTitle: Response Reference
 ---
 
-## Webhook Responses
+# Response Reference
 
-| Status | Message | Meaning |
-| ------ | ------- | ------- |
-| `200` | `Event received` | Valid event accepted. |
-| `200` | `Event already processed` | Duplicate request accepted idempotently. |
-| `400` | `Request body must be a JSON object` | Invalid body shape. |
-| `400` | `Missing event_type in payload` | Required event type absent. |
-| `404` | `Invalid webhook token` | Token did not resolve to a RestroX integration. |
-| `409` | `Integration disconnected` | Integration lifecycle status is `DISCONNECTED`. |
-| `409` | `Integration is not connected to a restaurant` | Integration has no stored restaurant binding. |
-| `409` | `Restaurant binding mismatch` | Payload restaurant identifier does not match the stored binding. |
+These are the partner-visible responses for the canonical RestroX webhook path.
 
-## Partner API Responses
+See also: [Troubleshooting](./troubleshooting).
 
-| Route | Status | Meaning |
-| ------ | ------ | ------- |
-| `connect` | `200` | RestroX connected successfully. |
-| `connect` | `409` | Duplicate binding or rebind attempted before disconnect. |
-| `sync-locations` | `200` | Route exists but returns skipped for outlet-owned RestroX. |
-| `test-sale` | `200` | Test sale accepted into webhook pipeline. |
-| `test-sale` | `409` | Stored restaurant binding is missing or does not match. |
+## `200 Event received`
+
+```json
+{
+  "success": true,
+  "message": "Event received"
+}
+```
+
+Meaning: Samparka accepted the delivery.
+
+Recommended sender behavior: record the delivery as acknowledged. Do not retry unless you later confirm the request did not reach Samparka.
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:332-365
+
+## `200 Event already processed`
+
+```json
+{
+  "success": true,
+  "message": "Event already processed"
+}
+```
+
+Meaning: the same webhook was sent before, and Samparka handled it safely.
+
+Recommended sender behavior: stop retrying the same payload.
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:293-312
+
+## `400 Request body must be a JSON object`
+
+```json
+{
+  "success": false,
+  "message": "Request body must be a JSON object"
+}
+```
+
+Meaning: the request body was missing, not JSON, or was an array instead of an object.
+
+Recommended sender behavior: correct the request body and resend.
+
+Source:
+samparka-backend/src/integrations/pos/providers/restrox/validator.js:23-26
+samparka-backend/src/integrations/pos/controller.js:217-221
+
+## `400 Missing event_type in payload`
+
+```json
+{
+  "success": false,
+  "message": "Missing event_type in payload"
+}
+```
+
+Meaning: the payload did not include `event_type` or `type`.
+
+Recommended sender behavior: add the event type and resend.
+
+Source:
+samparka-backend/src/integrations/pos/providers/restrox/parser.js:20-23
+samparka-backend/src/integrations/pos/controller.js:235-243
+
+## `404 Invalid webhook token`
+
+```json
+{
+  "success": false,
+  "message": "Invalid webhook token"
+}
+```
+
+Meaning: the token in the URL did not match a configured RestroX webhook location.
+
+Recommended sender behavior: verify the webhook URL with Samparka before retrying.
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:200-205
+
+## `500 Internal server error`
+
+```json
+{
+  "success": false,
+  "message": "Internal server error"
+}
+```
+
+Meaning: Samparka encountered an unexpected error while handling the request.
+
+Recommended sender behavior: retry later with the same payload.
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:367-397

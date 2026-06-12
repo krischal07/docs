@@ -1,22 +1,45 @@
 ---
-title: Getting Started
-description: Choose the right RestroX setup guide for the outlet-owned integration.
-sidebarTitle: Getting Started
+title: Getting Started Overview
+description: Navigate the RestroX onboarding flow and choose the right guide for each setup step.
+sidebarTitle: Overview
 ---
 
-Use this section when you want the fastest route to a correct RestroX setup.
+# Getting Started
+
+Use this section to move from first read to first successful webhook delivery.
 
 <Columns cols={2}>
-  <Card title="Partner Handoff" icon="handshake" href="/integrations/restrox/PARTNER-HANDOFF">
-    Recommended reading order for engineering and onboarding teams.
+  <Card title="Partner Handoff" icon="handshake" href="/PARTNER-HANDOFF">
+    Best starting point for a new RestroX engineer.
   </Card>
-  <Card title="Quick Start" icon="rocket" href="/integrations/restrox/quick-start">
-    Create, connect, and activate a RestroX outlet quickly.
+  <Card title="Quick Start" icon="rocket" href="/quick-start">
+    Shortest path to a successful sale and refund test.
   </Card>
-  <Card title="Authentication" icon="key-round" href="/integrations/restrox/native/authentication">
-    Review partner key, Integration Key, and webhook token roles.
+  <Card title="Authentication" icon="shield" href="/authentication">
+    Confirm how the webhook token is used to authorize delivery.
   </Card>
-  <Card title="Connection Keys" icon="key" href="/integrations/restrox/native/connection-keys">
-    Understand when the Integration Key is generated and reused.
+  <Card title="Webhook Endpoint" icon="webhook" href="/webhook-endpoint">
+    Review the request target, request format, and acknowledgment timing.
   </Card>
 </Columns>
+
+## Recommended Reading Order
+
+<Steps>
+  <Step title="Start With Handoff">
+    Open the partner handoff page for the full onboarding path and partner-specific flow.
+  </Step>
+  <Step title="Read The Quick Start">
+    Use the quick start to set up delivery and confirm the happy path quickly.
+  </Step>
+  <Step title="Verify Auth And Endpoint">
+    Review authentication and endpoint details before moving into repeated testing.
+  </Step>
+  <Step title="Expand Into Testing">
+    Use the testing guide, examples, and checklist to validate the full lifecycle.
+  </Step>
+</Steps>
+
+<Note>
+The broader reviewed overview remains available in the canonical [RestroX Partner Guide](/README).
+</Note>

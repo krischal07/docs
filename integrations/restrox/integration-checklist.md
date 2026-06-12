@@ -1,15 +1,97 @@
 ---
 title: Integration Checklist
-description: Final go-live checklist for an outlet-owned RestroX integration.
+description: Final go-live checklist for validating a RestroX to Samparka integration.
 sidebarTitle: Integration Checklist
 ---
 
-- [ ] Merchant created the RestroX integration with `storeId` and `outletId`
-- [ ] Store has the target outlet already
-- [ ] Integration Key shared with RestroX
-- [ ] Partner connect succeeded
-- [ ] Restaurant binding stored on the integration
-- [ ] Webhook URL copied from the integration detail
-- [ ] First valid sale promoted the integration to `ACTIVE`
-- [ ] Mismatch webhook test returns `409` and sets health to `ERROR`
-- [ ] Disconnect and reconnect behavior verified
+# Integration Checklist
+
+See also: [Testing Guide](./testing-guide).
+
+## Connect Contract
+
+- [ ] `POST /api/partners/restrox/connect` tested
+- [ ] `integrationKey` verified
+- [ ] `restaurantId` verified
+- [ ] Response status is `CONNECTED`
+- [ ] Legacy `locations[]` payload rejected
+
+Source:
+samparka-backend/src/index.js:146-155
+samparka-backend/src/integrations/pos/partners/restrox/controller.js:9-28
+samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
+
+## Webhook Connectivity
+
+- [ ] Webhook URL configured correctly
+- [ ] HTTPS enabled
+- [ ] Correct token used
+- [ ] Test webhook reaches Samparka
+- [ ] Invalid token test verified
+
+Source:
+samparka-backend/src/index.js:151-155
+samparka-backend/src/integrations/pos/controller.js:200-205
+
+## Event Delivery
+
+| Event Type | Tested | Result |
+| ---------- | ------ | ------ |
+| `order.completed` |  |  |
+| `refund.created` |  |  |
+| `order.voided` |  |  |
+
+Source:
+samparka-backend/src/integrations/pos/providers/restrox/mapper.js:18-30
+
+## Restaurant Binding
+
+- [ ] `external_location_id` matches the connected restaurant
+- [ ] Unknown location tested
+- [ ] Blocked-location scenario verified
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:285-365
+samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
+
+## Retry Behavior
+
+- [ ] Same payload sent twice
+- [ ] Duplicate acknowledged safely
+- [ ] No unexpected duplicate outcome observed
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:293-312
+
+## Refund Validation
+
+- [ ] Refund references original sale
+- [ ] Refund test completed
+- [ ] Duplicate refund repost tested
+
+Source:
+samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
+samparka-backend/src/loyalty/handlers/reversalEventHandler.js:158-160
+
+## Production Readiness
+
+- [ ] Production webhook URL configured
+- [ ] Connected restaurant binding verified
+- [ ] Token stored securely
+- [ ] Monitoring enabled
+
+Source:
+samparka-backend/src/integrations/pos/controller.js:285-365
+
+## Go-Live Signoff
+
+Partner Representative:  
+Date:
+
+Samparka Representative:  
+Date:
+
+Status:
+- [ ] Approved
+- [ ] Pending
+- [ ] Blocked

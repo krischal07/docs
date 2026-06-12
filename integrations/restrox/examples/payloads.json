@@ -1,21 +1,30 @@
 {
-  "create_integration_request": {
-    "provider": "restrox",
-    "storeId": "685000000000000000000010",
-    "outletId": "685000000000000000000001"
-  },
   "connect_request": {
-    "integrationKey": "SPK-RX-ABC12345",
-    "account": {
-      "id": "restrox-account-001",
-      "name": "Java Express"
-    },
+    "integrationKey": "restrox-key-001",
+    "restaurantId": "ktm-branch-01",
+    "restaurantName": "Kathmandu Branch"
+  },
+  "legacy_connect_request": {
+    "integrationKey": "restrox-key-001",
     "locations": [
       {
-        "restaurantId": "12345",
+        "restaurantId": "ktm-branch-01",
         "restaurantName": "Kathmandu Branch"
       }
     ]
+  },
+  "connect_response": {
+    "success": true,
+    "message": "RestroX connected",
+    "connected": true,
+    "integrationId": "684915c401ec340433d84ee2",
+    "externalLocationId": "ktm-branch-01",
+    "externalLocationName": "Kathmandu Branch",
+    "status": "CONNECTED"
+  },
+  "connect_validation_response": {
+    "success": false,
+    "message": "restaurantId is required"
   },
   "sale_completed_request": {
     "event_type": "order.completed",
@@ -26,8 +35,15 @@
     "customer": {
       "phone": "9800000101"
     },
-    "restaurantId": "12345",
-    "restaurantName": "Kathmandu Branch"
+    "external_location_id": "ktm-branch-01",
+    "external_location_name": "Kathmandu Branch",
+    "items": [
+      {
+        "name": "Cappuccino",
+        "qty": 1,
+        "price": 850
+      }
+    ]
   },
   "refund_created_request": {
     "event_type": "refund.created",
@@ -38,10 +54,55 @@
     "customer": {
       "phone": "9800000101"
     },
-    "restaurantId": "12345",
-    "restaurantName": "Kathmandu Branch"
+    "external_location_id": "ktm-branch-01",
+    "external_location_name": "Kathmandu Branch",
+    "items": [
+      {
+        "name": "Cappuccino",
+        "qty": 1,
+        "price": 850
+      }
+    ]
   },
-  "mismatch_request": {
+  "voided_sale_request": {
+    "event_type": "order.voided",
+    "order_id": "restrox-sale-1002",
+    "created_at": "2026-06-08T12:00:00.000Z",
+    "amount": 450,
+    "currency": "NPR",
+    "customer": {
+      "phone": "9800000102"
+    },
+    "external_location_id": "ktm-branch-01",
+    "external_location_name": "Kathmandu Branch",
+    "items": [
+      {
+        "name": "Americano",
+        "qty": 1,
+        "price": 450
+      }
+    ]
+  },
+  "duplicate_sale_request": {
+    "event_type": "order.completed",
+    "order_id": "restrox-sale-1001",
+    "created_at": "2026-06-08T10:15:00.000Z",
+    "amount": 850,
+    "currency": "NPR",
+    "customer": {
+      "phone": "9800000101"
+    },
+    "external_location_id": "ktm-branch-01",
+    "external_location_name": "Kathmandu Branch",
+    "items": [
+      {
+        "name": "Cappuccino",
+        "qty": 1,
+        "price": 850
+      }
+    ]
+  },
+  "blocked_location_request": {
     "event_type": "order.completed",
     "order_id": "restrox-sale-2001",
     "created_at": "2026-06-08T13:10:00.000Z",
@@ -50,7 +111,45 @@
     "customer": {
       "phone": "9800000103"
     },
-    "restaurantId": "99999",
-    "restaurantName": "Wrong Branch"
+    "external_location_id": "unknown-branch-99",
+    "external_location_name": "Unknown Branch",
+    "items": [
+      {
+        "name": "Latte",
+        "qty": 1,
+        "price": 600
+      }
+    ]
+  },
+  "missing_event_type_request": {
+    "order_id": "restrox-sale-3001",
+    "created_at": "2026-06-08T14:00:00.000Z",
+    "amount": 300,
+    "currency": "NPR",
+    "external_location_id": "ktm-branch-01"
+  },
+  "event_received_response": {
+    "success": true,
+    "message": "Event received"
+  },
+  "event_already_processed_response": {
+    "success": true,
+    "message": "Event already processed"
+  },
+  "invalid_token_response": {
+    "success": false,
+    "message": "Invalid webhook token"
+  },
+  "validation_failure_response": {
+    "success": false,
+    "message": "Missing event_type in payload"
+  },
+  "invalid_body_response": {
+    "success": false,
+    "message": "Request body must be a JSON object"
+  },
+  "internal_server_error_response": {
+    "success": false,
+    "message": "Internal server error"
   }
 }
