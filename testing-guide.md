@@ -1,6 +1,6 @@
 ---
 title: Testing Guide
-description: Validate connect, lifecycle, customer verification, refunds, duplicates, and compatibility checks before go-live.
+description: Validate connect, test-sale, customer verification, webhook delivery, refunds, duplicates, and failure paths before go-live.
 sidebarTitle: Testing Guide
 ---
 
@@ -10,13 +10,6 @@ This guide uses the shared fixtures in [`examples/payloads.json`](./examples/pay
 
 See also: [Refunds](./refunds) and [Troubleshooting](./troubleshooting).
 
-Source:
-samparka-backend/src/integrations/pos/partners/restrox/controller.js:9-28
-samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
-samparka-backend/src/integrations/pos/providers/restrox/parser.js:18-61
-samparka-backend/src/integrations/pos/controller.js:200-205
-samparka-backend/src/integrations/pos/controller.js:301-365
-
 ## Integration Verification Flow
 
 ```txt
@@ -24,7 +17,9 @@ Create Integration
 ↓
 Connect Restaurant
 ↓
-Submit Test Sale
+Store Returned Token
+↓
+Send Sale Or Submit Test Sale
 ↓
 Verify Integration Became ACTIVE
 ↓
@@ -33,15 +28,6 @@ Verify Customer Exists
 Verify Loyalty Transaction Exists
 ↓
 Verify Points Awarded
-```
-
-Webhook attribution for outlet-owned RestroX is:
-
-```txt
-Webhook Token
--> Resolve PosIntegration
--> Resolve Bound Restaurant
--> Process Sale Or Refund
 ```
 
 ## Connect Test
@@ -65,13 +51,63 @@ Expected response:
   "message": "RestroX connected",
   "connected": true,
   "integrationId": "replace-with-real-id",
+  "token": "replace-with-real-token",
+  "restaurantId": "{{expectedRestaurantId}}",
   "externalLocationId": "{{expectedRestaurantId}}",
   "externalLocationName": "{{expectedRestaurantName}}",
   "status": "CONNECTED"
 }
 ```
 
-## Sale Test
+## Test Sale Wrapper Check
+
+```bash
+curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
+  -H "Content-Type: application/json" \
+  -H "x-partner-key: {{partnerKey}}" \
+  --data '{
+    "integrationKey": "{{integrationKey}}",
+    "payload": {
+      "event_type": "order.completed",
+      "order_id": "restrox-sale-1001",
+      "created_at": "2026-06-08T10:15:00.000Z",
+      "amount": 850,
+      "currency": "NPR",
+      "customer": {
+        "phone": "9800000101"
+      },
+      "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
+    }
+  }'
+```
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Test sale submitted",
+  "data": {
+    "success": true,
+    "message": "Event received"
+  }
+}
+```
+
+Duplicate wrapper response:
+
+```json
+{
+  "success": true,
+  "message": "Test sale submitted",
+  "data": {
+    "success": true,
+    "message": "Event already processed"
+  }
+}
+```
+
+## Direct Webhook Sale Test
 
 ```bash
 curl -X POST "https://your-domain/webhook/restrox/{token}" \
@@ -98,11 +134,6 @@ Expected response:
 }
 ```
 
-Use the `sale_completed_request` fixture values from [`examples/payloads.json`](./examples/payloads.json).
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:351-365
-
 ## Verify ACTIVE
 
 After the first valid sale, fetch the merchant integration and confirm:
@@ -120,44 +151,56 @@ curl -X GET "https://your-domain/api/partners/restrox/customers/search?phone=980
   -H "x-integration-key: {{integrationKey}}"
 ```
 
-Assertions:
+Expected hit response:
 
-- response `200`
-- customer exists
-- phone matches the sale payload
-- customer belongs to the store resolved by `integrationKey`
-
-Customer lookup authorization is:
-
-```txt
-Partner Key
-+
-Integration Key
-=
-Customer Lookup Authorization
+```json
+{
+  "exists": true,
+  "customer": {
+    "id": "684a00000000000000001001",
+    "name": null,
+    "phone": "9800000101",
+    "email": "restrox-sale-1001@example.com",
+    "points": 85,
+    "tier": null,
+    "lifetimePoints": 85,
+    "membershipSince": "2026-06-08T10:15:00.000Z"
+  }
+}
 ```
 
-- `x-partner-key` identifies RestroX
-- `x-integration-key` identifies the merchant or store context
-- search results are scoped to that integration's store
+Expected miss response:
 
-## Customer Details Verification
+```json
+{
+  "exists": false
+}
+```
+
+## Customer Detail Verification
 
 ```bash
-curl -X GET "https://your-domain/api/customers/{customerId}" \
-  -H "Authorization: Bearer {{merchantToken}}"
+curl -X GET "https://your-domain/api/partners/restrox/customers/{customerId}" \
+  -H "x-partner-key: {{partnerKey}}" \
+  -H "x-integration-key: {{integrationKey}}"
 ```
 
-Assertions:
+Expected response:
 
-- response `200`
-- correct customer returned
-- loyalty data populated
-- points reflect sale processing
+```json
+{
+  "customer": {
+    "id": "684a00000000000000001001",
+    "phone": "9800000101",
+    "points": 85,
+    "lifetimePoints": 85
+  }
+}
+```
 
 ## Loyalty Transaction Verification
 
-After customer lookup succeeds, confirm the test sale created a loyalty transaction in merchant tooling or in the customer detail response fields used by your deployment.
+After customer lookup succeeds, confirm the test sale created a loyalty transaction in merchant tooling or by verifying that the customer's points changed as expected.
 
 ## Refund Test
 
@@ -186,40 +229,6 @@ Expected response:
 }
 ```
 
-Source:
-samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
-samparka-backend/src/integrations/pos/controller.js:351-365
-
-## Void Test
-
-```bash
-curl -X POST "https://your-domain/webhook/restrox/{token}" \
-  -H "Content-Type: application/json" \
-  --data '{
-    "event_type": "order.voided",
-    "order_id": "restrox-sale-1002",
-    "created_at": "2026-06-08T12:00:00.000Z",
-    "amount": 450,
-    "currency": "NPR",
-    "customer": { "phone": "9800000102" },
-    "items": [{ "name": "Americano", "qty": 1, "price": 450 }]
-  }'
-```
-
-Expected response:
-
-```json
-{
-  "success": true,
-  "message": "Event received"
-}
-```
-
-Source:
-samparka-backend/src/integrations/pos/providers/restrox/mapper.js:23-26
-samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38
-samparka-backend/src/integrations/pos/controller.js:351-365
-
 ## Duplicate Webhook Test
 
 Resend the sale test payload exactly as-is.
@@ -232,9 +241,6 @@ Expected response:
   "message": "Event already processed"
 }
 ```
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:293-312
 
 ## Invalid Token Test
 
@@ -261,30 +267,63 @@ Expected response:
 }
 ```
 
-Source:
-samparka-backend/src/integrations/pos/controller.js:200-205
+## Missing Restaurant Binding Test
 
-## Disconnected Integration Check
+Use the token from a newly created integration before calling connect:
 
 ```bash
-curl -X DELETE "https://your-domain/api/pos-integrations/{integrationId}" \
-  -H "Authorization: Bearer {{merchantToken}}"
+curl -X POST "https://your-domain/webhook/restrox/{token}" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "event_type": "order.completed",
+    "order_id": "restrox-sale-2001",
+    "amount": 600,
+    "currency": "NPR",
+    "customer": { "phone": "9800000103" }
+  }'
 ```
 
-Then fetch the integration and confirm:
+Expected response:
 
-- `connectionStatus = DISCONNECTED`
-- the integration is not active for webhook processing until it is connected again
+```json
+{
+  "success": false,
+  "message": "Integration is not connected to a restaurant"
+}
+```
 
-## Missing Restaurant Binding Check
+## Disconnected Integration Test
 
-Before connect, fetch the created integration and confirm:
+After disconnecting the integration, submit the same webhook again.
 
-- `connectionStatus = CREATED`
-- `externalLocationId` is empty or null
-- no restaurant has been bound yet
+Expected response:
 
-This is the only supported missing-binding check for outlet-owned RestroX. Do not test payload-side restaurant attribution scenarios, because restaurant identity does not come from webhook payload fields.
+```json
+{
+  "success": false,
+  "message": "Integration disconnected"
+}
+```
+
+## Validation Failure Tests
+
+Non-object body response:
+
+```json
+{
+  "success": false,
+  "message": "Request body must be a JSON object"
+}
+```
+
+Missing event type response:
+
+```json
+{
+  "success": false,
+  "message": "Missing event_type in payload"
+}
+```
 
 ## Deprecated Compatibility Checks
 

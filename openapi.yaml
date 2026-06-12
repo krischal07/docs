@@ -114,6 +114,8 @@ paths:
                     message: RestroX connected
                     connected: true
                     integrationId: 684915c401ec340433d84ee2
+                    token: abcxyz
+                    restaurantId: ktm-branch-01
                     externalLocationId: ktm-branch-01
                     externalLocationName: Kathmandu Branch
                     status: CONNECTED
@@ -186,17 +188,63 @@ paths:
                         price: 850
       responses:
         '200':
-          description: Test sale accepted into webhook processing
+          description: Test sale accepted into webhook processing and wrapped by the partner controller
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BasicResponse'
+                $ref: '#/components/schemas/TestSaleResponse'
               examples:
                 accepted:
-                  x-source-fixture: examples/payloads.json#/event_received_response
+                  x-source-fixture: examples/payloads.json#/test_sale_success_response
                   value:
                     success: true
-                    message: Event received
+                    message: Test sale submitted
+                    data:
+                      success: true
+                      message: Event received
+                duplicate:
+                  x-source-fixture: examples/payloads.json#/test_sale_duplicate_response
+                  value:
+                    success: true
+                    message: Test sale submitted
+                    data:
+                      success: true
+                      message: Event already processed
+        '400':
+          description: Request validation or webhook validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingEventType:
+                  x-source-fixture: examples/payloads.json#/validation_failure_response
+                  value:
+                    success: false
+                    message: Missing event_type in payload
+        '404':
+          description: Invalid integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Integration not ready for test-sale submission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingBinding:
+                  x-source-fixture: examples/payloads.json#/test_sale_missing_binding_response
+                  value:
+                    success: false
+                    message: This RestroX integration is not connected to a restaurant yet
+                notReady:
+                  x-source-fixture: examples/payloads.json#/test_sale_not_ready_response
+                  value:
+                    success: false
+                    message: This RestroX integration is not ready to receive webhooks
   /api/partners/restrox/sync-locations:
     post:
       summary: Compatibility-only sync route for outlet-owned RestroX
@@ -262,7 +310,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Matching customers fetched
+          description: Exact phone lookup result
           content:
             application/json:
               schema:
@@ -271,20 +319,62 @@ paths:
                 customerFound:
                   x-source-fixture: examples/payloads.json#/customer_search_response
                   value:
-                    success: true
-                    message: Customers fetched
-                    data:
-                      - id: 684a00000000000000001001
-                        phone: '9800000101'
-                        email: restrox-sale-1001@example.com
-                        storeId: 685000000000000000000010
-                        businessId: 685000000000000000000010
-  /api/customers/{customerId}:
+                    exists: true
+                    customer:
+                      id: 684a00000000000000001001
+                      name: null
+                      phone: '9800000101'
+                      email: restrox-sale-1001@example.com
+                      points: 85
+                      tier: null
+                      lifetimePoints: 85
+                      membershipSince: '2026-06-08T10:15:00.000Z'
+                customerMissing:
+                  x-source-fixture: examples/payloads.json#/customer_search_miss_response
+                  value:
+                    exists: false
+        '400':
+          description: Invalid phone lookup request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerCustomerErrorResponse'
+        '401':
+          description: Missing or invalid partner authentication or integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerCustomerErrorResponse'
+        '403':
+          description: Integration is inactive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerCustomerErrorResponse'
+        '409':
+          description: Multiple customer records match the same normalized phone
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerCustomerErrorResponse'
+  /api/partners/restrox/customers/{customerId}:
     get:
       summary: Fetch customer details after loyalty processing
       description: Verify loyalty data is populated and points reflect the processed sale.
-      operationId: getCustomer
+      operationId: getRestroxCustomer
       parameters:
+        - name: x-partner-key
+          in: header
+          required: true
+          description: Partner key that identifies RestroX.
+          schema:
+            type: string
+        - name: x-integration-key
+          in: header
+          required: true
+          description: Integration key that identifies the merchant or store context for the lookup.
+          schema:
+            type: string
         - $ref: '#/components/parameters/CustomerId'
       responses:
         '200':
@@ -297,19 +387,33 @@ paths:
                 customerDetails:
                   x-source-fixture: examples/payloads.json#/customer_detail_response
                   value:
-                    success: true
-                    message: Customer fetched
-                    data:
+                    customer:
                       id: 684a00000000000000001001
+                      name: null
                       phone: '9800000101'
                       email: restrox-sale-1001@example.com
-                      storeId: 685000000000000000000010
-                      businessId: 685000000000000000000010
-                      pointsBalance: 85
-                      lifetimePointsEarned: 85
-                      loyaltySummary:
-                        lastTransactionType: SALE
-                        lastTransactionReference: restrox-sale-1001
+                      points: 85
+                      tier: null
+                      lifetimePoints: 85
+                      membershipSince: '2026-06-08T10:15:00.000Z'
+        '401':
+          description: Missing or invalid partner authentication or integration key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerCustomerErrorResponse'
+        '403':
+          description: Integration is inactive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerCustomerErrorResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerCustomerErrorResponse'
   /webhook/restrox/{token}:
     post:
       summary: Receive RestroX webhook events
@@ -389,6 +493,28 @@ paths:
                   value:
                     success: false
                     message: Invalid webhook token
+        '409':
+          description: Integration state prevents webhook processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicResponse'
+              examples:
+                disconnected:
+                  x-source-fixture: examples/payloads.json#/disconnected_integration_response
+                  value:
+                    success: false
+                    message: Integration disconnected
+                missingBinding:
+                  x-source-fixture: examples/payloads.json#/missing_binding_response
+                  value:
+                    success: false
+                    message: Integration is not connected to a restaurant
+                notReady:
+                  x-source-fixture: examples/payloads.json#/not_ready_response
+                  value:
+                    success: false
+                    message: Integration is not ready to receive webhooks
         '500':
           description: Internal server error
           content:
@@ -514,6 +640,8 @@ components:
         - message
         - connected
         - integrationId
+        - token
+        - restaurantId
         - externalLocationId
         - status
       properties:
@@ -526,6 +654,10 @@ components:
         idempotent:
           type: boolean
         integrationId:
+          type: string
+        token:
+          type: string
+        restaurantId:
           type: string
         externalLocationId:
           type: string
@@ -545,6 +677,19 @@ components:
           type: string
         payload:
           $ref: '#/components/schemas/RestroxWebhookRequest'
+    TestSaleResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/BasicResponse'
     RestroxWebhookRequest:
       type: object
       additionalProperties: true
@@ -609,9 +754,6 @@ components:
           properties:
             phone:
               type: string
-            email:
-              type: string
-              description: Optional customer metadata.
         items:
           type: array
           items:
@@ -636,6 +778,10 @@ components:
       properties:
         id:
           type: string
+        name:
+          type:
+            - string
+            - 'null'
         phone:
           type:
             - string
@@ -644,50 +790,33 @@ components:
           type:
             - string
             - 'null'
-        storeId:
-          type:
-            - string
-            - 'null'
-        businessId:
-          type:
-            - string
-            - 'null'
-        pointsBalance:
+        points:
           type:
             - number
             - 'null'
-        lifetimePointsEarned:
+        tier:
+          type:
+            - string
+            - 'null'
+        lifetimePoints:
           type:
             - number
             - 'null'
-        loyaltySummary:
+        membershipSince:
           type:
-            - object
+            - string
             - 'null'
-          properties:
-            lastTransactionType:
-              type: string
-            lastTransactionReference:
-              type: string
     CustomerSearchResponse:
       type: object
       properties:
-        success:
+        exists:
           type: boolean
-        message:
-          type: string
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/CustomerRecord'
+        customer:
+          $ref: '#/components/schemas/CustomerRecord'
     CustomerDetailsResponse:
       type: object
       properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
+        customer:
           $ref: '#/components/schemas/CustomerRecord'
     DeprecatedSyncLocationsResponse:
       type: object
@@ -719,5 +848,15 @@ components:
       properties:
         success:
           type: boolean
+        message:
+          type: string
+    PartnerCustomerErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
         message:
           type: string

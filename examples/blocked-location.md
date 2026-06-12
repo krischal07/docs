@@ -1,6 +1,6 @@
 ---
 title: Missing Binding Example
-description: Example showing a webhook accepted for delivery while the integration still needs a restaurant binding.
+description: Example showing the response returned when an outlet-owned RestroX integration has no bound restaurant.
 sidebarTitle: Missing Binding
 ---
 
@@ -8,7 +8,7 @@ sidebarTitle: Missing Binding
 
 ## Request
 
-Use the `missing_binding_request` fixture from [`payloads.json`](./payloads.json).
+Use the `missing_binding_request` fixture from [`payloads.json`](./payloads.json) against the token for a newly created integration before connect.
 
 ```json
 {
@@ -26,18 +26,14 @@ Use the `missing_binding_request` fixture from [`payloads.json`](./payloads.json
 
 ```json
 {
-  "success": true,
-  "message": "Event received"
+  "success": false,
+  "message": "Integration is not connected to a restaurant"
 }
 ```
 
 ## What Happened
 
-Samparka accepted the delivery, but the integration still needs a bound restaurant before the event can be attributed correctly.
-
-Source:
-samparka-backend/src/integrations/pos/controller.js:246-349
-samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
+Samparka resolved the integration from the webhook token, then rejected the event because no restaurant was connected yet.
 
 ## What To Do Next
 

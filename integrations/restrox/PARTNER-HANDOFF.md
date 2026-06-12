@@ -6,13 +6,7 @@ sidebarTitle: Partner Handoff Source
 
 # RestroX Partner Handoff
 
-This package is the shareable entry point for the RestroX connect and webhook integration with Samparka. Connect uses a singular restaurant-binding contract. The active RestroX path does not use any legacy multi-step restaurant onboarding or payload-side attribution checks.
-
-Source:
-samparka-backend/src/index.js:146-155
-samparka-backend/src/integrations/pos/partners/restrox/controller.js:7-28
-samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
-samparka-backend/src/integrations/pos/routes.js:11-15
+This package is the shareable entry point for the RestroX connect, test-sale, customer lookup, and webhook integration with Samparka.
 
 ## Start Here
 
@@ -27,19 +21,17 @@ samparka-backend/src/integrations/pos/routes.js:11-15
 ```mermaid
 flowchart TD
   A["Merchant Creates Integration"] --> B["Partner Connects Restaurant"]
-  B --> C["System Stores Restaurant Binding"]
-  C --> D["Webhook Resolves Token"]
+  B --> C["Connect Returns Token"]
+  C --> D["RestroX Sends Webhook Or Test Sale"]
   D --> E["System Resolves Integration"]
   E --> F["System Attributes Sale To Bound Restaurant"]
-  F --> G["RestroX Calls Partner Customer Search"]
+  F --> G["RestroX Calls Partner Customer API"]
   G --> H["System Returns Store-Scoped Loyalty Data"]
 ```
 
-Source:
-samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
-samparka-backend/src/integrations/pos/controller.js:285-365
-
 ## Connect Contract
+
+Request:
 
 ```json
 {
@@ -49,12 +41,43 @@ samparka-backend/src/integrations/pos/controller.js:285-365
 }
 ```
 
+Success response:
+
+```json
+{
+  "success": true,
+  "message": "RestroX connected",
+  "connected": true,
+  "integrationId": "{{integrationId}}",
+  "token": "{{token}}",
+  "restaurantId": "{{expectedRestaurantId}}",
+  "externalLocationId": "{{expectedRestaurantId}}",
+  "externalLocationName": "{{expectedRestaurantName}}",
+  "status": "CONNECTED"
+}
+```
+
 Validation:
 
 - `integrationKey` is required.
 - `restaurantId` is required.
 - `restaurantName` is optional.
-- The request fails with `400` if `restaurantId` is missing.
+- the response may include `idempotent: true` when the same restaurant is already bound
+
+## Test Sale Contract
+
+`POST /api/partners/restrox/test-sale` wraps the underlying webhook response.
+
+```json
+{
+  "success": true,
+  "message": "Test sale submitted",
+  "data": {
+    "success": true,
+    "message": "Event received"
+  }
+}
+```
 
 ## Webhook Contract
 
@@ -71,22 +94,11 @@ Send webhook events to `/webhook/restrox/{token}` with transaction data and a cu
 }
 ```
 
-`customer.email` is optional metadata.
-Payload restaurant fields such as `restaurantId`, `restaurantName`, `external_location_id`, and `external_location_name` are optional non-canonical fields for outlet-owned attribution.
-
-Source:
-samparka-backend/src/integrations/pos/partners/restrox/controller.js:9-28
-samparka-backend/src/integrations/pos/partners/restrox/service.js:132-260
-
-## Testing Checklist
-
-Use [Integration Checklist](./integration-checklist) for go-live validation.
-
-`ACTIVE` only proves the integration activated. Do not sign off until customer verification, loyalty transaction verification, and points verification are complete.
+Payload restaurant fields such as `restaurantId`, `restaurantName`, `external_location_id`, and `external_location_name` are optional non-canonical metadata for outlet-owned attribution.
 
 ## Customer Lookup Contract
 
-Use the partner-authenticated customer lookup route:
+Use the partner-authenticated customer lookup routes:
 
 ```http
 GET /api/partners/restrox/customers/search?phone={{customerPhone}}
@@ -94,7 +106,19 @@ x-partner-key: {{partnerKey}}
 x-integration-key: {{integrationKey}}
 ```
 
+```http
+GET /api/partners/restrox/customers/{{customerId}}
+x-partner-key: {{partnerKey}}
+x-integration-key: {{integrationKey}}
+```
+
 `x-partner-key` identifies RestroX. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
+
+## Testing Checklist
+
+Use [Integration Checklist](./integration-checklist) for go-live validation.
+
+`ACTIVE` only proves the integration activated. Do not sign off until customer verification, loyalty transaction verification, and points verification are complete.
 
 ## OpenAPI
 

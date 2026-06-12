@@ -18,14 +18,3 @@ sidebarTitle: Troubleshooting
 | `200 Event received` but expected loyalty activity is missing | The integration is disconnected, missing its bound restaurant, the customer phone is missing, or refund linkage needs review | Confirm the integration is still connected, the bound restaurant exists on the integration, the customer phone is present, and the original sale identifier is correct. | Reconnect or rebind the integration if needed, then resend a valid event. |
 | `500 Internal server error` | Unexpected server-side failure | Wait and retry the same payload later. | Retry later. If the issue repeats, contact Samparka. |
 
-Source:
-samparka-backend/src/integrations/pos/partners/restrox/controller.js:9-28
-samparka-backend/src/integrations/pos/partners/restrox/service.js:116-260
-samparka-backend/src/integrations/pos/providers/restrox/validator.js:23-26
-samparka-backend/src/integrations/pos/providers/restrox/parser.js:20-23
-samparka-backend/src/integrations/pos/controller.js:200-205
-samparka-backend/src/integrations/pos/controller.js:293-365
-samparka-backend/src/integrations/pos/controller.js:367-397
-samparka-backend/src/integrations/pos/locationResolutionService.js:68-77
-samparka-backend/src/loyalty/handlers/saleCompletedHandler.js:101-110
-samparka-backend/src/loyalty/handlers/reversalEventHandler.js:23-38

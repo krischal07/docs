@@ -217,8 +217,9 @@
                 "exec": [
                   "pm.test('reconnect returns 200', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "pm.test('status is CONNECTED after reconnect', function () { pm.expect(body.status || (body.data && body.data.status)).to.eql('CONNECTED'); });",
-                  "pm.test('restaurant binding restored', function () { pm.expect(body.externalLocationId || (body.data && body.data.externalLocationId)).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });"
+                  "pm.test('status is CONNECTED after reconnect', function () { pm.expect(body.status).to.eql('CONNECTED'); });",
+                  "pm.test('token is returned on reconnect', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });",
+                  "pm.test('restaurant binding restored', function () { pm.expect(body.restaurantId).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });"
                 ]
               }
             }
@@ -264,8 +265,9 @@
                 "exec": [
                   "pm.test('rebind returns 200', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "pm.test('status remains CONNECTED', function () { pm.expect(body.status || (body.data && body.data.status)).to.eql('CONNECTED'); });",
-                  "pm.test('restaurant identity changed', function () { pm.expect(body.externalLocationId || (body.data && body.data.externalLocationId)).to.eql(pm.collectionVariables.get('rebindRestaurantId')); });"
+                  "pm.test('status remains CONNECTED', function () { pm.expect(body.status).to.eql('CONNECTED'); });",
+                  "pm.test('token is returned on rebind', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });",
+                  "pm.test('restaurant identity changed', function () { pm.expect(body.restaurantId).to.eql(pm.collectionVariables.get('rebindRestaurantId')); });"
                 ]
               }
             }
@@ -314,10 +316,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('connect succeeds', function () { pm.response.to.have.status(200); });",
+                  "pm.test('connect returns 200', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "pm.test('status is CONNECTED after connect', function () { pm.expect(body.status || (body.data && body.data.status)).to.eql('CONNECTED'); });",
-                  "pm.test('restaurant binding stored in response', function () { pm.expect(body.externalLocationId || (body.data && body.data.externalLocationId)).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });"
+                  "pm.test('connect success flag is true', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('connect message matches implementation', function () { pm.expect(body.message).to.eql('RestroX connected'); });",
+                  "pm.test('status is CONNECTED after connect', function () { pm.expect(body.status).to.eql('CONNECTED'); });",
+                  "pm.test('token is returned', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });",
+                  "pm.test('restaurantId is returned', function () { pm.expect(body.restaurantId).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });",
+                  "pm.test('external location matches expected restaurant', function () { pm.expect(body.externalLocationId).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });",
+                  "pm.collectionVariables.set('token', body.token);"
                 ]
               }
             }
@@ -363,8 +370,10 @@
                 "exec": [
                   "pm.test('submit test sale returns 200', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "const success = body.success !== undefined ? body.success : (body.data && body.data.success);",
-                  "pm.test('test sale accepted', function () { pm.expect(success).to.eql(true); });"
+                  "pm.test('outer success flag is true', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('outer message matches implementation', function () { pm.expect(body.message).to.eql('Test sale submitted'); });",
+                  "pm.test('inner webhook success flag is true', function () { pm.expect(body.data && body.data.success).to.eql(true); });",
+                  "pm.test('inner webhook message matches implementation', function () { pm.expect(['Event received', 'Event already processed']).to.include(body.data && body.data.message); });"
                 ]
               }
             }
@@ -454,7 +463,8 @@
                 "exec": [
                   "pm.test('rebind succeeds after disconnect', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "pm.test('restaurant binding changed', function () { pm.expect(body.externalLocationId || (body.data && body.data.externalLocationId)).to.eql(pm.collectionVariables.get('rebindRestaurantId')); });"
+                  "pm.test('restaurant binding changed', function () { pm.expect(body.restaurantId).to.eql(pm.collectionVariables.get('rebindRestaurantId')); });",
+                  "pm.test('token is returned on rebind success', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });"
                 ]
               }
             }
@@ -496,16 +506,17 @@
       "name": "Webhook Verification",
       "item": [
         {
-          "name": "Valid Webhook",
+          "name": "Webhook Sale Completed",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('valid webhook returns 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "pm.test('webhook accepted', function () { pm.expect(body.success).to.eql(true); });"
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Event received'); });"
                 ]
               }
             }
@@ -520,7 +531,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"{{customerPhone}}\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
@@ -533,20 +544,21 @@
                 "{{token}}"
               ]
             },
-            "description": "Submit the happy-path webhook directly to the tokenized endpoint."
+            "description": "Submit the happy-path completed sale directly to the tokenized webhook endpoint."
           }
         },
         {
-          "name": "Invalid Webhook Token",
+          "name": "Webhook Refund Created",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('invalid token returns 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "pm.test('invalid token message returned', function () { pm.expect(body.message).to.eql('Invalid webhook token'); });"
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Event received'); });"
                 ]
               }
             }
@@ -561,7 +573,133 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"{{customerPhone}}\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+              "raw": "{\n  \"event_type\": \"refund.created\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T11:30:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "restrox",
+                "{{token}}"
+              ]
+            },
+            "description": "Submit a refund webhook that references the original sale identifier."
+          }
+        },
+        {
+          "name": "Webhook Duplicate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Event already processed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "restrox",
+                "{{token}}"
+              ]
+            },
+            "description": "Replay the same completed-sale payload to verify duplicate handling."
+          }
+        },
+        {
+          "name": "Webhook Missing Binding",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Integration is not connected to a restaurant'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-2001\",\n  \"created_at\": \"2026-06-08T13:10:00.000Z\",\n  \"amount\": 600,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000103\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Latte\",\n      \"qty\": 1,\n      \"price\": 600\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "restrox",
+                "{{token}}"
+              ]
+            },
+            "description": "Run this against a newly created integration token before connect to verify the missing-binding rejection."
+          }
+        },
+        {
+          "name": "Webhook Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Invalid webhook token'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/webhook/restrox/invalid-token",
@@ -575,6 +713,132 @@
               ]
             },
             "description": "Send a valid webhook body to an invalid token and confirm webhook authentication fails."
+          }
+        },
+        {
+          "name": "Webhook Disconnected Integration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Integration disconnected'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"restrox-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "restrox",
+                "{{token}}"
+              ]
+            },
+            "description": "Run this after disconnecting the integration to confirm webhook processing is blocked."
+          }
+        },
+        {
+          "name": "Webhook Validation Failure",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Missing event_type in payload'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": \"restrox-sale-3001\",\n  \"created_at\": \"2026-06-08T14:00:00.000Z\",\n  \"amount\": 300,\n  \"currency\": \"NPR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "restrox",
+                "{{token}}"
+              ]
+            },
+            "description": "Submit a webhook body without event_type to confirm parser validation."
+          }
+        },
+        {
+          "name": "Webhook Invalid Body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Request body must be a JSON object'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/restrox/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "restrox",
+                "{{token}}"
+              ]
+            },
+            "description": "Submit a non-object JSON body to confirm request validation."
           }
         }
       ]
@@ -590,25 +854,13 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"customer search succeeds\", () => {",
-                  "  pm.response.to.have.status(200);",
-                  "});",
+                  "pm.test('customer search succeeds', () => { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "pm.test(\"response contains customer data\", () => {",
-                  "  pm.expect(body).to.be.an(\"object\");",
-                  "});",
-                  "const customers = Array.isArray(body.data) ? body.data : Array.isArray(body.customers) ? body.customers : Array.isArray(body.results) ? body.results : [];",
-                  "pm.test('customer exists', function () { pm.expect(customers.length).to.be.greaterThan(0); });",
-                  "const phone = pm.collectionVariables.get('customerPhone');",
-                  "const storeId = pm.collectionVariables.get('storeId');",
-                  "const matchedCustomer = customers.find((customer) => [customer.phone, customer.normalizedPhone, customer.normalized_phone].includes(phone)) || customers[0];",
-                  "pm.test('phone matches sale payload', function () {",
-                  "  const identifiers = [matchedCustomer.phone, matchedCustomer.normalizedPhone, matchedCustomer.normalized_phone];",
-                  "  pm.expect(identifiers.includes(phone)).to.eql(true);",
-                  "});",
-                  "const ownerId = matchedCustomer.storeId || matchedCustomer.store_id || matchedCustomer.businessId || matchedCustomer.business_id || (matchedCustomer.store && matchedCustomer.store.id) || (matchedCustomer.business && matchedCustomer.business.id);",
-                  "pm.test('customer belongs to expected store/business', function () { pm.expect(ownerId).to.eql(storeId); });",
-                  "pm.collectionVariables.set('customerId', matchedCustomer.id || matchedCustomer._id);"
+                  "pm.test('response contains exists flag', () => { pm.expect(body.exists).to.eql(true); });",
+                  "pm.test('response contains customer data', () => { pm.expect(body.customer).to.be.an('object'); });",
+                  "const customer = body.customer;",
+                  "pm.test('phone matches sale payload', () => { pm.expect(customer.phone).to.eql(pm.collectionVariables.get('customerPhone')); });",
+                  "pm.collectionVariables.set('customerId', customer.id);"
                 ]
               }
             }
@@ -657,12 +909,10 @@
                 "exec": [
                   "pm.test('details returns 200', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "const customer = body.data || body.customer || body.result;",
-                  "pm.test('correct customer returned', function () { pm.expect(String(customer.id || customer._id)).to.eql(String(pm.collectionVariables.get('customerId'))); });",
-                  "const pointsBalance = customer.pointsBalance !== undefined ? customer.pointsBalance : customer.points_balance !== undefined ? customer.points_balance : customer.loyaltySummary && customer.loyaltySummary.pointsBalance !== undefined ? customer.loyaltySummary.pointsBalance : customer.loyalty && customer.loyalty.pointsBalance !== undefined ? customer.loyalty.pointsBalance : customer.loyalty && customer.loyalty.points_balance !== undefined ? customer.loyalty.points_balance : undefined;",
-                  "const lifetimePoints = customer.lifetimePointsEarned !== undefined ? customer.lifetimePointsEarned : customer.lifetime_points_earned !== undefined ? customer.lifetime_points_earned : customer.loyaltySummary && customer.loyaltySummary.lifetimePointsEarned !== undefined ? customer.loyaltySummary.lifetimePointsEarned : customer.loyalty && customer.loyalty.lifetimePointsEarned !== undefined ? customer.loyalty.lifetimePointsEarned : undefined;",
-                  "pm.test('loyalty data populated', function () { pm.expect(pointsBalance !== undefined || lifetimePoints !== undefined || customer.loyaltySummary || customer.loyalty).to.eql(true); });",
-                  "pm.test('points reflect sale processing', function () { pm.expect(Number(pointsBalance !== undefined ? pointsBalance : lifetimePoints !== undefined ? lifetimePoints : 0)).to.be.at.least(Number(pm.collectionVariables.get('minimumPointsBalance'))); });"
+                  "const customer = body.customer;",
+                  "pm.test('correct customer returned', function () { pm.expect(String(customer.id)).to.eql(String(pm.collectionVariables.get('customerId'))); });",
+                  "pm.test('points are present', function () { pm.expect(Number(customer.points)).to.be.at.least(Number(pm.collectionVariables.get('minimumPointsBalance'))); });",
+                  "pm.test('lifetime points are present', function () { pm.expect(Number(customer.lifetimePoints)).to.be.at.least(Number(pm.collectionVariables.get('minimumPointsBalance'))); });"
                 ]
               }
             }
@@ -671,22 +921,28 @@
             "method": "GET",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{merchantToken}}"
+                "key": "x-partner-key",
+                "value": "{{partnerKey}}"
+              },
+              {
+                "key": "x-integration-key",
+                "value": "{{integrationKey}}"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/customers/{{customerId}}",
+              "raw": "{{baseUrl}}/api/partners/restrox/customers/{{customerId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
+                "partners",
+                "restrox",
                 "customers",
                 "{{customerId}}"
               ]
             },
-            "description": "Verify the customer state after loyalty processing, including points awarded."
+            "description": "Verify the customer state after loyalty processing using the partner customer detail route."
           }
         }
       ]

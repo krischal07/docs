@@ -9,6 +9,8 @@
     "message": "RestroX connected",
     "connected": true,
     "integrationId": "684915c401ec340433d84ee2",
+    "token": "abcxyz",
+    "restaurantId": "ktm-branch-01",
     "externalLocationId": "ktm-branch-01",
     "externalLocationName": "Kathmandu Branch",
     "status": "CONNECTED"
@@ -129,33 +131,28 @@
     "currency": "NPR"
   },
   "customer_search_response": {
-    "success": true,
-    "message": "Customers fetched",
-    "data": [
-      {
-        "id": "684a00000000000000001001",
-        "phone": "9800000101",
-        "email": "restrox-sale-1001@example.com",
-        "storeId": "685000000000000000000010",
-        "businessId": "685000000000000000000010"
-      }
-    ]
-  },
-  "customer_detail_response": {
-    "success": true,
-    "message": "Customer fetched",
-    "data": {
+    "exists": true,
+    "customer": {
       "id": "684a00000000000000001001",
+      "name": null,
       "phone": "9800000101",
       "email": "restrox-sale-1001@example.com",
-      "storeId": "685000000000000000000010",
-      "businessId": "685000000000000000000010",
-      "pointsBalance": 85,
-      "lifetimePointsEarned": 85,
-      "loyaltySummary": {
-        "lastTransactionType": "SALE",
-        "lastTransactionReference": "restrox-sale-1001"
-      }
+      "points": 85,
+      "tier": null,
+      "lifetimePoints": 85,
+      "membershipSince": "2026-06-08T10:15:00.000Z"
+    }
+  },
+  "customer_detail_response": {
+    "customer": {
+      "id": "684a00000000000000001001",
+      "name": null,
+      "phone": "9800000101",
+      "email": "restrox-sale-1001@example.com",
+      "points": 85,
+      "tier": null,
+      "lifetimePoints": 85,
+      "membershipSince": "2026-06-08T10:15:00.000Z"
     }
   },
   "sync_locations_response": {
@@ -192,5 +189,44 @@
   "internal_server_error_response": {
     "success": false,
     "message": "Internal server error"
+  },
+  "test_sale_success_response": {
+    "success": true,
+    "message": "Test sale submitted",
+    "data": {
+      "success": true,
+      "message": "Event received"
+    }
+  },
+  "test_sale_duplicate_response": {
+    "success": true,
+    "message": "Test sale submitted",
+    "data": {
+      "success": true,
+      "message": "Event already processed"
+    }
+  },
+  "test_sale_missing_binding_response": {
+    "success": false,
+    "message": "This RestroX integration is not connected to a restaurant yet"
+  },
+  "test_sale_not_ready_response": {
+    "success": false,
+    "message": "This RestroX integration is not ready to receive webhooks"
+  },
+  "customer_search_miss_response": {
+    "exists": false
+  },
+  "missing_binding_response": {
+    "success": false,
+    "message": "Integration is not connected to a restaurant"
+  },
+  "disconnected_integration_response": {
+    "success": false,
+    "message": "Integration disconnected"
+  },
+  "not_ready_response": {
+    "success": false,
+    "message": "Integration is not ready to receive webhooks"
   }
 }

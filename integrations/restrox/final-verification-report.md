@@ -1,12 +1,12 @@
 ---
 title: Final Verification Report
-description: Review the contract, schema, and content verification for the RestroX partner guide package.
+description: Review the backend-driven contract, schema, and content verification for the RestroX partner guide package.
 sidebarTitle: Verification Report
 ---
 
 # Final Verification Report
 
-This report captures the documentation-only correction for RestroX partner-authenticated customer lookup and the existing outlet-owned webhook flow.
+This report captures the backend-driven correction of the RestroX partner documentation package against `../samparka_vps/samparka-backend`.
 
 ## Files Updated
 
@@ -15,14 +15,10 @@ This report captures the documentation-only correction for RestroX partner-authe
 - `quick-start.md`
 - `testing-guide.md`
 - `payload-reference.md`
-- `location-mapping.md`
-- `troubleshooting.md`
 - `response-reference.md`
-- `refunds.md`
-- `integration-checklist.md`
-- `index.mdx`
-- `known-behaviors-and-limitations.md`
-- `reference/postman-collection.mdx`
+- `authentication.md`
+- `endpoint-catalog.md`
+- `troubleshooting.md`
 - `openapi.yaml`
 - `postman-collection.json`
 - `examples/payloads.json`
@@ -30,54 +26,47 @@ This report captures the documentation-only correction for RestroX partner-authe
 - `examples/refund-created.md`
 - `examples/duplicate-webhook.md`
 - `examples/blocked-location.md`
-- `examples/overview.mdx`
+- mirrored files under `integrations/restrox/`
 
 ## Contract Summary
 
-Canonical flow:
+Verified partner-facing contracts:
 
-```txt
-Partner Connect
--> Bind restaurantId
--> Persist external_location_id
--> Persist external_location_name
+- Connect returns a custom top-level response including `token` and `restaurantId`.
+- Test sale wraps the inner webhook response inside `data` and does not return the raw webhook response directly.
+- Customer search returns `exists: false` or `exists: true` plus one serialized `customer`.
+- Customer detail returns `{ customer: ... }`.
+- Webhook success and error bodies are minimal `{ success, message }` envelopes with scenario-specific status codes and exact message text.
 
-Webhook Event
--> Resolve webhook token
--> Resolve PosIntegration
--> Resolve bound restaurant
--> Process sale/refund
+## Implementation / Documentation Mismatches Found
 
-Customer Lookup
--> Authenticate RestroX with partner key
--> Scope search with integration key
--> Return loyalty data for that integration's store
-```
-
-Restaurant attribution now documents the integration binding as the source of truth.
-Webhook payload restaurant identity fields are documented only as optional non-canonical metadata for outlet-owned attribution.
-
-## What Changed
-
-- Webhook examples now use phone-first customer payloads and no longer require `customer.email`.
-- Active webhook examples no longer require `restaurantId`, `restaurantName`, `external_location_id`, or `external_location_name`.
-- Customer API coverage now documents `GET /api/partners/restrox/customers/search?phone=...` with `x-partner-key` plus `x-integration-key`, and keeps `GET /api/customers/{customerId}` for follow-up detail verification.
-- Postman coverage now tests invalid webhook token, disconnected integration state, and missing restaurant binding on the integration instead of payload mismatch scenarios.
-- Diagrams and onboarding copy now describe connect-time binding and token-to-integration-to-bound-restaurant attribution.
+- Connect docs omitted `token` and `restaurantId` from successful responses.
+- Connect docs did not describe the optional `idempotent: true` field for same-binding reconnects.
+- Webhook setup docs implied the token had to be discovered elsewhere, even though connect already returns it.
+- Test-sale examples documented raw webhook responses instead of the actual wrapped `responseHandler.success` envelope.
+- Customer search docs and examples still used an old array-style response shape instead of `{ exists, customer }`.
+- Customer detail docs pointed to merchant-style customer routes and merchant-style `data` envelopes instead of the implemented partner route and `{ customer }` shape.
+- Webhook docs did not consistently document the exact `409` responses for missing binding and disconnected integration.
+- Some example material still implied payload restaurant fields were required for outlet-owned webhook routing, but the implementation resolves restaurant identity from the integration bound to the token.
+- Partner-facing docs contained internal `Source:` citations and backend file paths that should not appear in published integration guidance.
 
 ## Search Verification
 
-Reviewed repository-wide references for legacy RestroX customer-search auth and path examples, including old merchant bearer-auth patterns and the old customer-search route.
+Reviewed repository-wide references for:
+
+- `^Source:`
+- legacy customer-search routes
+- legacy merchant bearer-auth customer-search examples
+- webhook wording that treats restaurant payload fields as required
 
 Result:
 
-- No active RestroX customer-search example uses merchant bearer auth.
-- No active RestroX customer-search example uses the legacy customer-search path.
-- Active customer-search examples use `/api/partners/restrox/customers/search`, `x-partner-key`, and `x-integration-key`.
-- Remaining `restaurantId` references are limited to the connect contract.
-- Remaining `external_location_id` and `external_location_name` references describe integration binding or optional non-canonical payload fields.
+- Active RestroX customer-search examples now use `/api/partners/restrox/customers/search`.
+- Active RestroX customer-detail examples now use `/api/partners/restrox/customers/{customerId}`.
+- Active RestroX webhook docs now use the exact backend status codes and exact message text for the documented scenarios.
+- Active RestroX onboarding docs now show `token` returned by connect and use it directly for webhook setup.
 
 ## Remaining Documentation Risks
 
 - Compatibility endpoints such as `sync-locations` and the deprecated locations route still appear in reference material and must stay clearly marked as non-onboarding paths.
-- The file path `examples/blocked-location.md` is retained for link compatibility even though the page content now documents missing integration binding rather than payload location mismatch.
+- Customer detail verification proves the partner-customer contract and the stored customer state, but loyalty transaction inspection still depends on merchant-side tooling outside the partner HTTP response itself.
