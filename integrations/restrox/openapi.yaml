@@ -3,73 +3,11 @@ info:
   title: Samparka RestroX Integration API
   version: 1.2.0
   description: |
-    Merchant lifecycle, partner connect, webhook verification, customer verification, and compatibility routes
-    for the RestroX integration with Samparka.
+    Partner connect, webhook, and customer routes for the RestroX integration with Samparka.
     Source fixtures for examples: docs/restrox-partner-guide/examples/payloads.json
 servers:
   - url: https://your-domain
 paths:
-  /api/pos-integrations:
-    post:
-      summary: Create an outlet-owned RestroX integration
-      operationId: createRestroxIntegration
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateIntegrationRequest'
-      responses:
-        '201':
-          description: Integration created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IntegrationEnvelope'
-  /api/pos-integrations/{id}:
-    get:
-      summary: Get a RestroX integration
-      operationId: getRestroxIntegration
-      parameters:
-        - $ref: '#/components/parameters/IntegrationId'
-      responses:
-        '200':
-          description: Integration fetched
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IntegrationEnvelope'
-    delete:
-      summary: Disconnect a RestroX integration
-      operationId: deleteRestroxIntegration
-      parameters:
-        - $ref: '#/components/parameters/IntegrationId'
-      responses:
-        '200':
-          description: Integration disconnected
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DisconnectEnvelope'
-  /api/pos-integrations/{id}/locations:
-    get:
-      summary: Compatibility-only locations route for outlet-owned RestroX
-      operationId: getRestroxLocationsCompatibility
-      parameters:
-        - $ref: '#/components/parameters/IntegrationId'
-      responses:
-        '409':
-          description: Not supported for outlet-owned RestroX
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                unsupported:
-                  x-source-fixture: examples/payloads.json#/locations_route_response
-                  value:
-                    success: false
-                    message: Locations route is not supported for outlet-owned RestroX
   /api/partners/restrox/connect:
     post:
       summary: Connect one RestroX restaurant to one outlet-owned Samparka integration
@@ -245,42 +183,6 @@ paths:
                   value:
                     success: false
                     message: This RestroX integration is not ready to receive webhooks
-  /api/partners/restrox/sync-locations:
-    post:
-      summary: Compatibility-only sync route for outlet-owned RestroX
-      operationId: postRestroxSyncLocations
-      parameters:
-        - name: x-partner-key
-          in: header
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - integrationKey
-              properties:
-                integrationKey:
-                  type: string
-      responses:
-        '200':
-          description: Compatibility route skipped
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeprecatedSyncLocationsResponse'
-              examples:
-                skipped:
-                  x-source-fixture: examples/payloads.json#/sync_locations_response
-                  value:
-                    success: true
-                    message: Sync skipped for outlet-owned RestroX
-                    data:
-                      skipped: true
   /api/partners/restrox/customers/search:
     get:
       summary: Search customers after the first sale
@@ -529,12 +431,6 @@ paths:
                     message: Internal server error
 components:
   parameters:
-    IntegrationId:
-      name: id
-      in: path
-      required: true
-      schema:
-        type: string
     CustomerId:
       name: customerId
       in: path
@@ -548,77 +444,6 @@ components:
       schema:
         type: string
   schemas:
-    CreateIntegrationRequest:
-      type: object
-      required:
-        - provider
-        - storeId
-        - outletId
-      properties:
-        provider:
-          type: string
-          enum: [restrox]
-        storeId:
-          type: string
-        outletId:
-          type: string
-    IntegrationData:
-      type: object
-      properties:
-        id:
-          type: string
-        provider:
-          type: string
-        storeId:
-          type: string
-        outletId:
-          type: string
-        ownershipMode:
-          type: string
-          enum: [OUTLET_OWNED]
-        connectionStatus:
-          type: string
-          enum: [CREATED, CONNECTED, ACTIVE, DISCONNECTED]
-        healthStatus:
-          type: string
-          enum: [HEALTHY, WARNING, ERROR]
-        integrationKey:
-          type: string
-        webhookUrl:
-          type: string
-        externalLocationId:
-          type:
-            - string
-            - 'null'
-        externalLocationName:
-          type:
-            - string
-            - 'null'
-    IntegrationEnvelope:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
-          $ref: '#/components/schemas/IntegrationData'
-    DisconnectEnvelope:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
-          type: object
-          properties:
-            disconnected:
-              type: boolean
-            deleted:
-              type: boolean
-            id:
-              type: string
     RestroxConnectRequest:
       type: object
       additionalProperties: false
@@ -818,18 +643,6 @@ components:
       properties:
         customer:
           $ref: '#/components/schemas/CustomerRecord'
-    DeprecatedSyncLocationsResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        data:
-          type: object
-          properties:
-            skipped:
-              type: boolean
     BasicResponse:
       type: object
       required:

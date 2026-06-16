@@ -68,5 +68,4 @@ Result:
 
 ## Remaining Documentation Risks
 
-- Compatibility endpoints such as `sync-locations` and the deprecated locations route still appear in reference material and must stay clearly marked as non-onboarding paths.
 - Customer detail verification proves the partner-customer contract and the stored customer state, but loyalty transaction inspection still depends on merchant-side tooling outside the partner HTTP response itself.

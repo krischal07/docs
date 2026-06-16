@@ -155,17 +155,6 @@
       "membershipSince": "2026-06-08T10:15:00.000Z"
     }
   },
-  "sync_locations_response": {
-    "success": true,
-    "message": "Sync skipped for outlet-owned RestroX",
-    "data": {
-      "skipped": true
-    }
-  },
-  "locations_route_response": {
-    "success": false,
-    "message": "Locations route is not supported for outlet-owned RestroX"
-  },
   "event_received_response": {
     "success": true,
     "message": "Event received"

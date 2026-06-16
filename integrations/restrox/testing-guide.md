@@ -325,8 +325,3 @@ Missing event type response:
 }
 ```
 
-## Deprecated Compatibility Checks
-
-- `POST /api/partners/restrox/sync-locations` is a compatibility-only check.
-- `GET /api/pos-integrations/{id}/locations` is a compatibility-only check.
-- Neither route is part of the active onboarding or verification flow.
