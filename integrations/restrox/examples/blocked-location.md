@@ -4,7 +4,6 @@ description: Example showing the response returned when an outlet-owned RestroX 
 sidebarTitle: Missing Binding
 ---
 
-# Missing Binding Example
 
 ## Request
 

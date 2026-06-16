@@ -4,7 +4,6 @@ description: Example of a refund webhook request and successful acknowledgment.
 sidebarTitle: Refund Created
 ---
 
-# Refund Created Example
 
 ## Request
 

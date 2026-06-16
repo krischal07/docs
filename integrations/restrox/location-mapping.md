@@ -4,7 +4,6 @@ description: Understand how the connected restaurant binding is used during webh
 sidebarTitle: Restaurant Binding
 ---
 
-# Restaurant Binding Reference
 
 RestroX connect is outlet-owned and singular:
 

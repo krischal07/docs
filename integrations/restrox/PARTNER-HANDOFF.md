@@ -4,7 +4,6 @@ description: Canonical partner handoff summary for RestroX onboarding with Sampa
 sidebarTitle: Partner Handoff Source
 ---
 
-# RestroX Partner Handoff
 
 This package is the shareable entry point for the RestroX connect, test-sale, customer lookup, and webhook integration with Samparka.
 

@@ -16,14 +16,9 @@
         "index"
       ]
     },
+    
     {
-      "group": "Integrations",
-      "pages": [
-        "integrations/restrox/index"
-      ]
-    },
-    {
-      "group": "RestroX Getting Started",
+      "group": "Getting Started",
       "pages": [
         "integrations/restrox/getting-started/overview",
         "integrations/restrox/quick-start",

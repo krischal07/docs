@@ -1,17 +1,16 @@
 ---
-title: RestroX Integration Guide
+title: POS Integration Guide
 description: Integrate RestroX with Samparka Loyalty using secure webhooks.
 sidebarTitle: Home
 mode: wide
 hideFooterPagination: true
 ---
 
-# RestroX Integration Guide
-
-Integrate RestroX with Samparka Loyalty using a singular connect contract and secure webhooks.
+Integrate POS with Samparka Loyalty using a singular connect contract and secure webhooks.
 
 <Info>
-This portal organizes the reviewed RestroX integration documents into a cleaner onboarding path. The underlying Markdown guides remain the canonical source of truth.
+
+This portal organizes the reviewed POS integration documents into a cleaner onboarding path. The underlying Markdown guides remain the canonical source of truth.
 </Info>
 
 <Columns cols={2}>
@@ -33,13 +32,13 @@ This portal organizes the reviewed RestroX integration documents into a cleaner 
 
 <Steps>
   <Step title="Receive Integration Key">
-    Confirm the Samparka Integration Key for the outlet-owned RestroX integration.
+    Confirm the Samparka Integration Key for the outlet-owned POS integration.
   </Step>
   <Step title="Connect Restaurant">
     Call the connect endpoint with `integrationKey`, `restaurantId`, and optional `restaurantName`.
   </Step>
   <Step title="Configure Webhook">
-    Point RestroX at the Samparka webhook endpoint after the integration status is `CONNECTED`.
+    Point POS at the Samparka webhook endpoint after the integration status is `CONNECTED`.
   </Step>
   <Step title="Send Test Sale">
     Use the documented phone-first sale fixture to verify that an accepted request returns a `200` acknowledgment.

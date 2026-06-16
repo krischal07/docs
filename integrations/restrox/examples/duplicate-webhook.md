@@ -4,7 +4,6 @@ description: Example showing how Samparka safely acknowledges a repeated RestroX
 sidebarTitle: Duplicate Webhook
 ---
 
-# Duplicate Webhook Example
 
 ## Request
 

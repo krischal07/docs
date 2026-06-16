@@ -4,7 +4,6 @@ description: Canonical overview of the RestroX partner connect, test-sale, custo
 sidebarTitle: Guide Overview
 ---
 
-# RestroX Partner Guide
 
 Samparka is a customer loyalty platform. A valid RestroX integration is complete only after both transport and business outcomes are verified.
 

@@ -4,7 +4,6 @@ description: Required and optional RestroX fields for connect, test-sale, and we
 sidebarTitle: Payload Reference
 ---
 
-# Payload Reference
 
 Samparka reads different fields for `connect`, `test-sale`, and direct webhook delivery.
 

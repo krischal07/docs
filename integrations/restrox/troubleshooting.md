@@ -4,7 +4,6 @@ description: Diagnose connect validation, webhook authentication, payload, and d
 sidebarTitle: Troubleshooting
 ---
 
-# Troubleshooting
 
 | Problem | Likely Cause | Verification Steps | Resolution |
 | ------- | ------------ | ------------------ | ---------- |

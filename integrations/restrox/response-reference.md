@@ -4,7 +4,6 @@ description: Reference the partner-visible response contracts for connect, test-
 sidebarTitle: Response Reference
 ---
 
-# Response Reference
 
 These are the partner-visible responses for the active RestroX integration path.
 

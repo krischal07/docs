@@ -4,7 +4,6 @@ description: Compatibility overview for the earlier RestroX known behaviors page
 sidebarTitle: Known Behaviors
 ---
 
-# Known Behaviors and Limitations
 
 This page keeps the older RestroX URL working for existing bookmarks and search results.
 

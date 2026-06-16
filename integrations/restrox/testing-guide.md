@@ -4,7 +4,6 @@ description: Validate connect, test-sale, customer verification, webhook deliver
 sidebarTitle: Testing Guide
 ---
 
-# Testing Guide
 
 This guide uses the shared fixtures in [`examples/payloads.json`](./examples/payloads.json).
 

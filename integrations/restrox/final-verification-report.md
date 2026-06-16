@@ -4,7 +4,6 @@ description: Review the backend-driven contract, schema, and content verificatio
 sidebarTitle: Verification Report
 ---
 
-# Final Verification Report
 
 This report captures the backend-driven correction of the RestroX partner documentation package against `../samparka_vps/samparka-backend`.
 

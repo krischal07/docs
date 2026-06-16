@@ -1,22 +1,50 @@
 ---
 title: Quick Start
-description: Connect RestroX to one Samparka outlet and validate partner and webhook delivery quickly.
+description: Connect POS to one Samparka outlet and validate partner and webhook delivery quickly.
 sidebarTitle: Quick Start
 ---
 
-# Quick Start
 
-This is the fastest path to a verified RestroX integration.
+This is the fastest path to a verified POS integration.
 
 See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integration-checklist).
 
+## Base URL
+
+All API requests are made to:
+
+```
+https://server.samparka.co
+```
+
+<CodeGroup>
+
+```bash Connect
+POST https://server.samparka.co/api/partners/restrox/connect
+```
+
+```bash Webhook
+POST https://server.samparka.co/webhook/restrox/{token}
+```
+
+```bash Customer Search
+GET https://server.samparka.co/api/partners/restrox/customers/search?phone={phone}
+```
+
+</CodeGroup>
+
+<Tip>
+  Set `https://server.samparka.co` as the `baseUrl` variable in your Postman collection or HTTP client before running any requests.
+</Tip>
+
+
 ## 1. Receive The Integration Key
 
-Ask Samparka for the outlet-owned RestroX `integrationKey`.
+Ask Samparka for the outlet-owned POS `integrationKey`.
 
 ## 2. Connect The Restaurant
 
-Send `POST` requests to `/api/partners/restrox/connect` with `Content-Type: application/json` and the partner auth header:
+Send `POST` requests to `/api/partners/{{provider}}/connect` with `Content-Type: application/json` and the partner auth header:
 
 ```http
 x-partner-key: {{partnerKey}}
@@ -37,7 +65,7 @@ Expected response:
 ```json
 {
   "success": true,
-  "message": "RestroX connected",
+  "message": "{{Provider}} connected",
   "connected": true,
   "integrationId": "{{integrationId}}",
   "token": "{{token}}",
