@@ -27,6 +27,8 @@
         "group": "RestroX Getting Started",
         "pages": [
           "integrations/restrox/getting-started/overview",
+          "integrations/restrox/customer-loyalty-award-flow",
+          "integrations/restrox/customer-identity",
           "integrations/restrox/PARTNER-HANDOFF",
           "integrations/restrox/quick-start",
           "integrations/restrox/authentication",
