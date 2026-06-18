@@ -14,33 +14,39 @@ See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integra
 All API requests are made to:
 
 ```
-https://server.samparka.co
+https://server.samparka.xyz
 ```
 
 <CodeGroup>
 
 ```bash Connect
-POST https://server.samparka.co/api/partners/restrox/connect
+POST https://server.samparka.xyz/api/partners/restrox/connect
 ```
 
 ```bash Webhook
-POST https://server.samparka.co/webhook/restrox/{token}
+POST https://server.samparka.xyz/webhook/restrox/{token}
 ```
 
 ```bash Customer Search
-GET https://server.samparka.co/api/partners/restrox/customers/search?phone={phone}
+GET https://server.samparka.xyz/api/partners/restrox/customers/search?phone={phone}
 ```
 
 </CodeGroup>
 
 <Tip>
-  Set `https://server.samparka.co` as the `baseUrl` variable in your Postman collection or HTTP client before running any requests.
+  Set `https://server.samparka.xyz` as the `baseUrl` variable in your Postman collection or HTTP client before running any requests.
 </Tip>
 
 
-## 1. Receive The Integration Key
+## 1. Receive The Connection Key
 
-Ask Samparka for the outlet-owned POS `integrationKey`.
+Get the merchant's Samparka Connection Key from the Samparka integration setup.
+
+Example:
+
+```text
+SPK-RX-ABC12345
+```
 
 ## 2. Connect The Restaurant
 
