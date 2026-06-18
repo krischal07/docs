@@ -1,6 +1,6 @@
 ---
 title: Duplicate Webhook Example
-description: Example showing how Samparka safely acknowledges a repeated RestroX webhook.
+description: Example showing how Samparka safely acknowledges a repeated POS webhook.
 sidebarTitle: Duplicate Webhook
 ---
 
@@ -13,7 +13,7 @@ Use the `duplicate_sale_request` fixture from [`payloads.json`](./payloads.json)
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "restrox-sale-1001",
+  "order_id": "pos-sale-1001",
   "created_at": "2026-06-08T10:15:00.000Z",
   "amount": 850,
   "currency": "NPR",

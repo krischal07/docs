@@ -1,12 +1,12 @@
 ---
 title: Final Verification Report
-description: Review the backend-driven contract, schema, and content verification for the RestroX partner guide package.
+description: Review the backend-driven contract, schema, and content verification for the POS partner guide package.
 sidebarTitle: Verification Report
 ---
 
 # Final Verification Report
 
-This report captures the backend-driven correction of the RestroX partner documentation package against `../samparka_vps/samparka-backend`.
+This report captures the backend-driven correction of the POS partner documentation package against `../samparka_vps/samparka-backend`.
 
 ## Files Updated
 
@@ -26,7 +26,7 @@ This report captures the backend-driven correction of the RestroX partner docume
 - `examples/refund-created.md`
 - `examples/duplicate-webhook.md`
 - `examples/blocked-location.md`
-- mirrored files under `integrations/restrox/`
+- mirrored files under `integrations/pos/`
 
 ## Contract Summary
 
@@ -61,10 +61,10 @@ Reviewed repository-wide references for:
 
 Result:
 
-- Active RestroX customer-search examples now use `/api/partners/restrox/customers/search`.
-- Active RestroX customer-detail examples now use `/api/partners/restrox/customers/{customerId}`.
-- Active RestroX webhook docs now use the exact backend status codes and exact message text for the documented scenarios.
-- Active RestroX onboarding docs now show `token` returned by connect and use it directly for webhook setup.
+- Active POS customer-search examples now use `/api/partners/{provider}/customers/search`.
+- Active POS customer-detail examples now use `/api/partners/{provider}/customers/{customerId}`.
+- Active POS webhook docs now use the exact backend status codes and exact message text for the documented scenarios.
+- Active POS onboarding docs now show `token` returned by connect and use it directly for webhook setup.
 
 ## Remaining Documentation Risks
 

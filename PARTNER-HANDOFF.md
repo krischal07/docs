@@ -1,12 +1,12 @@
 ---
-title: RestroX Partner Handoff
-description: Canonical partner handoff summary for RestroX onboarding with Samparka Loyalty.
+title: POS Partner Handoff
+description: Canonical partner handoff summary for POS onboarding with Samparka Loyalty.
 sidebarTitle: Partner Handoff Source
 ---
 
-# RestroX Partner Handoff
+# POS Partner Handoff
 
-This package is the shareable entry point for the RestroX connect, test-sale, customer lookup, and webhook integration with Samparka.
+This package is the shareable entry point for the POS connect, test-sale, customer lookup, and webhook integration with Samparka.
 
 ## Start Here
 
@@ -22,10 +22,10 @@ This package is the shareable entry point for the RestroX connect, test-sale, cu
 flowchart TD
   A["Merchant Creates Integration"] --> B["Partner Connects Restaurant"]
   B --> C["Connect Returns Token"]
-  C --> D["RestroX Sends Webhook Or Test Sale"]
+  C --> D["POS Sends Webhook Or Test Sale"]
   D --> E["System Resolves Integration"]
   E --> F["System Attributes Sale To Bound Restaurant"]
-  F --> G["RestroX Calls Partner Customer API"]
+  F --> G["POS Calls Partner Customer API"]
   G --> H["System Returns Store-Scoped Loyalty Data"]
 ```
 
@@ -46,7 +46,7 @@ Success response:
 ```json
 {
   "success": true,
-  "message": "RestroX connected",
+  "message": "POS connected",
   "connected": true,
   "integrationId": "{{integrationId}}",
   "token": "{{token}}",
@@ -86,7 +86,7 @@ Send webhook events to `/webhook/restrox/{token}` with transaction data and a cu
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "restrox-sale-1001",
+  "order_id": "pos-sale-1001",
   "amount": 850,
   "customer": {
     "phone": "+97798XXXXXXXX"
@@ -112,7 +112,7 @@ x-partner-key: {{partnerKey}}
 x-integration-key: {{integrationKey}}
 ```
 
-`x-partner-key` identifies RestroX. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
+`x-partner-key` is shared manually by Samparka during onboarding. For this integration, use `restrox` as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
 
 ## Testing Checklist
 

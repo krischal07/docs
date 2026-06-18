@@ -33,7 +33,7 @@ Verify Points Awarded
 ## Connect Test
 
 ```bash
-curl -X POST "https://your-domain/api/partners/restrox/connect" \
+curl -X POST "https://your-domain/api/partners/{provider}/connect" \
   -H "Content-Type: application/json" \
   -H "x-partner-key: {{partnerKey}}" \
   --data '{
@@ -48,7 +48,7 @@ Expected response:
 ```json
 {
   "success": true,
-  "message": "RestroX connected",
+  "message": "POS connected",
   "connected": true,
   "integrationId": "replace-with-real-id",
   "token": "replace-with-real-token",
@@ -62,14 +62,14 @@ Expected response:
 ## Test Sale Wrapper Check
 
 ```bash
-curl -X POST "https://your-domain/api/partners/restrox/test-sale" \
+curl -X POST "https://your-domain/api/partners/{provider}/test-sale" \
   -H "Content-Type: application/json" \
   -H "x-partner-key: {{partnerKey}}" \
   --data '{
     "integrationKey": "{{integrationKey}}",
     "payload": {
       "event_type": "order.completed",
-      "order_id": "restrox-sale-1001",
+      "order_id": "pos-sale-1001",
       "created_at": "2026-06-08T10:15:00.000Z",
       "amount": 850,
       "currency": "NPR",
@@ -110,11 +110,11 @@ Duplicate wrapper response:
 ## Direct Webhook Sale Test
 
 ```bash
-curl -X POST "https://your-domain/webhook/restrox/{token}" \
+curl -X POST "https://your-domain/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
-    "order_id": "restrox-sale-1001",
+    "order_id": "pos-sale-1001",
     "created_at": "2026-06-08T10:15:00.000Z",
     "amount": 850,
     "currency": "NPR",
@@ -146,7 +146,7 @@ After the first valid sale, fetch the merchant integration and confirm:
 ## Customer Search After First Sale
 
 ```bash
-curl -X GET "https://your-domain/api/partners/restrox/customers/search?phone=9800000101" \
+curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone=9800000101" \
   -H "x-partner-key: {{partnerKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
@@ -160,7 +160,7 @@ Expected hit response:
     "id": "684a00000000000000001001",
     "name": null,
     "phone": "9800000101",
-    "email": "restrox-sale-1001@example.com",
+    "email": "pos-sale-1001@example.com",
     "points": 85,
     "tier": null,
     "lifetimePoints": 85,
@@ -180,7 +180,7 @@ Expected miss response:
 ## Customer Detail Verification
 
 ```bash
-curl -X GET "https://your-domain/api/partners/restrox/customers/{customerId}" \
+curl -X GET "https://your-domain/api/partners/{provider}/customers/{customerId}" \
   -H "x-partner-key: {{partnerKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
@@ -205,11 +205,11 @@ After customer lookup succeeds, confirm the test sale created a loyalty transact
 ## Refund Test
 
 ```bash
-curl -X POST "https://your-domain/webhook/restrox/{token}" \
+curl -X POST "https://your-domain/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "refund.created",
-    "order_id": "restrox-sale-1001",
+    "order_id": "pos-sale-1001",
     "created_at": "2026-06-08T11:30:00.000Z",
     "amount": 850,
     "currency": "NPR",
@@ -245,11 +245,11 @@ Expected response:
 ## Invalid Token Test
 
 ```bash
-curl -X POST "https://your-domain/webhook/restrox/{invalid-token}" \
+curl -X POST "https://your-domain/webhook/{provider}/{invalid-token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
-    "order_id": "restrox-sale-1001",
+    "order_id": "pos-sale-1001",
     "created_at": "2026-06-08T10:15:00.000Z",
     "amount": 850,
     "currency": "NPR",
@@ -272,11 +272,11 @@ Expected response:
 Use the token from a newly created integration before calling connect:
 
 ```bash
-curl -X POST "https://your-domain/webhook/restrox/{token}" \
+curl -X POST "https://your-domain/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
-    "order_id": "restrox-sale-2001",
+    "order_id": "pos-sale-2001",
     "amount": 600,
     "currency": "NPR",
     "customer": { "phone": "9800000103" }

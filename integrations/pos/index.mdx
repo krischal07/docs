@@ -1,0 +1,66 @@
+---
+title: POS Integration Guide
+description: Integrate POS with Samparka Loyalty using secure webhooks.
+sidebarTitle: Home
+mode: wide
+hideFooterPagination: true
+---
+
+Integrate POS with Samparka Loyalty using a singular connect contract and secure webhooks.
+
+<Info>
+
+This portal organizes the reviewed POS integration documents into a cleaner onboarding path. The underlying Markdown guides remain the canonical source of truth.
+</Info>
+
+<Columns cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/integrations/pos/quick-start">
+    Connect the restaurant, configure the webhook, and reach a working baseline quickly.
+  </Card>
+  <Card title="Event Types" icon="radio" href="/integrations/pos/event-types">
+    Review the sale, refund, and void events accepted by Samparka.
+  </Card>
+  <Card title="Testing Guide" icon="flask-conical" href="/integrations/pos/testing-guide">
+    Validate delivery, duplicate handling, refunds, and common failure paths.
+  </Card>
+  <Card title="Integration Checklist" icon="clipboard-list" href="/integrations/pos/integration-checklist">
+    Complete the production-readiness checks before enabling live traffic.
+  </Card>
+</Columns>
+
+## Onboarding Flow
+
+<Steps>
+  <Step title="Receive Integration Key">
+    Confirm the Samparka Integration Key for the outlet-owned POS integration.
+  </Step>
+  <Step title="Connect Restaurant">
+    Call the connect endpoint with `integrationKey`, `restaurantId`, and optional `restaurantName`.
+  </Step>
+  <Step title="Configure Webhook">
+    Point POS at the Samparka webhook endpoint after the integration status is `CONNECTED`.
+  </Step>
+  <Step title="Send Test Sale">
+    Use the documented phone-first sale fixture to verify that an accepted request returns a `200` acknowledgment.
+  </Step>
+  <Step title="Verify Response">
+    Confirm the expected success message, verify customer lookup by phone, and resend the same payload once to validate idempotency.
+  </Step>
+  <Step title="Test Refund">
+    Send a `refund.created` payload that references the original sale identifier.
+  </Step>
+  <Step title="Go Live">
+    Finish the integration checklist, then promote the connection to production traffic.
+  </Step>
+</Steps>
+
+## Start With
+
+<Columns cols={2}>
+  <Card title="Partner Handoff" icon="handshake" href="/integrations/pos/PARTNER-HANDOFF">
+    Follow the recommended partner flow from handoff through go-live.
+  </Card>
+  <Card title="Technical Reference" icon="book-open" href="/integrations/pos/reference/overview">
+    Jump into endpoint, API, and Postman reference materials.
+  </Card>
+</Columns>

@@ -1,7 +1,7 @@
 ---
 title: Idempotency
-description: Root-level duplicate handling summary for RestroX.
+description: Root-level duplicate handling summary for POS.
 sidebarTitle: Idempotency
 ---
 
-Duplicate RestroX deliveries return `200 Event already processed`.
+Duplicate POS deliveries return `200 Event already processed`.

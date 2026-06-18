@@ -1,0 +1,702 @@
+{
+  "info": {
+    "name": "Samparka POS Integration",
+    "_postman_id": "f8f0b610-7cd4-4d07-9b53-pos-verification",
+    "description": "Partner API, webhook, and customer testing for the POS integration.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://your-domain"
+    },
+    {
+      "key": "partnerKey",
+      "value": "replace-with-partner-key"
+    },
+    {
+      "key": "integrationKey",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "expectedRestaurantId",
+      "value": "ktm-branch-01"
+    },
+    {
+      "key": "expectedRestaurantName",
+      "value": "Kathmandu Branch"
+    },
+    {
+      "key": "rebindRestaurantId",
+      "value": "pkr-branch-02"
+    },
+    {
+      "key": "rebindRestaurantName",
+      "value": "Pokhara Branch"
+    },
+    {
+      "key": "customerPhone",
+      "value": "9800000101"
+    },
+    {
+      "key": "customerId",
+      "value": ""
+    },
+    {
+      "key": "minimumPointsBalance",
+      "value": "1"
+    },
+    {
+      "key": "provider",
+      "value": "restrox"
+    }
+  ],
+  "item": [
+    {
+      "name": "Partner API",
+      "item": [
+        {
+          "name": "Connect Restaurant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('connect returns 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('connect success flag is true', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('connect message matches implementation', function () { pm.expect(body.message).to.eql('POS connected'); });",
+                  "pm.test('status is CONNECTED after connect', function () { pm.expect(body.status).to.eql('CONNECTED'); });",
+                  "pm.test('token is returned', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });",
+                  "pm.test('restaurantId is returned', function () { pm.expect(body.restaurantId).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });",
+                  "pm.test('external location matches expected restaurant', function () { pm.expect(body.externalLocationId).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });",
+                  "pm.collectionVariables.set('token', body.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-partner-key",
+                "value": "{{partnerKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"restaurantId\": \"{{expectedRestaurantId}}\",\n  \"restaurantName\": \"{{expectedRestaurantName}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/connect",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partners",
+                "{{provider}}",
+                "connect"
+              ]
+            },
+            "description": "Primary partner-facing connect request using the singular POS binding contract."
+          }
+        },
+        {
+          "name": "Submit Test Sale",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('submit test sale returns 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('outer success flag is true', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('outer message matches implementation', function () { pm.expect(body.message).to.eql('Test sale submitted'); });",
+                  "pm.test('inner webhook success flag is true', function () { pm.expect(body.data && body.data.success).to.eql(true); });",
+                  "pm.test('inner webhook message matches implementation', function () { pm.expect(['Event received', 'Event already processed']).to.include(body.data && body.data.message); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-partner-key",
+                "value": "{{partnerKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"payload\": {\n    \"event_type\": \"order.completed\",\n    \"order_id\": \"pos-sale-1001\",\n    \"created_at\": \"2026-06-08T10:15:00.000Z\",\n    \"amount\": 850,\n    \"currency\": \"NPR\",\n    \"customer\": {\n      \"phone\": \"{{customerPhone}}\"\n    },\n    \"items\": [\n      {\n        \"name\": \"Cappuccino\",\n        \"qty\": 1,\n        \"price\": 850\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/test-sale",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partners",
+                "{{provider}}",
+                "test-sale"
+              ]
+            },
+            "description": "Optional partner-side shortcut for submitting the first valid sale into the webhook pipeline."
+          }
+        },
+        {
+          "name": "Rebind Failure",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('rebind while connected returns conflict', function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-partner-key",
+                "value": "{{partnerKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"restaurantId\": \"{{rebindRestaurantId}}\",\n  \"restaurantName\": \"{{rebindRestaurantName}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/connect",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partners",
+                "{{provider}}",
+                "connect"
+              ]
+            },
+            "description": "Attempt a rebind while the integration is still connected to confirm the active binding is protected."
+          }
+        },
+        {
+          "name": "Rebind Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('rebind succeeds after disconnect', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('restaurant binding changed', function () { pm.expect(body.restaurantId).to.eql(pm.collectionVariables.get('rebindRestaurantId')); });",
+                  "pm.test('token is returned on rebind success', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-partner-key",
+                "value": "{{partnerKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"restaurantId\": \"{{rebindRestaurantId}}\",\n  \"restaurantName\": \"{{rebindRestaurantName}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/connect",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partners",
+                "{{provider}}",
+                "connect"
+              ]
+            },
+            "description": "Run this after disconnecting the integration to confirm a clean rebind succeeds."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhook Verification",
+      "item": [
+        {
+          "name": "Webhook Sale Completed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Event received'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "{{provider}}",
+                "{{token}}"
+              ]
+            },
+            "description": "Submit the happy-path completed sale directly to the tokenized webhook endpoint."
+          }
+        },
+        {
+          "name": "Webhook Refund Created",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Event received'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"refund.created\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T11:30:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "{{provider}}",
+                "{{token}}"
+              ]
+            },
+            "description": "Submit a refund webhook that references the original sale identifier."
+          }
+        },
+        {
+          "name": "Webhook Duplicate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Event already processed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "{{provider}}",
+                "{{token}}"
+              ]
+            },
+            "description": "Replay the same completed-sale payload to verify duplicate handling."
+          }
+        },
+        {
+          "name": "Webhook Missing Binding",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Integration is not connected to a restaurant'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-2001\",\n  \"created_at\": \"2026-06-08T13:10:00.000Z\",\n  \"amount\": 600,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000103\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Latte\",\n      \"qty\": 1,\n      \"price\": 600\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "{{provider}}",
+                "{{token}}"
+              ]
+            },
+            "description": "Run this against a newly created integration token before connect to verify the missing-binding rejection."
+          }
+        },
+        {
+          "name": "Webhook Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Invalid webhook token'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/{{provider}}/invalid-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "{{provider}}",
+                "invalid-token"
+              ]
+            },
+            "description": "Send a valid webhook body to an invalid token and confirm webhook authentication fails."
+          }
+        },
+        {
+          "name": "Webhook Disconnected Integration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Integration disconnected'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "{{provider}}",
+                "{{token}}"
+              ]
+            },
+            "description": "Run this after disconnecting the integration to confirm webhook processing is blocked."
+          }
+        },
+        {
+          "name": "Webhook Validation Failure",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Missing event_type in payload'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": \"pos-sale-3001\",\n  \"created_at\": \"2026-06-08T14:00:00.000Z\",\n  \"amount\": 300,\n  \"currency\": \"NPR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "{{provider}}",
+                "{{token}}"
+              ]
+            },
+            "description": "Submit a webhook body without event_type to confirm parser validation."
+          }
+        },
+        {
+          "name": "Webhook Invalid Body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status matches implementation', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(false); });",
+                  "pm.test('message matches implementation', function () { pm.expect(body.message).to.eql('Request body must be a JSON object'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{token}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhook",
+                "{{provider}}",
+                "{{token}}"
+              ]
+            },
+            "description": "Submit a non-object JSON body to confirm request validation."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer API",
+      "item": [
+        {
+          "name": "Search Customer After Sale",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('customer search succeeds', () => { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('response contains exists flag', () => { pm.expect(body.exists).to.eql(true); });",
+                  "pm.test('response contains customer data', () => { pm.expect(body.customer).to.be.an('object'); });",
+                  "const customer = body.customer;",
+                  "pm.test('phone matches sale payload', () => { pm.expect(customer.phone).to.eql(pm.collectionVariables.get('customerPhone')); });",
+                  "pm.collectionVariables.set('customerId', customer.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-partner-key",
+                "value": "{{partnerKey}}"
+              },
+              {
+                "key": "x-integration-key",
+                "value": "{{integrationKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/customers/search?phone={{customerPhone}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partners",
+                "{{provider}}",
+                "customers",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "phone",
+                  "value": "{{customerPhone}}"
+                }
+              ]
+            },
+            "description": "Verify the first valid sale resulted in customer resolution or creation by phone."
+          }
+        },
+        {
+          "name": "Get Customer Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('details returns 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "const customer = body.customer;",
+                  "pm.test('correct customer returned', function () { pm.expect(String(customer.id)).to.eql(String(pm.collectionVariables.get('customerId'))); });",
+                  "pm.test('points are present', function () { pm.expect(Number(customer.points)).to.be.at.least(Number(pm.collectionVariables.get('minimumPointsBalance'))); });",
+                  "pm.test('lifetime points are present', function () { pm.expect(Number(customer.lifetimePoints)).to.be.at.least(Number(pm.collectionVariables.get('minimumPointsBalance'))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-partner-key",
+                "value": "{{partnerKey}}"
+              },
+              {
+                "key": "x-integration-key",
+                "value": "{{integrationKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/customers/{{customerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partners",
+                "{{provider}}",
+                "customers",
+                "{{customerId}}"
+              ]
+            },
+            "description": "Verify the customer state after loyalty processing using the partner customer detail route."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,32 +1,33 @@
 ---
-title: RestroX Partner Guide
-description: Canonical overview of the RestroX partner connect, test-sale, customer lookup, and webhook integration with Samparka Loyalty.
+title: POS Partner Guide
+description: Canonical overview of the POS partner connect, test-sale, customer lookup, and webhook integration with Samparka Loyalty.
 sidebarTitle: Guide Overview
 ---
 
-# RestroX Partner Guide
+# POS Partner Guide
 
-Samparka is a customer loyalty platform. A valid RestroX integration is complete only after both transport and business outcomes are verified.
+Samparka is a customer loyalty platform. A valid POS integration is complete only after both transport and business outcomes are verified.
 
-1. Connect one RestroX restaurant to one outlet-owned Samparka integration with `POST /api/partners/restrox/connect`.
+1. Connect one POS restaurant to one outlet-owned Samparka integration with `POST /api/partners/restrox/connect`.
 2. Store the returned `token` and use it to configure the webhook URL.
 3. Send sale, refund, and void webhook traffic after the integration is connected.
 4. Verify customer resolution, loyalty processing, and awarded points after the first valid sale.
 
 ## Integration Verification Flow
 
-1. Receive the Samparka Integration Key for the outlet-owned RestroX integration.
-2. Call `POST /api/partners/restrox/connect` with `integrationKey`, `restaurantId`, and optional `restaurantName`.
-3. Store the returned `token`.
-4. Configure RestroX to send events to `https://your-domain/webhook/restrox/{token}`.
-5. Send a test `order.completed` event to the webhook endpoint or use `POST /api/partners/restrox/test-sale`.
-6. Verify the integration becomes `ACTIVE`.
-7. Search the customer with `GET /api/partners/restrox/customers/search?phone=...` using partner authentication and `x-integration-key`.
-8. Fetch the customer with `GET /api/partners/restrox/customers/{customerId}` and confirm loyalty fields are populated.
-9. Verify a loyalty transaction exists for the sale and the awarded points reflect successful processing.
-10. Repost the same sale payload once to confirm duplicate safety.
-11. Send a `refund.created` webhook that references the original sale identifier.
-12. Complete the go-live checklist.
+1. Receive the Samparka Integration Key and partner API key manually for the outlet-owned POS integration.
+2. For this integration, use `restrox` as the `{provider}` value in documented route examples.
+3. Call `POST /api/partners/restrox/connect` with `integrationKey`, `restaurantId`, and optional `restaurantName`.
+4. Store the returned `token`.
+5. Configure POS to send events to `https://your-domain/webhook/restrox/{token}`.
+6. Send a test `order.completed` event to the webhook endpoint or use `POST /api/partners/restrox/test-sale`.
+7. Verify the integration becomes `ACTIVE`.
+8. Search the customer with `GET /api/partners/restrox/customers/search?phone=...` using partner authentication and `x-integration-key`.
+9. Fetch the customer with `GET /api/partners/restrox/customers/{customerId}` and confirm loyalty fields are populated.
+10. Verify a loyalty transaction exists for the sale and the awarded points reflect successful processing.
+11. Repost the same sale payload once to confirm duplicate safety.
+12. Send a `refund.created` webhook that references the original sale identifier.
+13. Complete the go-live checklist.
 
 ## Quick Links
 
@@ -62,7 +63,7 @@ Successful connect responses return:
 ```json
 {
   "success": true,
-  "message": "RestroX connected",
+  "message": "POS connected",
   "connected": true,
   "integrationId": "...",
   "token": "...",
@@ -107,7 +108,7 @@ Duplicate test-sale submissions return:
 
 ## Canonical Webhook Attribution
 
-For outlet-owned RestroX, restaurant identity is resolved from the integration binding:
+For outlet-owned POS, restaurant identity is resolved from the integration binding:
 
 ```txt
 Webhook Token
@@ -120,7 +121,7 @@ Webhook payload restaurant fields are optional, non-canonical metadata. They are
 
 ## Customer Lookup Authorization
 
-Customer lookup for RestroX is partner-authenticated and integration-scoped:
+Customer lookup for POS is partner-authenticated and integration-scoped:
 
 ```txt
 Partner Key
@@ -130,7 +131,7 @@ Integration Key
 Customer Lookup Authorization
 ```
 
-- the partner key identifies RestroX
+- the partner key is shared manually by Samparka during onboarding
 - the integration key identifies the merchant or store context
 - customer search is scoped to the store that owns the integration
 

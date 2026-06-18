@@ -20,63 +20,63 @@
     {
       "group": "Getting Started",
       "pages": [
-        "integrations/restrox/getting-started/overview",
-        "integrations/restrox/quick-start",
-        "integrations/restrox/customer-loyalty-award-flow",
-        "integrations/restrox/customer-identity",
-        "integrations/restrox/PARTNER-HANDOFF",
-        "integrations/restrox/authentication",
-        "integrations/restrox/webhook-endpoint"
+        "integrations/pos/getting-started/overview",
+        "integrations/pos/quick-start",
+        "integrations/pos/customer-loyalty-award-flow",
+        "integrations/pos/customer-identity",
+        "integrations/pos/PARTNER-HANDOFF",
+        "integrations/pos/authentication",
+        "integrations/pos/webhook-endpoint"
       ]
     },
     {
-      "group": "RestroX Events",
+      "group": "POS Events",
       "pages": [
-        "integrations/restrox/event-types",
-        "integrations/restrox/payload-reference",
-        "integrations/restrox/response-reference",
-        "integrations/restrox/refunds"
+        "integrations/pos/event-types",
+        "integrations/pos/payload-reference",
+        "integrations/pos/response-reference",
+        "integrations/pos/refunds"
       ]
     },
     {
-      "group": "RestroX Reliability",
+      "group": "POS Reliability",
       "pages": [
-        "integrations/restrox/idempotency",
-        "integrations/restrox/location-mapping",
-        "integrations/restrox/known-behaviors-and-limitations"
+        "integrations/pos/idempotency",
+        "integrations/pos/location-mapping",
+        "integrations/pos/known-behaviors-and-limitations"
       ]
     },
     {
-      "group": "RestroX Testing",
+      "group": "POS Testing",
       "pages": [
-        "integrations/restrox/testing-guide",
-        "integrations/restrox/troubleshooting"
+        "integrations/pos/testing-guide",
+        "integrations/pos/troubleshooting"
       ]
     },
     {
-      "group": "RestroX Reference",
+      "group": "POS Reference",
       "pages": [
-        "integrations/restrox/reference/overview",
-        "integrations/restrox/endpoint-catalog",
-        "integrations/restrox/api-reference/overview",
-        "integrations/restrox/reference/postman-collection"
+        "integrations/pos/reference/overview",
+        "integrations/pos/endpoint-catalog",
+        "integrations/pos/api-reference/overview",
+        "integrations/pos/reference/postman-collection"
       ]
     },
     {
-      "group": "RestroX Examples",
+      "group": "POS Examples",
       "pages": [
-        "integrations/restrox/examples/overview",
-        "integrations/restrox/examples/sale-completed",
-        "integrations/restrox/examples/refund-created",
-        "integrations/restrox/examples/duplicate-webhook",
-        "integrations/restrox/examples/blocked-location"
+        "integrations/pos/examples/overview",
+        "integrations/pos/examples/sale-completed",
+        "integrations/pos/examples/refund-created",
+        "integrations/pos/examples/duplicate-webhook",
+        "integrations/pos/examples/blocked-location"
       ]
     },
     {
-      "group": "RestroX Go Live",
+      "group": "POS Go Live",
       "pages": [
-        "integrations/restrox/integration-checklist",
-        "integrations/restrox/final-verification-report"
+        "integrations/pos/integration-checklist",
+        "integrations/pos/final-verification-report"
       ]
     }
   ]

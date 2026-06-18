@@ -1,18 +1,23 @@
 ---
 title: Quick Start
-description: Connect RestroX to one Samparka outlet and validate partner and webhook delivery quickly.
+description: Connect POS to one Samparka outlet and validate partner and webhook delivery quickly.
 sidebarTitle: Quick Start
 ---
 
 # Quick Start
 
-This is the fastest path to a verified RestroX integration.
+This is the fastest path to a verified POS integration.
 
 See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integration-checklist).
 
 ## 1. Receive The Integration Key
 
-Ask Samparka for the outlet-owned RestroX `integrationKey`.
+Ask Samparka to manually share both of these values for your outlet-owned POS integration:
+
+- `integrationKey`
+- partner API key to use as `x-partner-key`
+
+For this integration, replace `{provider}` with `restrox`.
 
 ## 2. Connect The Restaurant
 
@@ -37,7 +42,7 @@ Expected response:
 ```json
 {
   "success": true,
-  "message": "RestroX connected",
+  "message": "POS connected",
   "connected": true,
   "integrationId": "{{integrationId}}",
   "token": "{{token}}",
@@ -54,7 +59,7 @@ If the same restaurant is already bound, the response may also include `idempote
 
 After a successful connect request, store the returned `token`.
 
-Configure RestroX to send webhook events to:
+Configure POS to send webhook events to:
 
 `https://your-domain/webhook/restrox/{{token}}`
 
@@ -65,7 +70,7 @@ Use the canonical sale fixture from [`examples/payloads.json`](./examples/payloa
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "restrox-sale-1001",
+  "order_id": "pos-sale-1001",
   "created_at": "2026-06-08T10:15:00.000Z",
   "amount": 850,
   "currency": "NPR",
@@ -113,7 +118,7 @@ Fetch the merchant integration after the first valid sale and confirm:
 
 ## 7. Verify The Customer Exists
 
-RestroX authenticates as a partner, provides `x-partner-key`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
+POS authenticates as a partner, provides `x-partner-key`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
 
 ```bash
 curl -X GET "https://your-domain/api/partners/restrox/customers/search?phone={{customerPhone}}" \

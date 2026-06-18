@@ -9,7 +9,7 @@ sidebarTitle: Troubleshooting
 | Problem | Likely Cause | Verification Steps | Resolution |
 | ------- | ------------ | ------------------ | ---------- |
 | `400 restaurantId is required` on connect | The request still uses the legacy payload or omitted `restaurantId` | Inspect the JSON body for top-level `restaurantId`. | Send the singular connect payload with `integrationKey` and `restaurantId`. |
-| `404 Invalid Integration Key` on connect | The `integrationKey` does not resolve a RestroX integration | Compare the request key with the current Samparka Integration Key. | Replace the key and retry the connect request. |
+| `404 Invalid Integration Key` on connect | The `integrationKey` does not resolve a POS integration | Compare the request key with the current Samparka Integration Key. | Replace the key and retry the connect request. |
 | `409 Disconnect the integration before rebinding it to another restaurant` | The integration is already connected to a different restaurant | Compare the requested `restaurantId` with the current binding. | Disconnect first, then reconnect with the new restaurant. |
 | `404 Invalid webhook token` | Wrong token in the URL path | Compare the configured URL with the token provided by Samparka. | Update the webhook URL and retry. |
 | `400 Request body must be a JSON object` | The request body is missing, malformed, or not a JSON object | Check `Content-Type`, body encoding, and confirm the top-level payload is an object. | Correct the body and resend. |

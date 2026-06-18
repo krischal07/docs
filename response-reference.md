@@ -6,7 +6,7 @@ sidebarTitle: Response Reference
 
 # Response Reference
 
-These are the partner-visible responses for the active RestroX integration path.
+These are the partner-visible responses for the active POS integration path.
 
 See also: [Troubleshooting](./troubleshooting).
 
@@ -15,7 +15,7 @@ See also: [Troubleshooting](./troubleshooting).
 ```json
 {
   "success": true,
-  "message": "RestroX connected",
+  "message": "POS connected",
   "connected": true,
   "integrationId": "684915c401ec340433d84ee2",
   "token": "abcxyz",
@@ -61,7 +61,7 @@ See also: [Troubleshooting](./troubleshooting).
     "id": "684a00000000000000001001",
     "name": null,
     "phone": "9800000101",
-    "email": "restrox-sale-1001@example.com",
+    "email": "pos-sale-1001@example.com",
     "points": 85,
     "tier": null,
     "lifetimePoints": 85,
@@ -86,7 +86,7 @@ See also: [Troubleshooting](./troubleshooting).
     "id": "684a00000000000000001001",
     "name": null,
     "phone": "9800000101",
-    "email": "restrox-sale-1001@example.com",
+    "email": "pos-sale-1001@example.com",
     "points": 85,
     "tier": null,
     "lifetimePoints": 85,

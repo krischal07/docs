@@ -1,9 +1,9 @@
 ---
 title: Webhook Endpoint
-description: Root-level mirror of the RestroX webhook endpoint.
+description: Root-level mirror of the POS webhook endpoint.
 sidebarTitle: Webhook Endpoint
 ---
 
-`POST /webhook/restrox/{token}`
+`POST /webhook/{provider}/{token}`
 
-The token resolves directly to the outlet-owned RestroX integration.
+The token resolves directly to the outlet-owned POS integration.

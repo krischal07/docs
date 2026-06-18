@@ -6,7 +6,7 @@ sidebarTitle: Restaurant Binding
 
 # Restaurant Binding Reference
 
-RestroX connect is outlet-owned and singular:
+POS connect is outlet-owned and singular:
 
 ```txt
 One Integration

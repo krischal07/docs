@@ -1,6 +1,6 @@
 ---
 title: Event Types
-description: Root-level event type summary for RestroX.
+description: Root-level event type summary for POS.
 sidebarTitle: Event Types
 ---
 

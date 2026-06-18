@@ -13,7 +13,7 @@ Use the `sale_completed_request` fixture from [`payloads.json`](./payloads.json)
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "restrox-sale-1001",
+  "order_id": "pos-sale-1001",
   "created_at": "2026-06-08T10:15:00.000Z",
   "amount": 850,
   "currency": "NPR",

@@ -1,6 +1,6 @@
 ---
 title: Integration Checklist
-description: Final go-live checklist for validating a RestroX to Samparka integration.
+description: Final go-live checklist for validating a POS to Samparka integration.
 sidebarTitle: Integration Checklist
 ---
 
@@ -10,7 +10,7 @@ See also: [Testing Guide](./testing-guide).
 
 ## Connect Contract
 
-- [ ] `POST /api/partners/restrox/connect` tested
+- [ ] `POST /api/partners/{provider}/connect` tested
 - [ ] `integrationKey` verified
 - [ ] `restaurantId` verified
 - [ ] Bound restaurant stored on the integration

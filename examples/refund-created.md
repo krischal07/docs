@@ -13,7 +13,7 @@ Use the `refund_created_request` fixture from [`payloads.json`](./payloads.json)
 ```json
 {
   "event_type": "refund.created",
-  "order_id": "restrox-sale-1001",
+  "order_id": "pos-sale-1001",
   "created_at": "2026-06-08T11:30:00.000Z",
   "amount": 850,
   "currency": "NPR",

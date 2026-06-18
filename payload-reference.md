@@ -1,6 +1,6 @@
 ---
 title: Payload Reference
-description: Required and optional RestroX fields for connect, test-sale, and webhook delivery.
+description: Required and optional POS fields for connect, test-sale, and webhook delivery.
 sidebarTitle: Payload Reference
 ---
 
@@ -10,14 +10,14 @@ Samparka reads different fields for `connect`, `test-sale`, and direct webhook d
 
 ## Connect Request
 
-`POST /api/partners/restrox/connect`
+`POST /api/partners/{provider}/connect`
 
 ### Required Properties
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `integrationKey` | string | Yes | Samparka Integration Key that resolves one outlet-owned `PosIntegration`. | `restrox-key-001` |
-| `restaurantId` | string | Yes | RestroX restaurant identifier persisted as `external_location_id`. | `ktm-branch-01` |
+| `integrationKey` | string | Yes | Samparka Integration Key that resolves one outlet-owned `PosIntegration`. | `pos-key-001` |
+| `restaurantId` | string | Yes | POS restaurant identifier persisted as `external_location_id`. | `ktm-branch-01` |
 
 ### Optional Properties
 
@@ -27,31 +27,31 @@ Samparka reads different fields for `connect`, `test-sale`, and direct webhook d
 
 ## Test Sale Request
 
-`POST /api/partners/restrox/test-sale`
+`POST /api/partners/{provider}/test-sale`
 
 ### Required Properties
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `integrationKey` | string | Yes | Samparka Integration Key that resolves one outlet-owned `PosIntegration`. | `restrox-key-001` |
+| `integrationKey` | string | Yes | Samparka Integration Key that resolves one outlet-owned `PosIntegration`. | `pos-key-001` |
 | `payload` | object | Yes | Webhook-shaped event body submitted into the webhook processing pipeline. | See webhook fields below. |
 
 ## Webhook Fields
 
-`POST /webhook/restrox/{token}`
+`POST /webhook/{provider}/{token}`
 
 ### Required Fields
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `event_type` or `type` | string | Yes | RestroX event name. | `order.completed` |
+| `event_type` or `type` | string | Yes | POS event name. | `order.completed` |
 
 ### Optional Fields
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `order_id` or `transaction_id` or `id` | string | No | Provider transaction identifier used for transaction reference and idempotency. | `restrox-sale-1001` |
-| `created_at` or `timestamp` | string | No | Event time from RestroX. | `2026-06-08T10:15:00.000Z` |
+| `order_id` or `transaction_id` or `id` | string | No | Provider transaction identifier used for transaction reference and idempotency. | `pos-sale-1001` |
+| `created_at` or `timestamp` | string | No | Event time from POS. | `2026-06-08T10:15:00.000Z` |
 | `amount` or `order_total` or `total` | number | No | Transaction amount. | `850` |
 | `currency` or `currency_code` | string | No | Currency code. Defaults to `NPR` if omitted. | `NPR` |
 | `customer.phone` or `phone` or `customer_phone` | string | No | Primary customer identifier for search and loyalty attribution. | `9800000101` |
@@ -61,7 +61,7 @@ Samparka reads different fields for `connect`, `test-sale`, and direct webhook d
 
 ## Restaurant Attribution Source Of Truth
 
-For outlet-owned RestroX:
+For outlet-owned POS:
 
 ```txt
 Webhook Token
