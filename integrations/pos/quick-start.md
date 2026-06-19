@@ -50,13 +50,13 @@ SPK-RX-ABC12345
 
 ## 2. Connect The Restaurant
 
-Send `POST` requests to `/api/partners/{{provider}}/connect` with `Content-Type: application/json` and the partner auth header:
+Send `POST` requests to `/api/partners/{{provider}}/connect` with `Content-Type: application/json` and the partner auth header.
 
 ```http
 x-partner-key: {{partnerKey}}
 ```
 
-Payload:
+Example payload:
 
 ```json
 {
@@ -66,29 +66,22 @@ Payload:
 }
 ```
 
-Expected response:
+Expected success response:
 
 ```json
 {
   "success": true,
-  "message": "{{Provider}} connected",
-  "connected": true,
   "integrationId": "{{integrationId}}",
   "token": "{{token}}",
-  "restaurantId": "{{expectedRestaurantId}}",
-  "externalLocationId": "{{expectedRestaurantId}}",
-  "externalLocationName": "{{expectedRestaurantName}}",
   "status": "CONNECTED"
 }
 ```
-
-If the same restaurant is already bound, the response may also include `idempotent: true`.
 
 ## 3. Configure The Webhook URL
 
 After a successful connect request, store the returned `token`.
 
-Configure RestroX to send webhook events to:
+Use the returned `token` to configure the webhook endpoint for subsequent RestroX event delivery.
 
 `https://your-domain/webhook/restrox/{{token}}`
 

@@ -46,13 +46,8 @@ Success response:
 ```json
 {
   "success": true,
-  "message": "POS connected",
-  "connected": true,
   "integrationId": "{{integrationId}}",
   "token": "{{token}}",
-  "restaurantId": "{{expectedRestaurantId}}",
-  "externalLocationId": "{{expectedRestaurantId}}",
-  "externalLocationName": "{{expectedRestaurantName}}",
   "status": "CONNECTED"
 }
 ```
@@ -62,7 +57,6 @@ Validation:
 - `integrationKey` is required.
 - `restaurantId` is required.
 - `restaurantName` is optional.
-- the response may include `idempotent: true` when the same restaurant is already bound
 
 ## Test Sale Contract
 

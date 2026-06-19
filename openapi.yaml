@@ -49,13 +49,8 @@ paths:
                   x-source-fixture: examples/payloads.json#/connect_response
                   value:
                     success: true
-                    message: POS connected
-                    connected: true
                     integrationId: 684915c401ec340433d84ee2
                     token: abcxyz
-                    restaurantId: ktm-branch-01
-                    externalLocationId: ktm-branch-01
-                    externalLocationName: Kathmandu Branch
                     status: CONNECTED
         '400':
           description: Request validation failure
@@ -462,34 +457,16 @@ components:
       type: object
       required:
         - success
-        - message
-        - connected
         - integrationId
         - token
-        - restaurantId
-        - externalLocationId
         - status
       properties:
         success:
-          type: boolean
-        message:
-          type: string
-        connected:
-          type: boolean
-        idempotent:
           type: boolean
         integrationId:
           type: string
         token:
           type: string
-        restaurantId:
-          type: string
-        externalLocationId:
-          type: string
-        externalLocationName:
-          type:
-            - string
-            - 'null'
         status:
           type: string
     TestSaleRequest:

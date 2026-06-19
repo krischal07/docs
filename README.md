@@ -63,18 +63,11 @@ Successful connect responses return:
 ```json
 {
   "success": true,
-  "message": "POS connected",
-  "connected": true,
   "integrationId": "...",
   "token": "...",
-  "restaurantId": "...",
-  "externalLocationId": "...",
-  "externalLocationName": "...",
   "status": "CONNECTED"
 }
 ```
-
-If the same restaurant is already bound, the response may also include `idempotent: true`.
 
 ## Test Sale Contract
 

@@ -42,18 +42,13 @@ curl -X POST "https://your-domain/api/partners/{provider}/connect" \
   }'
 ```
 
-Expected response:
+Expected success response:
 
 ```json
 {
   "success": true,
-  "message": "POS connected",
-  "connected": true,
   "integrationId": "replace-with-real-id",
   "token": "replace-with-real-token",
-  "restaurantId": "{{expectedRestaurantId}}",
-  "externalLocationId": "{{expectedRestaurantId}}",
-  "externalLocationName": "{{expectedRestaurantName}}",
   "status": "CONNECTED"
 }
 ```
@@ -323,4 +318,3 @@ Missing event type response:
   "message": "Missing event_type in payload"
 }
 ```
-

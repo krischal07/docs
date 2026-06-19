@@ -21,13 +21,13 @@ For this integration, replace `{provider}` with `restrox`.
 
 ## 2. Connect The Restaurant
 
-Send `POST` requests to `/api/partners/restrox/connect` with `Content-Type: application/json` and the partner auth header:
+Send `POST` requests to `/api/partners/{{provider}}/connect` with `Content-Type: application/json` and the partner auth header.
 
 ```http
 x-partner-key: {{partnerKey}}
 ```
 
-Payload:
+Example payload:
 
 ```json
 {
@@ -37,23 +37,16 @@ Payload:
 }
 ```
 
-Expected response:
+Expected success response:
 
 ```json
 {
   "success": true,
-  "message": "POS connected",
-  "connected": true,
   "integrationId": "{{integrationId}}",
   "token": "{{token}}",
-  "restaurantId": "{{expectedRestaurantId}}",
-  "externalLocationId": "{{expectedRestaurantId}}",
-  "externalLocationName": "{{expectedRestaurantName}}",
   "status": "CONNECTED"
 }
 ```
-
-If the same restaurant is already bound, the response may also include `idempotent: true`.
 
 ## 3. Configure The Webhook URL
 

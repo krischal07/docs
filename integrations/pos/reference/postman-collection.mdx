@@ -59,11 +59,9 @@ Use the Postman collection for hands-on partner API, webhook, and customer testi
                   "pm.test('connect returns 200', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
                   "pm.test('connect success flag is true', function () { pm.expect(body.success).to.eql(true); });",
-                  "pm.test('connect message matches implementation', function () { pm.expect(body.message).to.eql('POS connected'); });",
                   "pm.test('status is CONNECTED after connect', function () { pm.expect(body.status).to.eql('CONNECTED'); });",
                   "pm.test('token is returned', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });",
-                  "pm.test('restaurantId is returned', function () { pm.expect(body.restaurantId).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });",
-                  "pm.test('external location matches expected restaurant', function () { pm.expect(body.externalLocationId).to.eql(pm.collectionVariables.get('expectedRestaurantId')); });",
+                  "pm.test('integrationId is returned', function () { pm.expect(body.integrationId).to.be.a('string').and.not.empty; });",
                   "pm.collectionVariables.set('token', body.token);"
                 ]
               }

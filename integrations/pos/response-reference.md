@@ -14,13 +14,8 @@ See also: [Troubleshooting](./troubleshooting).
 ```json
 {
   "success": true,
-  "message": "POS connected",
-  "connected": true,
   "integrationId": "684915c401ec340433d84ee2",
   "token": "abcxyz",
-  "restaurantId": "ktm-branch-01",
-  "externalLocationId": "ktm-branch-01",
-  "externalLocationName": "Kathmandu Branch",
   "status": "CONNECTED"
 }
 ```
