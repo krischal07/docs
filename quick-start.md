@@ -54,7 +54,7 @@ After a successful connect request, store the returned `token`.
 
 Configure POS to send webhook events to:
 
-`https://your-domain/webhook/restrox/{{token}}`
+`https://samparka.xyz/webhook/restrox/{{token}}`
 
 ## 4. Send A Test Sale
 

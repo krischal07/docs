@@ -83,7 +83,7 @@ After a successful connect request, store the returned `token`.
 
 Use the returned `token` to configure the webhook endpoint for subsequent RestroX event delivery.
 
-`https://your-domain/webhook/restrox/{{token}}`
+`https://samparka.xyz/webhook/restrox/{{token}}`
 
 ## 4. Send A Test Sale
 
