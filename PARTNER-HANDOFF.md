@@ -20,11 +20,11 @@ This package is the shareable entry point for the POS connect, test-sale, custom
 
 ```mermaid
 flowchart TD
-  A["Merchant Creates Integration"] --> B["Partner Connects Restaurant"]
+  A["Merchant Creates Integration"] --> B["Partner Connects Location"]
   B --> C["Connect Returns Token"]
   C --> D["POS Sends Webhook Or Test Sale"]
   D --> E["System Resolves Integration"]
-  E --> F["System Attributes Sale To Bound Restaurant"]
+  E --> F["System Attributes Sale To Bound Location"]
   F --> G["POS Calls Partner Customer API"]
   G --> H["System Returns Store-Scoped Loyalty Data"]
 ```
@@ -36,8 +36,8 @@ Request:
 ```json
 {
   "integrationKey": "{{integrationKey}}",
-  "restaurantId": "{{expectedRestaurantId}}",
-  "restaurantName": "{{expectedRestaurantName}}"
+  "externalLocationId": "{{expectedLocationId}}",
+  "externalLocationName": "{{expectedLocationName}}"
 }
 ```
 
@@ -47,7 +47,7 @@ Success response:
 {
   "success": true,
   "integrationId": "{{integrationId}}",
-  "token": "{{token}}",
+  "token": "{{webhookToken}}",
   "status": "CONNECTED"
 }
 ```
@@ -55,8 +55,10 @@ Success response:
 Validation:
 
 - `integrationKey` is required.
-- `restaurantId` is required.
-- `restaurantName` is optional.
+- `externalLocationId` is required.
+- `externalLocationName` is optional.
+
+For backward compatibility, Samparka still accepts singular `restaurantId` and `restaurantName` fields, but new integrations should send the generic location fields.
 
 ## Test Sale Contract
 
@@ -88,7 +90,7 @@ Send webhook events to `/webhook/restrox/{token}` with transaction data and a cu
 }
 ```
 
-Payload restaurant fields such as `restaurantId`, `restaurantName`, `external_location_id`, and `external_location_name` are optional non-canonical metadata for outlet-owned attribution.
+Payload location fields such as `external_location_id`, `external_location_name`, `restaurantId`, and `restaurantName` are optional non-canonical metadata for outlet-owned attribution.
 
 ## Customer Lookup Contract
 
@@ -96,17 +98,17 @@ Use the partner-authenticated customer lookup routes:
 
 ```http
 GET /api/partners/restrox/customers/search?phone={{customerPhone}}
-x-partner-key: {{partnerKey}}
+Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
 ```http
 GET /api/partners/restrox/customers/{{customerId}}
-x-partner-key: {{partnerKey}}
+Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
-`x-partner-key` is shared manually by Samparka during onboarding. For this integration, use `restrox` as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
+`providerApiKey` is shared manually by Samparka during onboarding. For this integration, use `restrox` as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
 
 ## Testing Checklist
 

@@ -10,21 +10,26 @@ This is the fastest path to a verified POS integration.
 
 See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integration-checklist).
 
+<Tip>
+  Use the [Postman Collection](./reference/postman-collection) if you want the easiest setup path. It already includes the partner API, webhook, and customer verification requests.
+</Tip>
+
 ## 1. Receive The Integration Key
 
 Ask Samparka to manually share both of these values for your outlet-owned POS integration:
 
 - `integrationKey`
-- partner API key to use as `x-partner-key`
+- provider API key to use as `Authorization: Bearer {{providerApiKey}}`
 
-For this integration, replace `{provider}` with `restrox`.
+Use your provider slug in the `{provider}` route segment for all partner and webhook requests.
 
-## 2. Connect The Restaurant
+## 2. Connect The Location
 
 Send `POST` requests to `/api/partners/{{provider}}/connect` with `Content-Type: application/json` and the partner auth header.
 
 ```http
-x-partner-key: {{partnerKey}}
+Authorization: Bearer {{providerApiKey}}
+Content-Type: application/json
 ```
 
 Example payload:
@@ -32,10 +37,12 @@ Example payload:
 ```json
 {
   "integrationKey": "{{integrationKey}}",
-  "restaurantId": "{{expectedRestaurantId}}",
-  "restaurantName": "{{expectedRestaurantName}}"
+  "externalLocationId": "{{expectedLocationId}}",
+  "externalLocationName": "{{expectedLocationName}}"
 }
 ```
+
+For backward compatibility, Samparka still accepts singular `restaurantId` and `restaurantName` fields and normalizes them to `externalLocationId` and `externalLocationName`. New integrations should send the generic location fields.
 
 Expected success response:
 
@@ -43,10 +50,20 @@ Expected success response:
 {
   "success": true,
   "integrationId": "{{integrationId}}",
-  "token": "{{token}}",
+  "token": "{{webhookToken}}",
   "status": "CONNECTED"
 }
 ```
+
+Validate that the response:
+
+- returns HTTP `200`
+- has `"success": true`
+- has `"status": "CONNECTED"`
+- includes a non-empty `"integrationId"`
+- includes a non-empty `"token"`
+
+Do not assert `message`, `restaurantId`, or `externalLocationId` in the connect response. Those values are no longer part of the success payload.
 
 ## 3. Configure The Webhook URL
 
@@ -54,7 +71,7 @@ After a successful connect request, store the returned `token`.
 
 Configure POS to send webhook events to:
 
-`https://samparka.xyz/webhook/restrox/{{token}}`
+`https://samparka.xyz/webhook/{provider}/{{webhookToken}}`
 
 ## 4. Send A Test Sale
 
@@ -83,11 +100,11 @@ Expected webhook response:
 }
 ```
 
-Restaurant identity comes from the integration that owns `{token}`. Do not rely on payload restaurant fields for outlet-owned attribution.
+Location identity comes from the integration that owns `{token}`. Do not rely on payload location fields for outlet-owned attribution.
 
 ## 5. Optional Partner Shortcut
 
-`POST /api/partners/restrox/test-sale` submits a sale into the same webhook processing path, but wraps the webhook result:
+`POST /api/partners/{provider}/test-sale` submits a sale into the same webhook processing path, but wraps the webhook result:
 
 ```json
 {
@@ -111,11 +128,11 @@ Fetch the merchant integration after the first valid sale and confirm:
 
 ## 7. Verify The Customer Exists
 
-POS authenticates as a partner, provides `x-partner-key`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
+POS authenticates as a partner, provides `Authorization: Bearer {{providerApiKey}}`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
 
 ```bash
-curl -X GET "https://your-domain/api/partners/restrox/customers/search?phone={{customerPhone}}" \
-  -H "x-partner-key: {{partnerKey}}" \
+curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone={{customerPhone}}" \
+  -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
 
@@ -145,8 +162,8 @@ Expected miss response:
 Fetch the resolved customer:
 
 ```bash
-curl -X GET "https://your-domain/api/partners/restrox/customers/{{customerId}}" \
-  -H "x-partner-key: {{partnerKey}}" \
+curl -X GET "https://your-domain/api/partners/{provider}/customers/{{customerId}}" \
+  -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
 

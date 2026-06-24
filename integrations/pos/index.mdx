@@ -6,7 +6,7 @@ mode: wide
 hideFooterPagination: true
 ---
 
-Integrate POS with Samparka Loyalty using a singular connect contract and secure webhooks.
+Integrate POS with Samparka Loyalty using a location-based connect contract and secure webhooks.
 
 <Info>
 
@@ -15,7 +15,7 @@ This portal organizes the reviewed POS integration documents into a cleaner onbo
 
 <Columns cols={2}>
   <Card title="Quick Start" icon="rocket" href="/integrations/pos/quick-start">
-    Connect the restaurant, configure the webhook, and reach a working baseline quickly.
+    Connect the location, configure the webhook, and reach a working baseline quickly.
   </Card>
   <Card title="Event Types" icon="radio" href="/integrations/pos/event-types">
     Review the sale, refund, and void events accepted by Samparka.
@@ -34,8 +34,8 @@ This portal organizes the reviewed POS integration documents into a cleaner onbo
   <Step title="Receive Integration Key">
     Confirm the Samparka Integration Key for the outlet-owned POS integration.
   </Step>
-  <Step title="Connect Restaurant">
-    Call the connect endpoint with `integrationKey`, `restaurantId`, and optional `restaurantName`.
+  <Step title="Connect Location">
+    Call the connect endpoint with `integrationKey`, `externalLocationId`, and optional `externalLocationName`.
   </Step>
   <Step title="Configure Webhook">
     Point POS at the Samparka webhook endpoint after the integration status is `CONNECTED`.

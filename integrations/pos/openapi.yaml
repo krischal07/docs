@@ -10,18 +10,14 @@ servers:
 paths:
   /api/partners/{provider}/connect:
     post:
-      summary: Connect one POS restaurant to one outlet-owned Samparka integration
+      summary: Connect one external location to one outlet-owned Samparka integration
       description: |
-        Connect binds a single POS restaurant to a single outlet-owned Samparka integration.
-        The active connect contract only accepts integrationKey, restaurantId, and optional restaurantName.
+        Connect binds a single external location to a single outlet-owned Samparka integration.
+        The preferred connect contract accepts integrationKey, externalLocationId, and optional externalLocationName.
+        For backward compatibility, singular restaurantId and restaurantName aliases are still normalized to the location fields.
       operationId: postPosConnect
-      parameters:
-        - name: x-partner-key
-          in: header
-          required: true
-          description: Shared partner API key configured by Samparka.
-          schema:
-            type: string
+      security:
+        - ProviderBearerAuth: []
       requestBody:
         required: true
         content:
@@ -30,15 +26,15 @@ paths:
               $ref: '#/components/schemas/PosConnectRequest'
             examples:
               connectRequest:
-                summary: Singular restaurant binding
+                summary: Preferred external location binding
                 x-source-fixture: examples/payloads.json#/connect_request
                 value:
                   integrationKey: pos-key-001
-                  restaurantId: ktm-branch-01
-                  restaurantName: Kathmandu Branch
+                  externalLocationId: ktm-branch-01
+                  externalLocationName: Kathmandu Branch
       responses:
         '200':
-          description: Restaurant connected successfully or idempotently re-confirmed
+          description: Location connected successfully or idempotently re-confirmed
           content:
             application/json:
               schema:
@@ -59,14 +55,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                missingRestaurantId:
-                  summary: restaurantId is required
+                missingExternalLocationId:
+                  summary: externalLocationId is required
                   x-source-fixture: examples/payloads.json#/connect_validation_response
                   value:
                     success: false
-                    message: restaurantId is required
+                    message: externalLocationId is required
         '401':
-          description: Missing or invalid partner key
+          description: Missing or invalid provider bearer token
           content:
             application/json:
               schema:
@@ -90,12 +86,8 @@ paths:
         Push a sale-shaped payload into the webhook processing pipeline using the integration key instead of
         posting directly to the tokenized webhook URL.
       operationId: postPosTestSale
-      parameters:
-        - name: x-partner-key
-          in: header
-          required: true
-          schema:
-            type: string
+      security:
+        - ProviderBearerAuth: []
       requestBody:
         required: true
         content:
@@ -184,16 +176,12 @@ paths:
       description: |
         Verify a valid POS sale resulted in customer resolution or creation.
         Customer lookup is partner-authenticated and integration-scoped.
-        The documented contract uses `x-partner-key` and `x-integration-key`.
-        The backend also supports `Authorization: Bearer {{partnerKey}}` as an alternative to `x-partner-key`.
+        Use Authorization: Bearer for the provider API key and x-integration-key for store scoping.
+        Legacy x-partner-key compatibility exists in code paths, but it is non-canonical for new integrations.
       operationId: searchPosCustomers
+      security:
+        - ProviderBearerAuth: []
       parameters:
-        - name: x-partner-key
-          in: header
-          required: true
-          description: Partner key that identifies POS.
-          schema:
-            type: string
         - name: x-integration-key
           in: header
           required: true
@@ -259,13 +247,9 @@ paths:
       summary: Fetch customer details after loyalty processing
       description: Verify loyalty data is populated and points reflect the processed sale.
       operationId: getPosCustomer
+      security:
+        - ProviderBearerAuth: []
       parameters:
-        - name: x-partner-key
-          in: header
-          required: true
-          description: Partner key that identifies POS.
-          schema:
-            type: string
         - name: x-integration-key
           in: header
           required: true
@@ -317,7 +301,7 @@ paths:
       description: |
         Send POS sale, refund, or void webhooks to Samparka after the integration is connected.
         A 200 acknowledgment means the delivery was accepted. It does not guarantee loyalty activity was created.
-        For outlet-owned POS, restaurant attribution is resolved from the integration bound to the webhook token.
+        For outlet-owned POS, location attribution is resolved from the integration bound to the webhook token.
       operationId: postPosWebhook
       parameters:
         - $ref: '#/components/parameters/WebhookToken'
@@ -425,6 +409,11 @@ paths:
                     success: false
                     message: Internal server error
 components:
+  securitySchemes:
+    ProviderBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
   parameters:
     CustomerId:
       name: customerId
@@ -444,15 +433,17 @@ components:
       additionalProperties: false
       required:
         - integrationKey
-        - restaurantId
+        - externalLocationId
       properties:
         integrationKey:
           type: string
-        restaurantId:
+        externalLocationId:
           type: string
-        restaurantName:
+          description: Preferred external location identifier persisted as external_location_id.
+        externalLocationName:
           type: string
-      description: Singular restaurant binding contract for POS connect.
+          description: Optional external location label persisted as external_location_name.
+      description: Preferred location binding contract for POS connect. Singular restaurantId and restaurantName aliases remain supported as backward-compatible inputs.
     PosConnectResponse:
       type: object
       required:

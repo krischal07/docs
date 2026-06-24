@@ -11,31 +11,31 @@
       "value": "https://your-domain"
     },
     {
-      "key": "partnerKey",
-      "value": "replace-with-partner-key"
+      "key": "providerApiKey",
+      "value": "replace-with-provider-api-key"
     },
     {
       "key": "integrationKey",
       "value": ""
     },
     {
-      "key": "token",
+      "key": "webhookToken",
       "value": ""
     },
     {
-      "key": "expectedRestaurantId",
+      "key": "expectedLocationId",
       "value": "ktm-branch-01"
     },
     {
-      "key": "expectedRestaurantName",
+      "key": "expectedLocationName",
       "value": "Kathmandu Branch"
     },
     {
-      "key": "rebindRestaurantId",
+      "key": "rebindLocationId",
       "value": "pkr-branch-02"
     },
     {
-      "key": "rebindRestaurantName",
+      "key": "rebindLocationName",
       "value": "Pokhara Branch"
     },
     {
@@ -49,6 +49,14 @@
     {
       "key": "minimumPointsBalance",
       "value": "1"
+    },
+    {
+      "key": "provider",
+      "value": "restrox"
+    },
+    {
+      "key": "invalidWebhookToken",
+      "value": "invalid-token"
     }
   ],
   "item": [
@@ -56,7 +64,7 @@
       "name": "Partner API",
       "item": [
         {
-          "name": "Connect Restaurant",
+          "name": "Connect Location",
           "event": [
             {
               "listen": "test",
@@ -69,7 +77,7 @@
                   "pm.test('status is CONNECTED after connect', function () { pm.expect(body.status).to.eql('CONNECTED'); });",
                   "pm.test('token is returned', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });",
                   "pm.test('integrationId is returned', function () { pm.expect(body.integrationId).to.be.a('string').and.not.empty; });",
-                  "pm.collectionVariables.set('token', body.token);"
+                  "pm.collectionVariables.set('webhookToken', body.token);"
                 ]
               }
             }
@@ -78,31 +86,31 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{providerApiKey}}"
               },
               {
-                "key": "x-partner-key",
-                "value": "{{partnerKey}}"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"restaurantId\": \"{{expectedRestaurantId}}\",\n  \"restaurantName\": \"{{expectedRestaurantName}}\"\n}"
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"externalLocationId\": \"{{expectedLocationId}}\",\n  \"externalLocationName\": \"{{expectedLocationName}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/partners/{provider}/connect",
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/connect",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "partners",
-                "pos",
+                "{{provider}}",
                 "connect"
               ]
             },
-            "description": "Primary partner-facing connect request using the singular POS binding contract."
+            "description": "Primary partner-facing connect request using the preferred location binding contract."
           }
         },
         {
@@ -127,12 +135,12 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{providerApiKey}}"
               },
               {
-                "key": "x-partner-key",
-                "value": "{{partnerKey}}"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "body": {
@@ -140,14 +148,14 @@
               "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"payload\": {\n    \"event_type\": \"order.completed\",\n    \"order_id\": \"pos-sale-1001\",\n    \"created_at\": \"2026-06-08T10:15:00.000Z\",\n    \"amount\": 850,\n    \"currency\": \"NPR\",\n    \"customer\": {\n      \"phone\": \"{{customerPhone}}\"\n    },\n    \"items\": [\n      {\n        \"name\": \"Cappuccino\",\n        \"qty\": 1,\n        \"price\": 850\n      }\n    ]\n  }\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/partners/{provider}/test-sale",
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/test-sale",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "partners",
-                "pos",
+                "{{provider}}",
                 "test-sale"
               ]
             },
@@ -171,27 +179,27 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{providerApiKey}}"
               },
               {
-                "key": "x-partner-key",
-                "value": "{{partnerKey}}"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"restaurantId\": \"{{rebindRestaurantId}}\",\n  \"restaurantName\": \"{{rebindRestaurantName}}\"\n}"
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"externalLocationId\": \"{{rebindLocationId}}\",\n  \"externalLocationName\": \"{{rebindLocationName}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/partners/{provider}/connect",
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/connect",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "partners",
-                "pos",
+                "{{provider}}",
                 "connect"
               ]
             },
@@ -208,8 +216,9 @@
                 "exec": [
                   "pm.test('rebind succeeds after disconnect', function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
-                  "pm.test('restaurant binding changed', function () { pm.expect(body.restaurantId).to.eql(pm.collectionVariables.get('rebindRestaurantId')); });",
-                  "pm.test('token is returned on rebind success', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });"
+                  "pm.test('status is CONNECTED after rebind', function () { pm.expect(body.status).to.eql('CONNECTED'); });",
+                  "pm.test('token is returned on rebind success', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });",
+                  "pm.collectionVariables.set('webhookToken', body.token);"
                 ]
               }
             }
@@ -218,27 +227,27 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{providerApiKey}}"
               },
               {
-                "key": "x-partner-key",
-                "value": "{{partnerKey}}"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"restaurantId\": \"{{rebindRestaurantId}}\",\n  \"restaurantName\": \"{{rebindRestaurantName}}\"\n}"
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"externalLocationId\": \"{{rebindLocationId}}\",\n  \"externalLocationName\": \"{{rebindLocationName}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/partners/{provider}/connect",
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/connect",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "partners",
-                "pos",
+                "{{provider}}",
                 "connect"
               ]
             },
@@ -279,14 +288,14 @@
               "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/webhook/{provider}/{{token}}",
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "webhook",
-                "pos",
-                "{{token}}"
+                "{{provider}}",
+                "{{webhookToken}}"
               ]
             },
             "description": "Submit the happy-path completed sale directly to the tokenized webhook endpoint."
@@ -321,14 +330,14 @@
               "raw": "{\n  \"event_type\": \"refund.created\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T11:30:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/webhook/{provider}/{{token}}",
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "webhook",
-                "pos",
-                "{{token}}"
+                "{{provider}}",
+                "{{webhookToken}}"
               ]
             },
             "description": "Submit a refund webhook that references the original sale identifier."
@@ -363,14 +372,14 @@
               "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/webhook/{provider}/{{token}}",
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "webhook",
-                "pos",
-                "{{token}}"
+                "{{provider}}",
+                "{{webhookToken}}"
               ]
             },
             "description": "Replay the same completed-sale payload to verify duplicate handling."
@@ -405,14 +414,14 @@
               "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-2001\",\n  \"created_at\": \"2026-06-08T13:10:00.000Z\",\n  \"amount\": 600,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000103\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Latte\",\n      \"qty\": 1,\n      \"price\": 600\n    }\n  ]\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/webhook/{provider}/{{token}}",
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "webhook",
-                "pos",
-                "{{token}}"
+                "{{provider}}",
+                "{{webhookToken}}"
               ]
             },
             "description": "Run this against a newly created integration token before connect to verify the missing-binding rejection."
@@ -447,17 +456,17 @@
               "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/webhook/{provider}/invalid-token",
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{invalidWebhookToken}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "webhook",
-                "pos",
-                "invalid-token"
+                "{{provider}}",
+                "{{invalidWebhookToken}}"
               ]
             },
-            "description": "Send a valid webhook body to an invalid token and confirm webhook authentication fails."
+            "description": "Send a valid webhook body to an invalid webhook token and confirm webhook authentication fails."
           }
         },
         {
@@ -489,14 +498,14 @@
               "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/webhook/{provider}/{{token}}",
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "webhook",
-                "pos",
-                "{{token}}"
+                "{{provider}}",
+                "{{webhookToken}}"
               ]
             },
             "description": "Run this after disconnecting the integration to confirm webhook processing is blocked."
@@ -531,14 +540,14 @@
               "raw": "{\n  \"order_id\": \"pos-sale-3001\",\n  \"created_at\": \"2026-06-08T14:00:00.000Z\",\n  \"amount\": 300,\n  \"currency\": \"NPR\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/webhook/{provider}/{{token}}",
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "webhook",
-                "pos",
-                "{{token}}"
+                "{{provider}}",
+                "{{webhookToken}}"
               ]
             },
             "description": "Submit a webhook body without event_type to confirm parser validation."
@@ -573,14 +582,14 @@
               "raw": "[]"
             },
             "url": {
-              "raw": "{{baseUrl}}/webhook/{provider}/{{token}}",
+              "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "webhook",
-                "pos",
-                "{{token}}"
+                "{{provider}}",
+                "{{webhookToken}}"
               ]
             },
             "description": "Submit a non-object JSON body to confirm request validation."
@@ -614,8 +623,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "x-partner-key",
-                "value": "{{partnerKey}}"
+                "key": "Authorization",
+                "value": "Bearer {{providerApiKey}}"
               },
               {
                 "key": "x-integration-key",
@@ -623,14 +632,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/partners/{provider}/customers/search?phone={{customerPhone}}",
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/customers/search?phone={{customerPhone}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "partners",
-                "pos",
+                "{{provider}}",
                 "customers",
                 "search"
               ],
@@ -666,8 +675,8 @@
             "method": "GET",
             "header": [
               {
-                "key": "x-partner-key",
-                "value": "{{partnerKey}}"
+                "key": "Authorization",
+                "value": "Bearer {{providerApiKey}}"
               },
               {
                 "key": "x-integration-key",
@@ -675,14 +684,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/partners/{provider}/customers/{{customerId}}",
+              "raw": "{{baseUrl}}/api/partners/{{provider}}/customers/{{customerId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "partners",
-                "pos",
+                "{{provider}}",
                 "customers",
                 "{{customerId}}"
               ]

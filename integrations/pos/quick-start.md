@@ -4,31 +4,36 @@ description: Connect POS to one Samparka outlet and validate partner and webhook
 sidebarTitle: Quick Start
 ---
 
+# Quick Start
 
 This is the fastest path to a verified POS integration.
 
 See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integration-checklist).
 
+<Tip>
+  Use the [Postman Collection](./reference/postman-collection) if you want the easiest setup path. It already includes the partner API, webhook, and customer verification requests.
+</Tip>
+
 ## Base URL
 
 All API requests are made to:
 
-```
+```text
 https://server.samparka.xyz
 ```
 
 <CodeGroup>
 
 ```bash Connect
-POST https://server.samparka.xyz/api/partners/restrox/connect
+POST https://server.samparka.xyz/api/partners/{provider}/connect
 ```
 
 ```bash Webhook
-POST https://server.samparka.xyz/webhook/restrox/{token}
+POST https://server.samparka.xyz/webhook/{provider}/{token}
 ```
 
 ```bash Customer Search
-GET https://server.samparka.xyz/api/partners/restrox/customers/search?phone={phone}
+GET https://server.samparka.xyz/api/partners/{provider}/customers/search?phone={phone}
 ```
 
 </CodeGroup>
@@ -37,23 +42,20 @@ GET https://server.samparka.xyz/api/partners/restrox/customers/search?phone={pho
   Set `https://server.samparka.xyz` as the `baseUrl` variable in your Postman collection or HTTP client before running any requests.
 </Tip>
 
+## 1. Receive The Integration Key
 
-## 1. Receive The Connection Key
+Ask Samparka to manually share both of these values for your outlet-owned POS integration:
 
-Get the merchant's Samparka Connection Key from the Samparka integration setup.
+- `integrationKey`
+- provider API key to use as `Authorization: Bearer {{providerApiKey}}`
 
-Example:
-
-```text
-SPK-RX-ABC12345
-```
-
-## 2. Connect The Restaurant
+## 2. Connect The Location
 
 Send `POST` requests to `/api/partners/{{provider}}/connect` with `Content-Type: application/json` and the partner auth header.
 
 ```http
-x-partner-key: {{partnerKey}}
+Authorization: Bearer {{providerApiKey}}
+Content-Type: application/json
 ```
 
 Example payload:
@@ -61,10 +63,12 @@ Example payload:
 ```json
 {
   "integrationKey": "{{integrationKey}}",
-  "restaurantId": "{{expectedRestaurantId}}",
-  "restaurantName": "{{expectedRestaurantName}}"
+  "externalLocationId": "{{expectedLocationId}}",
+  "externalLocationName": "{{expectedLocationName}}"
 }
 ```
+
+For backward compatibility, Samparka still accepts singular `restaurantId` and `restaurantName` fields and normalizes them to `externalLocationId` and `externalLocationName`. New integrations should send the generic location fields.
 
 Expected success response:
 
@@ -72,18 +76,28 @@ Expected success response:
 {
   "success": true,
   "integrationId": "{{integrationId}}",
-  "token": "{{token}}",
+  "token": "{{webhookToken}}",
   "status": "CONNECTED"
 }
 ```
+
+Validate that the response:
+
+- returns HTTP `200`
+- has `"success": true`
+- has `"status": "CONNECTED"`
+- includes a non-empty `"integrationId"`
+- includes a non-empty `"token"`
+
+Do not assert `message`, `restaurantId`, or `externalLocationId` in the connect response. Those values are no longer part of the success payload.
 
 ## 3. Configure The Webhook URL
 
 After a successful connect request, store the returned `token`.
 
-Use the returned `token` to configure the webhook endpoint for subsequent RestroX event delivery.
+Use the returned `token` to configure the webhook endpoint for subsequent provider event delivery.
 
-`https://samparka.xyz/webhook/restrox/{{token}}`
+`https://samparka.xyz/webhook/{provider}/{{webhookToken}}`
 
 ## 4. Send A Test Sale
 
@@ -112,11 +126,11 @@ Expected webhook response:
 }
 ```
 
-Restaurant identity comes from the integration that owns `{token}`. Do not rely on payload restaurant fields for outlet-owned attribution.
+Location identity comes from the integration that owns `{token}`. Do not rely on payload location fields for outlet-owned attribution.
 
 ## 5. Optional Partner Shortcut
 
-`POST /api/partners/restrox/test-sale` submits a sale into the same webhook processing path, but wraps the webhook result:
+`POST /api/partners/{provider}/test-sale` submits a sale into the same webhook processing path, but wraps the webhook result:
 
 ```json
 {
@@ -140,11 +154,11 @@ Fetch the merchant integration after the first valid sale and confirm:
 
 ## 7. Verify The Customer Exists
 
-RestroX authenticates as a partner, provides `x-partner-key`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
+The provider authenticates as a partner, provides `Authorization: Bearer {{providerApiKey}}`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
 
 ```bash
-curl -X GET "https://your-domain/api/partners/restrox/customers/search?phone={{customerPhone}}" \
-  -H "x-partner-key: {{partnerKey}}" \
+curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone={{customerPhone}}" \
+  -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
 
@@ -174,8 +188,8 @@ Expected miss response:
 Fetch the resolved customer:
 
 ```bash
-curl -X GET "https://your-domain/api/partners/restrox/customers/{{customerId}}" \
-  -H "x-partner-key: {{partnerKey}}" \
+curl -X GET "https://your-domain/api/partners/{provider}/customers/{{customerId}}" \
+  -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
 

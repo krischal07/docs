@@ -12,8 +12,7 @@ See also: [Testing Guide](./testing-guide).
 
 - [ ] `POST /api/partners/{provider}/connect` tested
 - [ ] `integrationKey` verified
-- [ ] `restaurantId` verified
-- [ ] Bound restaurant stored on the integration
+- [ ] `externalLocationId` verified
+- [ ] Bound external location stored on the integration
 - [ ] Response status is `CONNECTED`
-- [ ] Only the singular connect payload is used in active tooling and tests
-
+- [ ] Only the location-based connect payload is used in active tooling and tests

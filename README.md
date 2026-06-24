@@ -8,16 +8,16 @@ sidebarTitle: Guide Overview
 
 Samparka is a customer loyalty platform. A valid POS integration is complete only after both transport and business outcomes are verified.
 
-1. Connect one POS restaurant to one outlet-owned Samparka integration with `POST /api/partners/restrox/connect`.
+1. Connect one external location to one outlet-owned Samparka integration with `POST /api/partners/restrox/connect`.
 2. Store the returned `token` and use it to configure the webhook URL.
 3. Send sale, refund, and void webhook traffic after the integration is connected.
 4. Verify customer resolution, loyalty processing, and awarded points after the first valid sale.
 
 ## Integration Verification Flow
 
-1. Receive the Samparka Integration Key and partner API key manually for the outlet-owned POS integration.
+1. Receive the Samparka Integration Key and provider API key manually for the outlet-owned POS integration.
 2. For this integration, use `restrox` as the `{provider}` value in documented route examples.
-3. Call `POST /api/partners/restrox/connect` with `integrationKey`, `restaurantId`, and optional `restaurantName`.
+3. Call `POST /api/partners/restrox/connect` with `integrationKey`, `externalLocationId`, and optional `externalLocationName`.
 4. Store the returned `token`.
 5. Configure POS to send events to `https://your-domain/webhook/restrox/{token}`.
 6. Send a test `order.completed` event to the webhook endpoint or use `POST /api/partners/restrox/test-sale`.
@@ -41,7 +41,7 @@ Samparka is a customer loyalty platform. A valid POS integration is complete onl
 - [Response Reference](./response-reference)
 - [Refunds](./refunds)
 - [Idempotency](./idempotency)
-- [Restaurant Binding Reference](./location-mapping)
+- [Location Binding Reference](./location-mapping)
 - [Testing Guide](./testing-guide)
 - [Troubleshooting](./troubleshooting)
 - [Integration Checklist](./integration-checklist)
@@ -53,10 +53,12 @@ Samparka is a customer loyalty platform. A valid POS integration is complete onl
 ```json
 {
   "integrationKey": "...",
-  "restaurantId": "...",
-  "restaurantName": "..."
+  "externalLocationId": "...",
+  "externalLocationName": "..."
 }
 ```
+
+For backward compatibility, Samparka still accepts singular `restaurantId` and `restaurantName` fields and normalizes them to `externalLocationId` and `externalLocationName`. New integrations should send the generic location fields.
 
 Successful connect responses return:
 
@@ -101,30 +103,30 @@ Duplicate test-sale submissions return:
 
 ## Canonical Webhook Attribution
 
-For outlet-owned POS, restaurant identity is resolved from the integration binding:
+For outlet-owned POS, location identity is resolved from the integration binding:
 
 ```txt
 Webhook Token
 -> PosIntegration
 -> Outlet
--> Bound Restaurant
+-> Bound External Location
 ```
 
-Webhook payload restaurant fields are optional, non-canonical metadata. They are not the source of truth for restaurant attribution.
+Webhook payload location fields are optional, non-canonical metadata. They are not the source of truth for outlet-owned attribution.
 
 ## Customer Lookup Authorization
 
 Customer lookup for POS is partner-authenticated and integration-scoped:
 
 ```txt
-Partner Key
+Provider API Key
 +
 Integration Key
 =
 Customer Lookup Authorization
 ```
 
-- the partner key is shared manually by Samparka during onboarding
+- the provider API key is shared manually by Samparka during onboarding
 - the integration key identifies the merchant or store context
 - customer search is scoped to the store that owns the integration
 

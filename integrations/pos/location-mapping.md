@@ -1,9 +1,11 @@
 ---
-title: Restaurant Binding Reference
-description: Understand how the connected restaurant binding is used during webhook delivery.
-sidebarTitle: Restaurant Binding
+title: Location Binding Reference
+description: Understand how the connected location binding is used during webhook delivery.
+sidebarTitle: Location Binding
 ---
 
+
+# Location Binding Reference
 
 POS connect is outlet-owned and singular:
 
@@ -11,8 +13,7 @@ POS connect is outlet-owned and singular:
 One Integration
 =
 One Outlet
-=
-One Restaurant
+-> One External Location
 ```
 
 The `connect` step persists:
@@ -20,5 +21,6 @@ The `connect` step persists:
 - `external_location_id`
 - `external_location_name`
 
-Webhook delivery then resolves the bound restaurant from the integration that owns the webhook token.
+Webhook delivery then resolves the bound location from the integration that owns the webhook token.
 
+For backward compatibility, Samparka still accepts singular `restaurantId` and `restaurantName` on connect and normalizes them to the location fields above. New integrations should send `externalLocationId` and `externalLocationName`.

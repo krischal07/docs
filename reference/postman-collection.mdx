@@ -27,7 +27,7 @@ Use the Postman collection for hands-on partner API, webhook, and customer testi
     In Postman, choose import and select the unchanged collection file.
   </Step>
   <Step title="Fill Environment Values">
-    Set `baseUrl`, `partnerKey`, `integrationKey`, `expectedRestaurantId`, `expectedRestaurantName`, `customerPhone`, and `token`.
+    Set `baseUrl`, `providerApiKey`, `integrationKey`, `expectedLocationId`, `expectedLocationName`, `customerPhone`, and `webhookToken`.
   </Step>
 </Steps>
 
@@ -40,8 +40,8 @@ Use the Postman collection for hands-on partner API, webhook, and customer testi
 ## Recommended Testing Order
 
 <Steps>
-  <Step title="Connect Restaurant">
-    Connect the restaurant using your integration key and confirm the response returns `CONNECTED` and a webhook token.
+  <Step title="Connect Location">
+    Connect the external location using your integration key and confirm the response returns `CONNECTED` and a webhook token.
   </Step>
   <Step title="Submit Test Sale">
     Send the first valid sale and confirm the integration reaches `ACTIVE`.
@@ -50,10 +50,10 @@ Use the Postman collection for hands-on partner API, webhook, and customer testi
     Search for the customer, fetch customer details, and verify loyalty data and points were populated.
   </Step>
   <Step title="Verify Failure Cases">
-    Confirm invalid webhook token handling, disconnected integration state, and missing restaurant binding before connect.
+    Confirm invalid webhook token handling, disconnected integration state, and missing location binding before connect.
   </Step>
 </Steps>
 
 <Info>
-The collection uses the active singular connect contract and phone-first webhook examples. POS customer search uses `x-partner-key` plus `x-integration-key` against `/api/partners/{provider}/customers/search`.
+The collection uses the preferred location connect contract and phone-first webhook examples. Partner API requests use `Authorization: Bearer {{providerApiKey}}`, and POS customer search also includes `x-integration-key` against `/api/partners/{provider}/customers/search`.
 </Info>

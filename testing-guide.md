@@ -15,7 +15,7 @@ See also: [Refunds](./refunds) and [Troubleshooting](./troubleshooting).
 ```txt
 Create Integration
 ↓
-Connect Restaurant
+Connect Location
 ↓
 Store Returned Token
 ↓
@@ -35,13 +35,15 @@ Verify Points Awarded
 ```bash
 curl -X POST "https://your-domain/api/partners/{provider}/connect" \
   -H "Content-Type: application/json" \
-  -H "x-partner-key: {{partnerKey}}" \
+  -H "Authorization: Bearer {{providerApiKey}}" \
   --data '{
     "integrationKey": "{{integrationKey}}",
-    "restaurantId": "{{expectedRestaurantId}}",
-    "restaurantName": "{{expectedRestaurantName}}"
+    "externalLocationId": "{{expectedLocationId}}",
+    "externalLocationName": "{{expectedLocationName}}"
   }'
 ```
+
+For backward compatibility, Samparka still accepts singular `restaurantId` and `restaurantName`, but new integrations should send `externalLocationId` and `externalLocationName`.
 
 Expected success response:
 
@@ -54,12 +56,22 @@ Expected success response:
 }
 ```
 
+Validate that the response:
+
+- returns HTTP `200`
+- has `"success": true`
+- has `"status": "CONNECTED"`
+- includes a non-empty `"integrationId"`
+- includes a non-empty `"token"`
+
+Do not assert `message`, `restaurantId`, or `externalLocationId` in the connect response. Those values are no longer part of the success payload.
+
 ## Test Sale Wrapper Check
 
 ```bash
 curl -X POST "https://your-domain/api/partners/{provider}/test-sale" \
   -H "Content-Type: application/json" \
-  -H "x-partner-key: {{partnerKey}}" \
+  -H "Authorization: Bearer {{providerApiKey}}" \
   --data '{
     "integrationKey": "{{integrationKey}}",
     "payload": {
@@ -142,7 +154,7 @@ After the first valid sale, fetch the merchant integration and confirm:
 
 ```bash
 curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone=9800000101" \
-  -H "x-partner-key: {{partnerKey}}" \
+  -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
 
@@ -176,7 +188,7 @@ Expected miss response:
 
 ```bash
 curl -X GET "https://your-domain/api/partners/{provider}/customers/{customerId}" \
-  -H "x-partner-key: {{partnerKey}}" \
+  -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
 
@@ -262,7 +274,7 @@ Expected response:
 }
 ```
 
-## Missing Restaurant Binding Test
+## Missing Location Binding Test
 
 Use the token from a newly created integration before calling connect:
 
