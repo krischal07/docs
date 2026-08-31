@@ -8,7 +8,7 @@ sidebarTitle: Payload Reference
 Samparka reads different fields for `connect`, `test-sale`, and direct webhook delivery.
 
 <Info>
-**Also see — Purchase QR request fields** (`bill_id`, `amount`, `currency`, `customer_phone`): [Request / Response Contract](/integrations/pos/purchase-qr/request-response).
+**Also see — Purchase QR request fields** (`amount`, `currency`, `items`): [Request / Response Contract](/integrations/pos/purchase-qr/request-response).
 </Info>
 
 ## Connect Request
@@ -72,9 +72,8 @@ The POS sends the cash-sale details and receives a scannable purchase QR `qr_lin
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `bill_id` | string | Yes | Unique bill identifier. Used as part of the idempotency key `posqr:{provider}:{bill_id}`. | `INV-2041` |
 | `amount` | number | Yes | Sale amount. Must be greater than `0`. | `1250` |
-| `customer_phone` | string | Yes | Customer phone, matches `/^\+?[0-9]{7,15}$/`. Used as the QR deep-link target and loyalty attribution. | `+9779800001234` |
+| `items` | array | Yes | Product items in the bill. Each item has `name`, `qty`, and `price`. | `[{ "name": "Cappuccino", "qty": 1, "price": 850 }]` |
 
 ### Optional Properties
 
@@ -83,7 +82,7 @@ The POS sends the cash-sale details and receives a scannable purchase QR `qr_lin
 | `currency` | string | No | 3-letter currency code. Defaults to `NPR` if omitted. | `NPR` |
 
 <Note>
-  `customer_phone` is **required** for purchase QR because the receipt QR is a WhatsApp-style deep link — without a valid target number there is no usable QR. This intentionally differs from the customer lookup flow, where a missing or invalid phone never blocks checkout.
+  `items` is **required** for purchase QR because the POS must provide the product items in the bill for loyalty attribution.
 </Note>
 
 ## Restaurant Attribution Source Of Truth

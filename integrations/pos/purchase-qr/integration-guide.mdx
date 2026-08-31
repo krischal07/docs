@@ -4,18 +4,20 @@ description: How to integrate the POS purchase QR endpoint, including example cu
 sidebarTitle: Integration Guide
 ---
 
-The `:token` is the `webhook_token` of an `OUTLET_OWNED` Blanxer/RestroX integration. The host below is the local dev API (`localhost:8081`); in production it's the Samparka API origin.
+The `:token` is the `webhook_token` of an `OUTLET_OWNED` POS integration. The host below is the local dev API (`localhost:8081`); in production it's the Samparka API origin.
 
 ## Example curl (success)
 
 ```bash
-curl -X POST http://localhost:8081/integrations/pos/blanxer/<webhook_token>/purchase-qr \
+curl -X POST http://localhost:8081/integrations/pos/{provider}/<webhook_token>/purchase-qr \
   -H "Content-Type: application/json" \
   -d '{
-    "bill_id": "INV-2041",
     "amount": 1250,
     "currency": "NPR",
-    "customer_phone": "+9779800001234"
+    "items": [
+      { "name": "Cappuccino", "qty": 1, "price": 850 },
+      { "name": "Latte", "qty": 1, "price": 400 }
+    ]
   }'
 ```
 
@@ -28,11 +30,9 @@ HTTP 200
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "http://localhost:8081/r/xKd93k",
-    "purchase_reference": "posqr:blanxer:INV-2041",
+    "purchase_reference": "posqr:{provider}:...",
     "amount": 1250,
     "currency": "NPR",
-    "customer_phone": "+9779800001234",
-    "bill_id": "INV-2041",
     "status": "QR_GENERATED",
     "expires_at": "2026-08-31T07:40:08.000Z"
   }
@@ -45,7 +45,7 @@ HTTP 200
 HTTP 409
 {
   "success": false,
-  "message": "blanxer is not connected for this store",
+  "message": "{provider} is not connected for this store",
   "errors": { "code": "pos_not_connected", "status": "CREATED" }
 }
 ```
@@ -64,7 +64,7 @@ HTTP 422
 
 The endpoint only issues a QR when the POS integration is connected **and** an active communication provider exists.
 
-| POS (RestroX/Blanxer) | WhatsApp/Wapio | Result |
+| POS | WhatsApp/Wapio | Result |
 |---|---|---|
 | Not connected | anything | `409 pos_not_connected` — no QR, no session |
 | Connected | not connected | `422 no active connected communication provider` — no QR, no session |
@@ -75,9 +75,8 @@ The endpoint only issues a QR when the POS integration is connected **and** an a
 | Choice | Rationale |
 |---|---|
 | Auth via **existing `webhook_token`** per `posIntegrationLocation` | Zero new secrets; same tokens the POS already uses for webhooks. Provider-match check is automatic via `resolveTokenContext`. |
-| **`purchaseReference = posqr:{provider}:{bill_id}`** as idempotency key | Piggybacks on the existing `findByPurchaseReference` dedup inside `createSession` — no new collection or dedup logic. Colons/dots/hyphens allowed by the validator. |
-| **Reject missing/invalid phone at creation** (400) | The receipt QR is a WhatsApp deep link — without a valid target number there is no usable QR. The partner customer-search endpoint already implements the `invalid_phone / conflict / missing` flowchart. |
-| **`missing` customer still creates a session** | Mirrors the dashboard flow — a new customer onboards when they scan & claim. The flowchart's `missing` is terminal only for the *lookup* path, not for session creation. |
+| **Idempotency key derived from request** | Piggybacks on the existing `findByPurchaseReference` dedup inside `createSession` — no new collection or dedup logic. |
+| **Items are required at creation** (400) | The POS must send product items so the QR session has the bill details needed for loyalty attribution. |
 | **`currency` defaults to `NPR`** | POS payloads may omit currency; dashboard uses 3-letter codes, Nepal is the operating market. Explicit value overrides. |
 | **POS must be genuinely connected** | The endpoint refuses with `409 pos_not_connected` unless the integration status is `CONNECTED`/`ACTIVE` — matches the dashboard's notion of "connected". A `CREATED`/`DISCONNECTED` integration can't issue checkouts. |
 | **Requires an active communication provider** | If the POS is connected but no WhatsApp/Wapio communication provider is active, session creation aborts with `422` (`no active connected communication provider`) — no QR is issued. There is deliberately **no fallback** deep-link. |
@@ -98,8 +97,7 @@ The endpoint only issues a QR when the POS integration is connected **and** an a
 
 ## Open questions to confirm with the team
 
-1. **Phone-absent sale:** if a walk-in pays without giving a number, should the POS still call the endpoint (with what phone?) or silently skip loyalty for that sale?
-2. **Bill ID re-use window after completion:** a retried `bill_id` while the session is `QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM` is correctly idempotent today; a retried `bill_id` after `COMPLETED`/`CLAIMED` is rejected (409). Happy with that, or should completed bills get a fresh QR?
+1. **Items re-use window after completion:** a retried request with the same items while the session is `QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM` is correctly idempotent today; a retried request after `COMPLETED`/`CLAIMED` is rejected (409). Happy with that, or should completed sessions get a fresh QR?
 
 ## Related Documentation
 
