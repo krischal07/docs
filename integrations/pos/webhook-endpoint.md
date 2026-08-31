@@ -5,9 +5,34 @@ sidebarTitle: Webhook Endpoint
 ---
 
 
-## Endpoint
+<Tabs>
+  <Tab title="App">
+    ## Endpoint
 
-- Method: `POST`
-- Path: `/webhook/{provider}/{token}`
-- Content-Type: `application/json`
+    - Method: `POST`
+    - Path: `/webhook/{provider}/{token}`
+    - Content-Type: `application/json`
+  </Tab>
+  <Tab title="Communication">
+    The **Purchase QR** endpoint is the sister checkout entry point that uses the same tokenized auth as the webhook endpoint — but instead of pushing a *completed* sale, it creates a QR session and returns a QR link in the response.
 
+    ## Endpoint
+
+    - Method: `POST`
+    - Path: `/integrations/pos/{provider}/{token}/purchase-qr`
+    - Content-Type: `application/json`
+
+    ## Purpose
+
+    The POS calls this to get a QR link to print on the customer's receipt. The customer scans the QR → WhatsApp deep link → claim → points. It reuses the same `webhook_token` for authentication.
+
+    <Columns cols={2}>
+      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+        Example curl calls and behavior matrix.
+      </Card>
+      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+        Request/response shape, error codes, idempotency.
+      </Card>
+    </Columns>
+  </Tab>
+</Tabs>

@@ -31,6 +31,15 @@
         ]
       },
       {
+        "group": "Purchase QR",
+        "pages": [
+          "integrations/pos/purchase-qr/overview",
+          "integrations/pos/purchase-qr/request-response",
+          "integrations/pos/purchase-qr/integration-guide",
+          "integrations/pos/purchase-qr/testing"
+        ]
+      },
+      {
         "group": "POS Events",
         "pages": [
           "integrations/pos/event-types",

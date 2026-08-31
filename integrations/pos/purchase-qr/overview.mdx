@@ -1,0 +1,124 @@
+---
+title: Purchase QR Overview
+description: POS-initiated purchase checkout that returns a QR link in the same HTTP response for receipt printing and WhatsApp loyalty claim.
+sidebarTitle: Overview
+---
+
+The Purchase QR endpoint lets **Blanxer / RestroX POS terminals** create a Samparka *purchase-checkout* session on the fly and receive the QR link in the same HTTP response. The POS renders that link as a QR and prints it on its receipt. The customer scans → WhatsApp flow → Wapio verification → points. The endpoint reuses 100% of the existing purchase-checkout pipeline — no new models, no new loyalty logic, no new QR infrastructure.
+
+```mermaid
+sequenceDiagram
+  participant POS as POS (Blanxer/RestroX)
+  participant SAM as Samparka
+  participant CUST as Customer
+
+  POS->>SAM: POST { bill_id, amount, phone }
+  SAM->>SAM: Create purchase-checkout session
+  SAM->>SAM: Wapio signs the QR
+  SAM-->>POS: { qr_link }
+  POS->>POS: Render link as QR and print on receipt
+  CUST->>CUST: Scans QR on receipt
+  CUST->>SAM: Opens WhatsApp deep link & claims
+  SAM->>SAM: Verification + completion orchestrator
+  SAM-->>CUST: Points awarded
+```
+
+## Why this endpoint and not the existing alternatives
+
+| Existing path | What it does | Why not enough |
+|---|---|---|
+| Dashboard checkout (`POST /api/v1/purchase-sessions`) | Staff manually types phone + amount → QR on screen | Requires Samparka dashboard; POS cashiers never open it |
+| POS webhooks (`POST /integrations/pos/:provider/events`) | POS pushes `sale.completed` → direct points, no QR | Needs phone in the payload — but anonymous cash sales often lack it; also gives no QR to print |
+| Canonical ingress (`POST /api/v1/integrations/purchases`) | Purchase sessions push *completed* purchases into the canonical `InternalEvent` pipeline | That's the sink after completion, not the source that creates QR sessions |
+
+The new route is the **missing source**: POS *creates* the QR session instead of staff.
+
+## Architecture at a glance
+
+```mermaid
+flowchart LR
+  subgraph POS_SIDE[POS Terminal]
+    POS[POS / fetch cashier]
+  end
+  subgraph SAM_SIDE[Samparka]
+    CTL[purchaseQrController]
+    LS[Location Resolution<br/>locationResolutionService]
+    PG[POS-connected guard<br/>CONNECTED / ACTIVE]
+    ID[Idempotency<br/>posqr:{provider}:{bill_id}]
+    WAP[QR generation via Wapio<br/>+ redirect short_url]
+  end
+
+  POS -->|POST /integrations/pos/:provider/:token/purchase-qr<br/>{ bill_id, amount, customer_phone[, currency] }| CTL
+  CTL --> LS
+  LS --> PG
+  PG --> ID
+  ID --> WAP
+  WAP -. { qr_link, purchase_reference, ... } .-> POS
+  PG -.->|else 409 pos_not_connected| POS
+```
+
+## State and lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> CREATED
+  CREATED --> QR_GENERATED: ensureQrGenerated
+  QR_GENERATED --> WAITING_FOR_CUSTOMER_CLAIM: customer waits
+  WAITING_FOR_CUSTOMER_CLAIM --> CLAIMED: customer scans
+  CLAIMED --> POINTS_AWARDED
+  POINTS_AWARDED --> COMPLETED
+  COMPLETED --> [*]
+  QR_GENERATED --> QR_GENERATED: POS retry while pending (same QR, 200)
+  WAITING_FOR_CUSTOMER_CLAIM --> WAITING_FOR_CUSTOMER_CLAIM: POS retry while pending (same QR, 200)
+```
+
+Statuses that still return the same QR (retry-safe): `QR_GENERATED`, `WAITING_FOR_CUSTOMER_CLAIM`. Terminal/expired ones return `409`/`410`.
+
+## End-to-end sequence (including the customer scan)
+
+```mermaid
+sequenceDiagram
+  participant POS as POS
+  participant CTL as purchaseQrController
+  participant SVC as PurchaseSessionService
+  participant WAPIO as Wapio
+  participant RDL as RedirectLinkService
+  participant CUST as Customer
+  participant WHATS as WhatsApp
+  participant ORCH as CompletionOrchestrator
+  participant ING as Canonical Ingress
+
+  POS->>CTL: POST { bill_id, amount, phone }
+  CTL->>CTL: resolveTokenContext
+  CTL->>CTL: POS-connected guard (else 409 pos_not_connected)
+  CTL->>CTL: validate bill / amount / phone
+  CTL->>SVC: createPOSCheckoutSession
+  SVC->>WAPIO: generatePurchaseQR
+  WAPIO-->>SVC: { whatsapp_deep_link }
+  SVC->>RDL: create link
+  RDL-->>SVC: redirectlinks (code / short_url)
+  SVC->>SVC: transition sessions -> QR_GENERATED
+  SVC-->>CTL: session (with short_url)
+  CTL-->>POS: { qr_link }
+  POS->>POS: render QR from qr_link + print on receipt
+  CUST->>CUST: scans QR
+  CUST->>WHATS: opens WhatsApp deep link
+  WHATS->>ORCH: POST /webhooks/wapio/customer-verification
+  ORCH->>ING: POST /integrations/purchases
+  ING->>ING: InternalEvent + processEvent
+  ING-->>CUST: points awarded (loyaltyLedger / CustomerOutletPoints)
+```
+
+## Future considerations (optional)
+
+* Rate-limit the new route the same way `pos/routes.js` notes `Rate-limiting placeholder`.
+* If POS vendors need CORS/origin lockdown, add it on this path.
+* If analytics/missions should ever *consume* POS-QR-origin sessions, register those processors (today they're no-ops, so no work is left for them).
+
+## Related Documentation
+
+- [Request / Response Contract](./request-response)
+- [Integration Guide](./integration-guide)
+- [Testing & Verification](./testing)
+- [Customer Loyalty Award Flow](../customer-loyalty-award-flow)
+- [Customer Identity](../customer-identity)

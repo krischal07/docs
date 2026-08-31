@@ -7,6 +7,10 @@ sidebarTitle: Response Reference
 
 These are the partner-visible responses for the active POS integration path.
 
+<Info>
+**Also see — Purchase QR responses** (200 QR ready, 409 pos_not_connected / already processed, 410 expired, 422, 502): [Request / Response Contract](/integrations/pos/purchase-qr/request-response).
+</Info>
+
 See also: [Troubleshooting](./troubleshooting).
 
 ## Connect Success
@@ -171,3 +175,116 @@ See also: [Troubleshooting](./troubleshooting).
 ```
 
 The same `{ error, message }` envelope is used for partner customer validation, auth, and lookup failures.
+
+## Purchase QR
+
+`POST /integrations/pos/{provider}/{token}/purchase-qr`
+
+See [Purchase QR Checkout](./purchase-qr/request-response).
+
+### `200 Purchase QR ready`
+
+```json
+{
+  "success": true,
+  "message": "Purchase QR ready",
+  "data": {
+    "qr_link": "https://samparka.co/r/xKd93k",
+    "purchase_reference": "posqr:blanxer:INV-2041",
+    "amount": 1250,
+    "currency": "NPR",
+    "customer_phone": "+9779800001234",
+    "bill_id": "INV-2041",
+    "status": "QR_GENERATED",
+    "expires_at": "2026-08-31T07:40:08.000Z"
+  }
+}
+```
+
+`qr_link` is the short URL the POS turns into a scannable QR. A retried `bill_id` while the session is pending returns the same QR.
+
+### `400 Invalid purchase QR request`
+
+```json
+{
+  "success": false,
+  "message": "Invalid purchase QR request",
+  "errors": { "code": "purchase_qr_validation_failed" }
+}
+```
+
+### `401 Invalid integration token`
+
+```json
+{
+  "success": false,
+  "message": "Invalid or unknown integration token"
+}
+```
+
+### `404 Unknown provider`
+
+```json
+{
+  "success": false,
+  "message": "Unknown provider"
+}
+```
+
+### `409 POS not connected`
+
+```json
+{
+  "success": false,
+  "message": "blanxer is not connected for this store",
+  "errors": { "code": "pos_not_connected", "status": "CREATED" }
+}
+```
+
+### `409 Already processed`
+
+```json
+{
+  "success": false,
+  "message": "This bill has already been processed",
+  "errors": { "code": "purchase_qr_unavailable", "status": "COMPLETED" }
+}
+```
+
+### `410 Expired`
+
+```json
+{
+  "success": false,
+  "message": "This bill's checkout has expired",
+  "errors": { "code": "purchase_qr_expired" }
+}
+```
+
+### `422 Not mapped to an outlet`
+
+```json
+{
+  "success": false,
+  "message": "Integration is not mapped to an outlet"
+}
+```
+
+### `422 No active connected communication provider`
+
+```json
+{
+  "success": false,
+  "message": "No active connected communication provider is configured"
+}
+```
+
+### `502 QR generation failed`
+
+```json
+{
+  "success": false,
+  "message": "QR link could not be generated for this bill",
+  "errors": { "code": "purchase_qr_generation_failed" }
+}
+```

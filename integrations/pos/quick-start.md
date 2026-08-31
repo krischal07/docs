@@ -4,238 +4,312 @@ description: Connect POS to one Samparka outlet and validate partner and webhook
 sidebarTitle: Quick Start
 ---
 
-# Quick Start
 
-This is the fastest path to a verified POS integration.
+<Tabs>
+  <Tab title="App">
+    This is the fastest path to a verified POS integration.
 
-See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integration-checklist).
+    See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integration-checklist).
 
-<Tip>
-  Use the [Postman Collection](./reference/postman-collection) if you want the easiest setup path. It already includes the partner API, webhook, and customer verification requests.
-</Tip>
+    <Tip>
+      Use the [Postman Collection](./reference/postman-collection) if you want the easiest setup path. It already includes the partner API, webhook, and customer verification requests.
+    </Tip>
 
-## Base URL
+    ## Base URL
 
-All API requests are made to:
+    All API requests are made to:
 
-```text
-https://server.samparka.xyz
-```
+    ```text
+    https://server.samparka.xyz
+    ```
 
-<CodeGroup>
+    <CodeGroup>
 
-```bash Connect
-POST https://server.samparka.xyz/api/partners/{provider}/connect
-```
+    ```bash Connect
+    POST https://server.samparka.xyz/api/partners/{provider}/connect
+    ```
 
-```bash Webhook
-POST https://server.samparka.xyz/webhook/{provider}/{token}
-```
+    ```bash Webhook
+    POST https://server.samparka.xyz/webhook/{provider}/{token}
+    ```
 
-```bash Customer Search
-GET https://server.samparka.xyz/api/partners/{provider}/customers/search?phone={phone}
-```
+    ```bash Customer Search
+    GET https://server.samparka.xyz/api/partners/{provider}/customers/search?phone={phone}
+    ```
 
-</CodeGroup>
+    </CodeGroup>
 
-<Tip>
-  Set `https://server.samparka.xyz` as the `baseUrl` variable in your Postman collection or HTTP client before running any requests.
-</Tip>
+    <Tip>
+      Set `https://server.samparka.xyz` as the `baseUrl` variable in your Postman collection or HTTP client before running any requests.
+    </Tip>
 
-## 1. Receive The Integration Key
+    ## 1. Receive The Integration Key
 
-Ask Samparka to manually share both of these values for your outlet-owned POS integration:
+    Ask Samparka to manually share both of these values for your outlet-owned POS integration:
 
-- `integrationKey`
-- provider API key to use as `Authorization: Bearer {{providerApiKey}}`
+    - `integrationKey`
+    - provider API key to use as `Authorization: Bearer {{providerApiKey}}`
 
-## 2. Connect The Location
+    ## 2. Connect The Location
 
-Send `POST` requests to `/api/partners/{{provider}}/connect` with `Content-Type: application/json` and the partner auth header.
+    Send `POST` requests to `/api/partners/{{provider}}/connect` with `Content-Type: application/json` and the partner auth header.
 
-```http
-Authorization: Bearer {{providerApiKey}}
-Content-Type: application/json
-```
+    ```http
+    Authorization: Bearer {{providerApiKey}}
+    Content-Type: application/json
+    ```
 
-Example payload:
+    Example payload:
 
-```json
-{
-  "integrationKey": "{{integrationKey}}",
-  "externalLocationId": "{{expectedLocationId}}",
-  "externalLocationName": "{{expectedLocationName}}"
-}
-```
+    ```json
+    {
+      "integrationKey": "{{integrationKey}}",
+      "externalLocationId": "{{expectedLocationId}}",
+      "externalLocationName": "{{expectedLocationName}}"
+    }
+    ```
 
-For backward compatibility, Samparka still accepts singular `restaurantId` and `restaurantName` fields and normalizes them to `externalLocationId` and `externalLocationName`. New integrations should send the generic location fields.
+    For backward compatibility, Samparka still accepts singular `restaurantId` and `restaurantName` fields and normalizes them to `externalLocationId` and `externalLocationName`. New integrations should send the generic location fields.
 
-Expected success response:
+    Expected success response:
 
-```json
-{
-  "success": true,
-  "integrationId": "{{integrationId}}",
-  "token": "{{webhookToken}}",
-  "status": "CONNECTED"
-}
-```
+    ```json
+    {
+      "success": true,
+      "integrationId": "{{integrationId}}",
+      "token": "{{webhookToken}}",
+      "status": "CONNECTED"
+    }
+    ```
 
-Validate that the response:
+    Validate that the response:
 
-- returns HTTP `200`
-- has `"success": true`
-- has `"status": "CONNECTED"`
-- includes a non-empty `"integrationId"`
-- includes a non-empty `"token"`
+    - returns HTTP `200`
+    - has `"success": true`
+    - has `"status": "CONNECTED"`
+    - includes a non-empty `"integrationId"`
+    - includes a non-empty `"token"`
 
-Do not assert `message`, `restaurantId`, or `externalLocationId` in the connect response. Those values are no longer part of the success payload.
+    Do not assert `message`, `restaurantId`, or `externalLocationId` in the connect response. Those values are no longer part of the success payload.
 
-## 3. Configure The Webhook URL
+    ## 3. Configure The Webhook URL
 
-After a successful connect request, store the returned `token`.
+    After a successful connect request, store the returned `token`.
 
-Use the returned `token` to configure the webhook endpoint for subsequent provider event delivery.
+    Use the returned `token` to configure the webhook endpoint for subsequent provider event delivery.
 
-`https://samparka.xyz/webhook/{provider}/{{webhookToken}}`
+    `https://samparka.xyz/webhook/{provider}/{{webhookToken}}`
 
-## 4. Send A Test Sale
+    ## 4. Send A Test Sale
 
-Use the canonical sale fixture from [`examples/payloads.json`](./examples/payloads.json):
+    Use the canonical sale fixture from [`examples/payloads.json`](./examples/payloads.json):
 
-```json
-{
-  "event_type": "order.completed",
-  "order_id": "restrox-sale-1001",
-  "created_at": "2026-06-08T10:15:00.000Z",
-  "amount": 850,
-  "currency": "NPR",
-  "customer": {
-    "phone": "9800000101"
-  },
-  "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
-}
-```
+    ```json
+    {
+      "event_type": "order.completed",
+      "order_id": "restrox-sale-1001",
+      "created_at": "2026-06-08T10:15:00.000Z",
+      "amount": 850,
+      "currency": "NPR",
+      "customer": {
+        "phone": "9800000101"
+      },
+      "items": [{ "name": "Cappuccino", "qty": 1, "price": 850 }]
+    }
+    ```
+
+    Expected webhook response:
+
+    ```json
+    {
+      "success": true,
+      "message": "Event received"
+    }
+    ```
+
+    Location identity comes from the integration that owns `{token}`. Do not rely on payload location fields for outlet-owned attribution.
 
-Expected webhook response:
-
-```json
-{
-  "success": true,
-  "message": "Event received"
-}
-```
-
-Location identity comes from the integration that owns `{token}`. Do not rely on payload location fields for outlet-owned attribution.
+    ## 5. Optional Partner Shortcut
 
-## 5. Optional Partner Shortcut
+    `POST /api/partners/{provider}/test-sale` submits a sale into the same webhook processing path, but wraps the webhook result:
 
-`POST /api/partners/{provider}/test-sale` submits a sale into the same webhook processing path, but wraps the webhook result:
+    ```json
+    {
+      "success": true,
+      "message": "Test sale submitted",
+      "data": {
+        "success": true,
+        "message": "Event received"
+      }
+    }
+    ```
+
+    ## 6. Verify The Integration Became ACTIVE
+
+    Fetch the merchant integration after the first valid sale and confirm:
 
-```json
-{
-  "success": true,
-  "message": "Test sale submitted",
-  "data": {
-    "success": true,
-    "message": "Event received"
-  }
-}
-```
+    - `connectionStatus = ACTIVE`
+    - `healthStatus = HEALTHY`
 
-## 6. Verify The Integration Became ACTIVE
+    `ACTIVE` confirms the integration activated, but it does not prove the loyalty workflow finished successfully.
 
-Fetch the merchant integration after the first valid sale and confirm:
+    ## 7. Verify The Customer Exists
 
-- `connectionStatus = ACTIVE`
-- `healthStatus = HEALTHY`
+    The provider authenticates as a partner, provides `Authorization: Bearer {{providerApiKey}}`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
 
-`ACTIVE` confirms the integration activated, but it does not prove the loyalty workflow finished successfully.
+    ```bash
+    curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone={{customerPhone}}" \
+      -H "Authorization: Bearer {{providerApiKey}}" \
+      -H "x-integration-key: {{integrationKey}}"
+    ```
 
-## 7. Verify The Customer Exists
+    Expected hit response:
 
-The provider authenticates as a partner, provides `Authorization: Bearer {{providerApiKey}}`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
+    ```json
+    {
+      "exists": true,
+      "customer": {
+        "id": "{{customerId}}",
+        "phone": "{{customerPhone}}",
+        "points": 85
+      }
+    }
+    ```
 
-```bash
-curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone={{customerPhone}}" \
-  -H "Authorization: Bearer {{providerApiKey}}" \
-  -H "x-integration-key: {{integrationKey}}"
-```
+    Expected miss response:
 
-Expected hit response:
+    ```json
+    {
+      "exists": false
+    }
+    ```
 
-```json
-{
-  "exists": true,
-  "customer": {
-    "id": "{{customerId}}",
-    "phone": "{{customerPhone}}",
-    "points": 85
-  }
-}
-```
+    ## 8. Verify Customer Details And Points
 
-Expected miss response:
+    Fetch the resolved customer:
 
-```json
-{
-  "exists": false
-}
-```
+    ```bash
+    curl -X GET "https://your-domain/api/partners/{provider}/customers/{{customerId}}" \
+      -H "Authorization: Bearer {{providerApiKey}}" \
+      -H "x-integration-key: {{integrationKey}}"
+    ```
+
+    Expected response:
+
+    ```json
+    {
+      "customer": {
+        "id": "{{customerId}}",
+        "phone": "{{customerPhone}}",
+        "points": 85,
+        "lifetimePoints": 85
+      }
+    }
+    ```
 
-## 8. Verify Customer Details And Points
+    ## 9. Verify Loyalty Transaction Exists
 
-Fetch the resolved customer:
-
-```bash
-curl -X GET "https://your-domain/api/partners/{provider}/customers/{{customerId}}" \
-  -H "Authorization: Bearer {{providerApiKey}}" \
-  -H "x-integration-key: {{integrationKey}}"
-```
-
-Expected response:
-
-```json
-{
-  "customer": {
-    "id": "{{customerId}}",
-    "phone": "{{customerPhone}}",
-    "points": 85,
-    "lifetimePoints": 85
-  }
-}
-```
-
-## 9. Verify Loyalty Transaction Exists
-
-Use merchant tooling or the verified customer state to confirm a loyalty transaction was created for the test sale before go-live.
-
-## 10. Repost The Same Payload Once
-
-Send the exact same webhook body again. Samparka should acknowledge the duplicate safely.
-
-Expected response:
-
-```json
-{
-  "success": true,
-  "message": "Event already processed"
-}
-```
-
-## 11. Send A Test Refund
-
-Use a `refund.created` payload that reuses the original sale identifier.
-
-Expected response:
-
-```json
-{
-  "success": true,
-  "message": "Event received"
-}
-```
-
-## 12. Complete Go-Live Validation
-
-Run the checks in [Integration Checklist](./integration-checklist) before switching to production traffic.
+    Use merchant tooling or the verified customer state to confirm a loyalty transaction was created for the test sale before go-live.
+
+    ## 10. Repost The Same Payload Once
+
+    Send the exact same webhook body again. Samparka should acknowledge the duplicate safely.
+
+    Expected response:
+
+    ```json
+    {
+      "success": true,
+      "message": "Event already processed"
+    }
+    ```
+
+    ## 11. Send A Test Refund
+
+    Use a `refund.created` payload that reuses the original sale identifier.
+
+    Expected response:
+
+    ```json
+    {
+      "success": true,
+      "message": "Event received"
+    }
+    ```
+
+    ## 12. Complete Go-Live Validation
+
+    Run the checks in [Integration Checklist](./integration-checklist) before switching to production traffic.
+  </Tab>
+  <Tab title="Communication">
+    The fastest path to a working POS-initiated QR checkout. The POS requests a QR and prints it on the customer's receipt.
+
+    ## Base URL
+
+    All API requests are made to:
+
+    ```text
+    https://server.samparka.xyz
+    ```
+
+    ## Prerequisites
+
+    Before calling the Purchase QR endpoint, confirm:
+
+    - the POS integration is `CONNECTED`/`ACTIVE`
+    - an active WhatsApp/Wapio communication provider is configured for the store
+
+    ## 1. Send A Purchase QR Request
+
+    `POST /integrations/pos/{provider}/{token}/purchase-qr` with the `webhook_token` carried in the path.
+
+    ```bash
+    curl -X POST https://server.samparka.xyz/integrations/pos/restrox/<webhook_token>/purchase-qr \
+      -H "Content-Type: application/json" \
+      -d '{
+        "bill_id": "INV-2041",
+        "amount": 1250,
+        "currency": "NPR",
+        "customer_phone": "+9779800001234"
+      }'
+    ```
+
+    ## 2. Receive The QR Link
+
+    Expected response:
+
+    ```json
+    {
+      "success": true,
+      "message": "Purchase QR ready",
+      "data": {
+        "qr_link": "https://samparka.co/r/xKd93k",
+        "purchase_reference": "posqr:restrox:INV-2041",
+        "amount": 1250,
+        "currency": "NPR",
+        "customer_phone": "+9779800001234",
+        "bill_id": "INV-2041",
+        "status": "QR_GENERATED",
+        "expires_at": "2026-08-26T12:12:04.000Z"
+      }
+    }
+    ```
+
+    ## 3. Render QR On The Receipt
+
+    Turn `qr_link` into a QR image and print it on the customer's receipt. When the customer scans it, they are taken through the WhatsApp claim flow and points are awarded.
+
+    ## 4. Idempotency
+
+    Re-sending the same `provider + bill_id` returns the same QR instead of creating a duplicate session. See [Request / Response Contract](/integrations/pos/purchase-qr/request-response) for the full behavior.
+
+    <Columns cols={2}>
+      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+        Full example curl, behavior matrix, and design choices.
+      </Card>
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+        Automated test cases and deployment notes.
+      </Card>
+    </Columns>
+  </Tab>
+</Tabs>

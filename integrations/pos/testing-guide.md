@@ -6,6 +6,10 @@ sidebarTitle: Testing Guide
 
 # Testing Guide
 
+<Info>
+**Also see — Purchase QR tests**. Automated cases for the POS checkout endpoint: [Testing & Verification](/integrations/pos/purchase-qr/testing).
+</Info>
+
 This guide uses the shared fixtures in [`examples/payloads.json`](./examples/payloads.json).
 
 See also: [Refunds](./refunds) and [Troubleshooting](./troubleshooting).
@@ -331,3 +335,95 @@ Missing event type response:
   "message": "Missing event_type in payload"
 }
 ```
+
+## Purchase QR Checkout Test
+
+See [Purchase QR Checkout](./purchase-qr/integration-guide).
+
+### Happy Path
+
+```bash
+curl -X POST "https://your-domain/integrations/pos/{provider}/{webhookToken}/purchase-qr" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "bill_id": "INV-2041",
+    "amount": 1250,
+    "currency": "NPR",
+    "customer_phone": "9800000101"
+  }'
+```
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Purchase QR ready",
+  "data": {
+    "qr_link": "https://your-domain/r/xKd93k",
+    "purchase_reference": "posqr:blanxer:INV-2041",
+    "amount": 1250,
+    "currency": "NPR",
+    "customer_phone": "9800000101",
+    "bill_id": "INV-2041",
+    "status": "QR_GENERATED",
+    "expires_at": "2026-08-31T07:40:08.000Z"
+  }
+}
+```
+
+Validate that:
+
+- HTTP `200`
+- `"success": true`
+- `"status": "QR_GENERATED"`
+- `qr_link` is a non-empty scannable short URL
+
+### Idempotent Retry
+
+Replay the exact same `bill_id` payload. Expected result is the same `qr_link`, not a duplicate session.
+
+### Validation Failure
+
+Send a body with a non-positive or missing `amount`, or a missing/invalid `customer_phone`.
+
+Expected response:
+
+```json
+{
+  "success": false,
+  "message": "Invalid purchase QR request",
+  "errors": { "code": "purchase_qr_validation_failed" }
+}
+```
+
+### POS Not Connected
+
+Use a token whose POS integration status is `CREATED` (not `CONNECTED`/`ACTIVE`).
+
+Expected response:
+
+```json
+{
+  "success": false,
+  "message": "blanxer is not connected for this store",
+  "errors": { "code": "pos_not_connected", "status": "CREATED" }
+}
+```
+
+### No Active Communication Provider
+
+Use a connected POS integration without an active WhatsApp/Wapio communication provider.
+
+Expected response:
+
+```json
+{
+  "success": false,
+  "message": "No active connected communication provider is configured"
+}
+```
+
+### Invalid Token Or Unknown Provider
+
+Expected `401` for an unknown/invalid token and `404` for a provider not in `{blanxer, restrox}`.

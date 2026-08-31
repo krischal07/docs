@@ -212,5 +212,44 @@
   "not_ready_response": {
     "success": false,
     "message": "Integration is not ready to receive webhooks"
+  },
+  "purchase_qr_request": {
+    "bill_id": "INV-2041",
+    "amount": 1250,
+    "currency": "NPR",
+    "customer_phone": "+9779800001234"
+  },
+  "purchase_qr_response": {
+    "success": true,
+    "message": "Purchase QR ready",
+    "data": {
+      "qr_link": "https://samparka.co/r/xKd93k",
+      "purchase_reference": "posqr:blanxer:INV-2041",
+      "amount": 1250,
+      "currency": "NPR",
+      "customer_phone": "+9779800001234",
+      "bill_id": "INV-2041",
+      "status": "QR_GENERATED",
+      "expires_at": "2026-08-31T07:40:08.000Z"
+    }
+  },
+  "purchase_qr_validation_response": {
+    "success": false,
+    "message": "Invalid purchase QR request",
+    "errors": {
+      "code": "purchase_qr_validation_failed"
+    }
+  },
+  "purchase_qr_pos_not_connected_response": {
+    "success": false,
+    "message": "blanxer is not connected for this store",
+    "errors": {
+      "code": "pos_not_connected",
+      "status": "CREATED"
+    }
+  },
+  "purchase_qr_no_comm_provider_response": {
+    "success": false,
+    "message": "No active connected communication provider is configured"
   }
 }

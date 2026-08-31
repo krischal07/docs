@@ -1,0 +1,110 @@
+---
+title: Purchase QR Integration Guide
+description: How to integrate the POS purchase QR endpoint, including example curl calls, behavior matrix, and design choices.
+sidebarTitle: Integration Guide
+---
+
+The `:token` is the `webhook_token` of an `OUTLET_OWNED` Blanxer/RestroX integration. The host below is the local dev API (`localhost:8081`); in production it's the Samparka API origin.
+
+## Example curl (success)
+
+```bash
+curl -X POST http://localhost:8081/integrations/pos/blanxer/<webhook_token>/purchase-qr \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bill_id": "INV-2041",
+    "amount": 1250,
+    "currency": "NPR",
+    "customer_phone": "+9779800001234"
+  }'
+```
+
+### 200 — POS connected + active communication provider → real Wapio QR
+
+```
+HTTP 200
+{
+  "success": true,
+  "message": "Purchase QR ready",
+  "data": {
+    "qr_link": "http://localhost:8081/r/xKd93k",
+    "purchase_reference": "posqr:blanxer:INV-2041",
+    "amount": 1250,
+    "currency": "NPR",
+    "customer_phone": "+9779800001234",
+    "bill_id": "INV-2041",
+    "status": "QR_GENERATED",
+    "expires_at": "2026-08-31T07:40:08.000Z"
+  }
+}
+```
+
+### 409 — POS integration not connected (status is `CREATED`, not `CONNECTED`/`ACTIVE`)
+
+```
+HTTP 409
+{
+  "success": false,
+  "message": "blanxer is not connected for this store",
+  "errors": { "code": "pos_not_connected", "status": "CREATED" }
+}
+```
+
+### 422 — POS connected but no active WhatsApp/Wapio communication provider
+
+```
+HTTP 422
+{
+  "success": false,
+  "message": "No active connected communication provider is configured"
+}
+```
+
+## Behavior matrix
+
+The endpoint only issues a QR when the POS integration is connected **and** an active communication provider exists.
+
+| POS (RestroX/Blanxer) | WhatsApp/Wapio | Result |
+|---|---|---|
+| Not connected | anything | `409 pos_not_connected` — no QR, no session |
+| Connected | not connected | `422 no active connected communication provider` — no QR, no session |
+| Connected | connected | `200` real Wapio QR |
+
+## Design choices
+
+| Choice | Rationale |
+|---|---|
+| Auth via **existing `webhook_token`** per `posIntegrationLocation` | Zero new secrets; same tokens the POS already uses for webhooks. Provider-match check is automatic via `resolveTokenContext`. |
+| **`purchaseReference = posqr:{provider}:{bill_id}`** as idempotency key | Piggybacks on the existing `findByPurchaseReference` dedup inside `createSession` — no new collection or dedup logic. Colons/dots/hyphens allowed by the validator. |
+| **Reject missing/invalid phone at creation** (400) | The receipt QR is a WhatsApp deep link — without a valid target number there is no usable QR. The partner customer-search endpoint already implements the `invalid_phone / conflict / missing` flowchart. |
+| **`missing` customer still creates a session** | Mirrors the dashboard flow — a new customer onboards when they scan & claim. The flowchart's `missing` is terminal only for the *lookup* path, not for session creation. |
+| **`currency` defaults to `NPR`** | POS payloads may omit currency; dashboard uses 3-letter codes, Nepal is the operating market. Explicit value overrides. |
+| **POS must be genuinely connected** | The endpoint refuses with `409 pos_not_connected` unless the integration status is `CONNECTED`/`ACTIVE` — matches the dashboard's notion of "connected". A `CREATED`/`DISCONNECTED` integration can't issue checkouts. |
+| **Requires an active communication provider** | If the POS is connected but no WhatsApp/Wapio communication provider is active, session creation aborts with `422` (`no active connected communication provider`) — no QR is issued. There is deliberately **no fallback** deep-link. |
+| **Only one route addition, placed before the catch-all** | `/integrations/pos/:provider/:token/purchase-qr` is 3 segments, so it never collides with `/:provider/events` (2) or the catch-all `/:provider/:token` (2) — but registered first for safety. |
+| **No dashboard/frontend changes** | The POS owns the UI (its receipt). `checkitbro` is a disposable localhost visualizer, not a feature. |
+
+## File map
+
+| File | Purpose |
+|---|---|
+| `src/integrations/pos/purchaseQrController.js` | Validation, token resolution, POS-connected guard, idempotency key, session creation, response shaping |
+| `src/integrations/pos/routes.js` | Added `POST /:provider/:token/purchase-qr` before the catch-all routes |
+| `src/purchaseSessions/service/PurchaseSessionService.js` | Added `createPOSCheckoutSession()` — POS entry point that routes through the normal `createSession()` / Wapio pipeline |
+| `src/purchaseSessions/utils/processingStatus.js` | Reused. `getProcessingStatus()` drives response codes |
+| `src/integrations/pos/locationResolutionService.js` | Reused. `resolveTokenContext(provider, token)` — same resolver every POS webhook uses |
+| `__tests__/integrations/pos.purchase-qr.test.js` | 9 cases (see Testing page) |
+| `src/pages/CheckItBro.jsx` + `src/purchaseSessions/checkitbroDebugController.js` | Temporary localhost debug page + debug listing `GET .../checkitbro/debug`. Remove before prod. |
+
+## Open questions to confirm with the team
+
+1. **Phone-absent sale:** if a walk-in pays without giving a number, should the POS still call the endpoint (with what phone?) or silently skip loyalty for that sale?
+2. **Bill ID re-use window after completion:** a retried `bill_id` while the session is `QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM` is correctly idempotent today; a retried `bill_id` after `COMPLETED`/`CLAIMED` is rejected (409). Happy with that, or should completed bills get a fresh QR?
+
+## Related Documentation
+
+- [Overview](./overview)
+- [Request / Response Contract](./request-response)
+- [Testing & Verification](./testing)
+- [Webhook Endpoint](../webhook-endpoint)
+- [Authentication](../authentication)

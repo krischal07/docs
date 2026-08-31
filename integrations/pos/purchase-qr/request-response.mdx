@@ -1,0 +1,77 @@
+---
+title: Purchase QR Request / Response Contract
+description: Request shape, response shape, error codes, and idempotency for the POS purchase QR endpoint.
+sidebarTitle: Request / Response Contract
+---
+
+**Endpoint** — `POST /integrations/pos/:provider/:token/purchase-qr` (no bearer header; token carries store+outlet)
+
+Path params: `provider ∈ {blanxer, restrox}`, `token = webhook_token` of an `OUTLET_OWNED` integration.
+
+## Request
+
+```json
+{
+  "bill_id": "INV-2041",          // required, non-empty string
+  "amount": 1250,                  // required, > 0
+  "currency": "NPR",               // optional, 3-letter, defaults to NPR
+  "customer_phone": "+9779800001234" // required, /^\+?[0-9]{7,15}$/
+}
+```
+
+| Field | Type | Required | Description | Example |
+| ----- | ---- | -------- | ----------- | ------- |
+| `bill_id` | string | Yes | Non-empty bill/invoice identifier from the POS. | `INV-2041` |
+| `amount` | number | Yes | Transaction amount, must be greater than 0. | `1250` |
+| `currency` | string | No | 3-letter currency code. Defaults to `NPR` if omitted. | `NPR` |
+| `customer_phone` | string | Yes | Target customer phone for the WhatsApp deep link. Matches `/^\+?[0-9]{7,15}$/`. | `+9779800001234` |
+
+## Response — 200 Purchase QR ready
+
+An idempotent retry returns the same QR.
+
+```json
+{
+  "success": true,
+  "message": "Purchase QR ready",
+  "data": {
+    "qr_link": "https://samparka.co/r/xKd93k",   // short_url — POS turns this into a QR
+    "purchase_reference": "posqr:blanxer:INV-2041",
+    "amount": 1250,
+    "currency": "NPR",
+    "customer_phone": "+9779800001234",
+    "bill_id": "INV-2041",
+    "status": "QR_GENERATED",
+    "expires_at": "2026-08-26T12:12:04.000Z"
+  }
+}
+```
+
+## Error codes
+
+| Status | When |
+|---|---|
+| `400 invalid purchase QR request` | Missing/empty `bill_id`, non-positive `amount`, invalid `customer_phone`, bad `currency` |
+| `401 invalid integration token` | Unknown/expired token, no matching integration |
+| `404 unknown provider` | Provider not in `{blanxer, restrox}` |
+| `404 integration store not found` | Token resolves but store doc missing |
+| `409 pos_not_connected` | The POS integration (RestroX/Blanxer) status is not `CONNECTED`/`ACTIVE` — refused before any checkout is created |
+| `422 not mapped to an outlet` | Token's integration has no `outlet_id` bound |
+| `422 no active connected communication provider` | POS is connected but no WhatsApp/Wapio communication provider is active — session creation aborts (no QR) |
+| `409 already processed` | Same bill previously completed/claimed/failed |
+| `410 expired` | Same bill previously expired |
+| `502 QR generation failed` | Session created but `short_url` missing (Wapio/redirect failure) |
+
+## Idempotency
+
+`purchaseReference = posqr:{provider}:{sanitized(bill_id)}`. Same `provider + bill_id` for the same merchant always maps to the same session via `findByPurchaseReference(merchantId, purchaseReference)` — second call with the same bill reuses the pending session's QR instead of creating a duplicate. Verified in the `is idempotent` test (count stays 1 across two calls).
+
+The `posqr:` prefix never collides with dashboard references (`ps_…`).
+
+## Related Documentation
+
+- [Overview](./overview)
+- [Integration Guide](./integration-guide)
+- [Testing & Verification](./testing)
+- [Payload Reference](../payload-reference)
+- [Response Reference](../response-reference)
