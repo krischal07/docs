@@ -22,7 +22,7 @@ sidebarTitle: Endpoint Catalog
 
     | Endpoint | Purpose | Authentication |
     | -------- | ------- | -------------- |
-    | `POST /integrations/pos/{provider}/{token}/purchase-qr` | Create a scannable purchase-checkout QR for a cash sale from the POS terminal; returns the QR link in the response. | Tokenized URL path (same `webhook_token`) |
+    | `POST /integrations/pos/{provider}/purchase-qr` | Create a scannable purchase-checkout QR for a cash sale from the POS terminal; returns the QR link in the response. | `Authorization: Bearer {{providerApiKey}}` plus `X-Integration-Key` |
 
     <Columns cols={2}>
       <Card title="Overview" icon="compass" href="/integrations/pos/purchase-qr/overview">

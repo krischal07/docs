@@ -178,9 +178,9 @@ The same `{ error, message }` envelope is used for partner customer validation, 
 
 ## Purchase QR
 
-`POST /integrations/pos/{provider}/{token}/purchase-qr`
+`POST /integrations/pos/{provider}/purchase-qr`
 
-See [Purchase QR Checkout](./purchase-qr/request-response).
+Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key`). See [Purchase QR Checkout](./purchase-qr/request-response).
 
 ### `200 Purchase QR ready`
 
@@ -190,7 +190,7 @@ See [Purchase QR Checkout](./purchase-qr/request-response).
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",
-    "purchase_reference": "posqr:{provider}:...",
+    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
@@ -199,7 +199,7 @@ See [Purchase QR Checkout](./purchase-qr/request-response).
 }
 ```
 
-`qr_link` is the short URL the POS turns into a scannable QR. A retried request while the session is pending returns the same QR.
+`qr_link` is the short URL the POS turns into a scannable QR. A retried request while the same session is pending returns the same QR.
 
 ### `400 Invalid purchase QR request`
 

@@ -343,8 +343,10 @@ See [Purchase QR Checkout](./purchase-qr/integration-guide).
 ### Happy Path
 
 ```bash
-curl -X POST "https://your-domain/integrations/pos/{provider}/{webhookToken}/purchase-qr" \
+curl -X POST "https://your-domain/integrations/pos/{provider}/purchase-qr" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <provider_api_key>" \
+  -H "X-Integration-Key: <integration_key>" \
   --data '{
     "amount": 1250,
     "currency": "NPR",
@@ -362,7 +364,7 @@ Expected response:
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://your-domain/r/xKd93k",
-    "purchase_reference": "posqr:{provider}:...",
+    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
@@ -380,7 +382,7 @@ Validate that:
 
 ### Idempotent Retry
 
-Replay the exact same request payload. Expected result is the same `qr_link`, not a duplicate session.
+Each request creates a **new checkout session** (fresh `ps_…` reference). Retry-safety lives in the session lifecycle: re-sending the request while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`) returns the same `qr_link` (200), not a new session.
 
 ### Validation Failure
 
@@ -398,7 +400,7 @@ Expected response:
 
 ### POS Not Connected
 
-Use a token whose POS integration status is `CREATED` (not `CONNECTED`/`ACTIVE`).
+Use an integration key whose POS integration status is `CREATED` (not `CONNECTED`/`ACTIVE`).
 
 Expected response:
 

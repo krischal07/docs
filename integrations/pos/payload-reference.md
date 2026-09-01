@@ -64,9 +64,9 @@ Samparka reads different fields for `connect`, `test-sale`, and direct webhook d
 
 ## Purchase QR Request
 
-`POST /integrations/pos/{provider}/{token}/purchase-qr`
+`POST /integrations/pos/{provider}/purchase-qr`
 
-The POS sends the cash-sale details and receives a scannable purchase QR `qr_link` in response. See [Purchase QR Request / Response](./purchase-qr/request-response).
+The POS sends the cash-sale details and receives a scannable purchase QR `qr_link` in response. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key`). No `webhook_token` in the path. See [Purchase QR Request / Response](./purchase-qr/request-response).
 
 ### Required Properties
 

@@ -36,6 +36,7 @@ Use the Postman collection for hands-on partner API, webhook, and customer testi
 - `Partner API`
 - `Webhook Verification`
 - `Customer API`
+- `Purchase QR` (Communication)
 
 ## Recommended Testing Order
 
@@ -54,6 +55,25 @@ Use the Postman collection for hands-on partner API, webhook, and customer testi
   </Step>
 </Steps>
 
+## Communication — Purchase QR Request
+
+The collection's `Purchase QR` section lets you exercise the QR checkout from the POS terminal. It calls the tokenized purchase QR endpoint and sends the cash-sale details:
+
+```json
+{
+  "amount": 1250,
+  "currency": "NPR",
+  "items": [
+    { "name": "Cappuccino", "qty": 1, "price": 850 }
+  ]
+}
+```
+
+- **Endpoint** — `POST {{baseUrl}}/integrations/pos/{{provider}}/{{webhookToken}}/purchase-qr`
+- **Auth** — the same `webhook_token` carried in the path (no bearer header)
+- **Response** — `200` with `qr_link`, `purchase_reference`, `amount`, `currency`, and `status: QR_GENERATED`
+- **Contact Samparka to get access** — the Communication feature requires a connected WhatsApp communication provider.
+
 <Info>
-The collection uses the preferred location connect contract and phone-first webhook examples. Partner API requests use `Authorization: Bearer {{providerApiKey}}`, and POS customer search also includes `x-integration-key` against `/api/partners/{provider}/customers/search`.
+The collection uses the preferred location connect contract and phone-first webhook examples. Partner API requests use `Authorization: Bearer {{providerApiKey}}`, and POS customer search also includes `x-integration-key` against `/api/partners/{provider}/customers/search`. The Purchase QR (Communication) request requires an active WhatsApp communication provider — contact the Samparka team for access.
 </Info>

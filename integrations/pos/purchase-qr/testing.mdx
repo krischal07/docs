@@ -14,12 +14,14 @@ sidebarTitle: Testing & Verification
 
 | Test | Assertion |
 |---|---|
-| happy path | 200 with `qr_link`, `purchase_reference = posqr:{provider}:...`, amount |
-| persistence | session in `purchasesessions` with `QR_GENERATED`, `communication.metadata.short_url` |
-| idempotency | same request twice → same `qr_link`, count stays 1 |
-| missing/invalid items | 400 |
+| happy path | 200 with `qr_link`, `purchase_reference = ps_...`, amount, currency=NPR |
+| persistence | session in `purchasesessions` with `QR_GENERATED`, `metadata.items`, `communication.metadata.short_url` |
+| idempotency (within session) | same request while pending → same `qr_link`, count stays 1 |
+| items total ≠ amount | 400 |
+| missing/empty items | 400 |
 | missing/negative amount | 400 |
-| unknown token | 401 |
+| missing/invalid provider key | 401 |
+| missing/invalid integration key | 401 |
 | unknown provider | 404 |
 | POS connected, no comm provider | 422 (`no active connected communication provider`) — no session created |
 | POS not connected (status CREATED) | 409 `pos_not_connected` — no session created |
@@ -35,7 +37,7 @@ NODE_OPTIONS="--max-old-space-size=512" npx jest __tests__/integrations/pos.purc
 * All backend. No frontend deploy required (except `checkitbro` if you keep it).
 * `checkitbro` (`src/pages/CheckItBro.jsx`, `checkitbroDebugController.js`, the `/checkitbro/debug` route on `purchaseSessions/routes.js`) is **localhost-only**. Remove those 3 additions before cutting a production release. Remove the comment-guarded `CheckItBro` import + `/checkitbro` route in `MainApp.jsx` at the same time.
 * The staging `SERVER_URL` currently produces `http://localhost:8081/r/...` short URLs — in production `SERVER_URL` yields `https://samparka.co/r/...` automatically via `RedirectLinkService.baseUrl`.
-* The `posqr:` prefix never collides with dashboard references (`ps_…`).
+* The `purchase_reference` format is now the standard `ps_…` prefix (same as dashboard) — no separate `posqr:` scheme.
 
 ## Related Documentation
 

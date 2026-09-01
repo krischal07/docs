@@ -48,11 +48,11 @@ flowchart LR
     CTL[purchaseQrController]
     LS[Location Resolution<br/>locationResolutionService]
     PG[POS-connected guard<br/>CONNECTED / ACTIVE]
-    ID[Idempotency<br/>posqr:{provider}:...]
+    ID[Idempotency<br/>ps_... (per-request fresh)]
     WAP[QR generation via Wapio<br/>+ redirect short_url]
   end
 
-  POS -->|POST /integrations/pos/:provider/:token/purchase-qr<br/>{ amount, currency, items }| CTL
+  POS -->|POST /integrations/pos/:provider/purchase-qr<br/>{ amount, currency, items }| CTL
   CTL --> LS
   LS --> PG
   PG --> ID

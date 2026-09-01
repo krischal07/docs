@@ -225,7 +225,7 @@
     "message": "Purchase QR ready",
     "data": {
       "qr_link": "https://samparka.co/r/xKd93k",
-      "purchase_reference": "posqr:{provider}:...",
+      "purchase_reference": "ps_1690000000000_ab12cd34ef56",
       "amount": 1250,
       "currency": "NPR",
       "status": "QR_GENERATED",

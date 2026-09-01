@@ -261,11 +261,13 @@ sidebarTitle: Quick Start
 
     ## 1. Send A Purchase QR Request
 
-    `POST /integrations/pos/{provider}/{token}/purchase-qr` with the `webhook_token` carried in the path.
+    `POST /integrations/pos/{provider}/purchase-qr`. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key`). No `webhook_token` in the path.
 
     ```bash
-    curl -X POST https://server.samparka.xyz/integrations/pos/{provider}/<webhook_token>/purchase-qr \
+    curl -X POST https://server.samparka.xyz/integrations/pos/{provider}/purchase-qr \
       -H "Content-Type: application/json" \
+      -H "Authorization: Bearer <provider_api_key>" \
+      -H "X-Integration-Key: <integration_key>" \
       -d '{
         "amount": 1250,
         "currency": "NPR",
@@ -285,7 +287,7 @@ sidebarTitle: Quick Start
       "message": "Purchase QR ready",
       "data": {
         "qr_link": "https://samparka.co/r/xKd93k",
-        "purchase_reference": "posqr:{provider}:...",
+        "purchase_reference": "ps_1690000000000_ab12cd34ef56",
         "amount": 1250,
         "currency": "NPR",
         "status": "QR_GENERATED",
@@ -300,7 +302,7 @@ sidebarTitle: Quick Start
 
     ## 4. Idempotency
 
-    Re-sending the same request returns the same QR instead of creating a duplicate session. See [Request / Response Contract](/integrations/pos/purchase-qr/request-response) for the full behavior.
+    Each request creates a **new checkout session** (fresh `ps_…` `purchase_reference`). Retry-safety lives in the session lifecycle: while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`), retrying returns the same QR (200). See [Request / Response Contract](/integrations/pos/purchase-qr/request-response) for the full behavior.
 
     <Columns cols={2}>
       <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">

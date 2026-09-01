@@ -22,7 +22,7 @@ See also: [Testing Guide](./testing-guide).
 
 See [Purchase QR Integration Guide](./purchase-qr/integration-guide).
 
-- [ ] `POST /integrations/pos/{provider}/{token}/purchase-qr` tested with a valid sale
+- [ ] `POST /integrations/pos/{provider}/purchase-qr` tested with a valid sale
 - [ ] Response `200` with `status = QR_GENERATED` and a non-empty `qr_link`
 - [ ] `qr_link` renders as a scannable QR and applies to the customer
 - [ ] Same request retried returns the same QR (idempotent)

@@ -4,9 +4,15 @@ description: Request shape, response shape, error codes, and idempotency for the
 sidebarTitle: Request / Response Contract
 ---
 
-**Endpoint** — `POST /integrations/pos/:provider/:token/purchase-qr` (no bearer header; token carries store+outlet)
+**Endpoint** — `POST /integrations/pos/:provider/purchase-qr`
 
-Path params: `provider` = your POS provider, `token = webhook_token` of an `OUTLET_OWNED` integration.
+**Auth (two-part):**
+- `Authorization: Bearer <provider_api_key>` — confirms the POS vendor (provider key `slug` must match the route `:provider`)
+- `X-Integration-Key: <integration_key>` — confirms which store/outlet
+
+No `webhook_token` is used on this endpoint. The provider API key confirms the vendor, and the integration key resolves the outlet.
+
+Path params: `provider` = your POS provider (`blanxer`, `restrox`, or your `{provider}` value).
 
 ## Request
 
@@ -36,7 +42,7 @@ An idempotent retry returns the same QR.
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",   // short_url — POS turns this into a QR
-    "purchase_reference": "posqr:{provider}:...",
+    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
@@ -49,22 +55,23 @@ An idempotent retry returns the same QR.
 
 | Status | When |
 |---|---|
-| `400 invalid purchase QR request` | Missing/empty `items`, non-positive `amount`, bad `currency` |
-| `401 invalid integration token` | Unknown/expired token, no matching integration |
+| `400 purchase_qr_validation_failed` | Missing/non-positive `amount`, bad `currency`, missing/empty `items`, item missing `name` / non-positive `qty` / non-positive `price`, or `items` total ≠ `amount` |
+| `401 invalid provider key` | Missing/invalid `Authorization: Bearer <provider_api_key>` |
+| `401 invalid integration key` | Missing/invalid `X-Integration-Key` |
 | `404 unknown provider` | Provider not recognized |
 | `404 integration store not found` | Token resolves but store doc missing |
 | `409 pos_not_connected` | The POS integration status is not `CONNECTED`/`ACTIVE` — refused before any checkout is created |
-| `422 not mapped to an outlet` | Token's integration has no `outlet_id` bound |
+| `422 not mapped to an outlet` | Integration has no `outlet_id` bound |
 | `422 no active connected communication provider` | POS is connected but no WhatsApp/Wapio communication provider is active — session creation aborts (no QR) |
-| `409 already processed` | Same bill previously completed/claimed/failed |
-| `410 expired` | Same bill previously expired |
+| `409 already processed` | Session previously completed/claimed/failed |
+| `410 expired` | Session previously expired |
 | `502 QR generation failed` | Session created but `short_url` missing (Wapio/redirect failure) |
 
 ## Idempotency
 
-`purchaseReference` is generated from the request and used as the idempotency key. Same provider + items for the same merchant always maps to the same session via `findByPurchaseReference(merchantId, purchaseReference)` — second call with the same request reuses the pending session's QR instead of creating a duplicate. Verified in the `is idempotent` test (count stays 1 across two calls).
+The request no longer carries a `bill_id`, so the controller doesn't derive a reference from it. Each POS request creates a **new checkout session** via `buildPurchaseReference()` (a fresh `ps_{ts}_{hex}` per call) — there is no cross-request dedup. Retry-safety lives in the session lifecycle (`ensureQrGenerated`): retrying the *same pending session* returns the same QR (200) while it is `QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`; a `COMPLETED`/`CLAIMED` session is rejected (409).
 
-The `posqr:` prefix never collides with dashboard references (`ps_…`).
+The `purchase_reference` uses the standard `ps_…` prefix (same as dashboard).
 
 ## Related Documentation
 
