@@ -6,6 +6,10 @@ sidebarTitle: Overview
 
 The Purchase QR endpoint lets **POS terminals** create a Samparka *purchase-checkout* session on the fly and receive the QR link in the same HTTP response. The POS renders that link as a QR and prints it on its receipt. The customer scans → WhatsApp flow → Wapio verification → points. The endpoint reuses 100% of the existing purchase-checkout pipeline — no new models, no new loyalty logic, no new QR infrastructure.
 
+<Info>
+  The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+</Info>
+
 ```mermaid
 sequenceDiagram
   participant POS as POS

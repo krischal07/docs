@@ -264,13 +264,14 @@ sidebarTitle: Quick Start
     `POST /integrations/pos/{provider}/{token}/purchase-qr` with the `webhook_token` carried in the path.
 
     ```bash
-    curl -X POST https://server.samparka.xyz/integrations/pos/restrox/<webhook_token>/purchase-qr \
+    curl -X POST https://server.samparka.xyz/integrations/pos/{provider}/<webhook_token>/purchase-qr \
       -H "Content-Type: application/json" \
       -d '{
-        "bill_id": "INV-2041",
         "amount": 1250,
         "currency": "NPR",
-        "customer_phone": "+9779800001234"
+        "items": [
+          { "name": "Cappuccino", "qty": 1, "price": 850 }
+        ]
       }'
     ```
 
@@ -284,11 +285,9 @@ sidebarTitle: Quick Start
       "message": "Purchase QR ready",
       "data": {
         "qr_link": "https://samparka.co/r/xKd93k",
-        "purchase_reference": "posqr:restrox:INV-2041",
+        "purchase_reference": "posqr:{provider}:...",
         "amount": 1250,
         "currency": "NPR",
-        "customer_phone": "+9779800001234",
-        "bill_id": "INV-2041",
         "status": "QR_GENERATED",
         "expires_at": "2026-08-26T12:12:04.000Z"
       }
@@ -301,7 +300,7 @@ sidebarTitle: Quick Start
 
     ## 4. Idempotency
 
-    Re-sending the same `provider + bill_id` returns the same QR instead of creating a duplicate session. See [Request / Response Contract](/integrations/pos/purchase-qr/request-response) for the full behavior.
+    Re-sending the same request returns the same QR instead of creating a duplicate session. See [Request / Response Contract](/integrations/pos/purchase-qr/request-response) for the full behavior.
 
     <Columns cols={2}>
       <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">

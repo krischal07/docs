@@ -346,10 +346,11 @@ See [Purchase QR Checkout](./purchase-qr/integration-guide).
 curl -X POST "https://your-domain/integrations/pos/{provider}/{webhookToken}/purchase-qr" \
   -H "Content-Type: application/json" \
   --data '{
-    "bill_id": "INV-2041",
     "amount": 1250,
     "currency": "NPR",
-    "customer_phone": "9800000101"
+    "items": [
+      { "name": "Cappuccino", "qty": 1, "price": 850 }
+    ]
   }'
 ```
 
@@ -361,11 +362,9 @@ Expected response:
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://your-domain/r/xKd93k",
-    "purchase_reference": "posqr:blanxer:INV-2041",
+    "purchase_reference": "posqr:{provider}:...",
     "amount": 1250,
     "currency": "NPR",
-    "customer_phone": "9800000101",
-    "bill_id": "INV-2041",
     "status": "QR_GENERATED",
     "expires_at": "2026-08-31T07:40:08.000Z"
   }
@@ -381,11 +380,11 @@ Validate that:
 
 ### Idempotent Retry
 
-Replay the exact same `bill_id` payload. Expected result is the same `qr_link`, not a duplicate session.
+Replay the exact same request payload. Expected result is the same `qr_link`, not a duplicate session.
 
 ### Validation Failure
 
-Send a body with a non-positive or missing `amount`, or a missing/invalid `customer_phone`.
+Send a body with a non-positive or missing `amount`, or missing/empty `items`.
 
 Expected response:
 
@@ -406,7 +405,7 @@ Expected response:
 ```json
 {
   "success": false,
-  "message": "blanxer is not connected for this store",
+  "message": "{provider} is not connected for this store",
   "errors": { "code": "pos_not_connected", "status": "CREATED" }
 }
 ```

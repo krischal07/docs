@@ -16,6 +16,10 @@ sidebarTitle: Endpoint Catalog
     | `GET /api/partners/{provider}/customers/{customerId}` | Fetch one customer record within one integration scope. | `Authorization: Bearer {{providerApiKey}}` plus `x-integration-key` |
   </Tab>
   <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
     | Endpoint | Purpose | Authentication |
     | -------- | ------- | -------------- |
     | `POST /integrations/pos/{provider}/{token}/purchase-qr` | Create a scannable purchase-checkout QR for a cash sale from the POS terminal; returns the QR link in the response. | Tokenized URL path (same `webhook_token`) |

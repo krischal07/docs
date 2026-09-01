@@ -6,7 +6,7 @@ sidebarTitle: Testing & Verification
 
 ## Trust and verification
 
-*Provenance:* controller live-tested on staging DB (`samparka-staging`, DB `test`) with real POS tokens. A real `curl` returns a live `short_url` (`/r/...`) that 302s to the correct `wa.me` link. Idempotency demonstrated: same request twice → same `qr_link`, one session in `purchasesessions`.
+*Provenance:* controller live-tested on staging DB (`samparka-staging`, DB `test`) with real store and POS tokens. A real `curl` returns a live `short_url` (`/r/...`) that 302s to the correct `wa.me` link. Idempotency demonstrated: same request twice → same `qr_link`, one session in `purchasesessions`.
 
 ## Automated tests
 

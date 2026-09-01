@@ -8,7 +8,7 @@ sidebarTitle: Loyalty Award Flow
 This page is the canonical workflow guide for loyalty awarding in the POS native integration.
 
 <Info>
-**Also see — Purchase QR**. When the POS creates the QR session itself (rather than staff using the dashboard), the customer still onboards on scan & claim. See the [Purchase QR Overview](/integrations/pos/purchase-qr/overview).
+**Also see — Purchase QR**. When the POS creates the QR session itself (rather than staff using the dashboard), the customer still onboards on scan & claim. The loyalty award flow below describes this **Communication** path end to end. See the [Purchase QR Overview](/integrations/pos/purchase-qr/overview).
 </Info>
 
 It is written for:
@@ -70,7 +70,16 @@ Customer registration is managed by Samparka.
 
 Loyalty processing may still resolve or create customer records internally according to Samparka identity rules.
 
-## Recommended Cashier Workflow
+## Loyalty Award Flows
+
+The POS integration supports two loyalty award entry points, presented as tabs below:
+
+- **App** — cashier-led sales where the customer phone is captured at the counter and a customer is resolved up front.
+- **Communication** — Purchase QR sales where the POS does not capture a phone; loyalty is resolved when the customer scans the QR on their device.
+
+<Tabs>
+  <Tab title="App">
+    ## Recommended Cashier Workflow
 
 ```mermaid
 flowchart TD
@@ -485,10 +494,89 @@ Decline
  ↓
  No Loyalty
 ```
+  </Tab>
+  <Tab title="Communication">
+<Info>
+  The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+</Info>
+
+The **Communication** path (Purchase QR) is different from the App flow: the POS does **not** capture a phone number at all. It submits the cash sale as `amount` + `items`, receives a scannable QR in the same response, and the customer completes loyalty attribution from their own device.
+
+This is ideal for anonymous cash sales, walk-ins, or customers who do not want to hand over a number at the counter.
+
+### Core Differences From The App Flow
+
+| Concern | App (cashier-led) | Communication (Purchase QR) |
+| ------- | ----------------- | --------------------------- |
+| Phone capture | Cashier enters phone at the POS | Not captured; no phone in the request |
+| Request payload | `sale.completed` event with customer identity | `amount` + `currency` + `items` |
+| Customer resolution | Lookup at checkout via partner customer API | On scan & claim, after the customer verifies on their device |
+| Points awarded | When the submitted sale is processed | After WhatsApp → Wapio verification completes the session |
+| Failure impact | Loyalty never blocks checkout | Session still created; loyalty resolved later |
+
+### Loyalty Flow
+
+```mermaid
+sequenceDiagram
+  participant POS as POS
+  participant SAM as Samparka
+  participant CUST as Customer
+
+  POS->>SAM: POST { amount, items } → purchase QR
+  SAM-->>POS: { qr_link, purchase_reference }
+  POS->>POS: Render + print QR on receipt
+  CUST->>CUST: Scans the QR
+  CUST->>SAM: Opens WhatsApp deep link & verifies (Wapio)
+  SAM->>SAM: Completion orchestrator resolves customer
+  SAM->>SAM: Loyalty processor awards points
+  SAM-->>CUST: Points linked to the sale
+```
+
+### Step 1: POS Creates The Checkout Session
+
+The POS posts the cash-sale details to the purchase QR endpoint. No phone is required — the request is `amount`, `currency`, and `items`.
+
+The response returns a `qr_link` (short URL) and a `purchase_reference` used as the idempotency key.
+
+### Step 2: The Customer Scans The Receipt
+
+The POS renders `qr_link` as a QR and prints it on the receipt. The customer scans it with their phone, which opens the WhatsApp claim flow.
+
+### Step 3: Verification And Customer Identity
+
+On scan, Wapio verification completes and the purchase-checkout session is marked claimed. Customer identity is resolved at this point:
+
+- an **existing** customer is matched to the sale
+- a **missing** customer is onboarded as part of the claim flow
+
+The customer is never blocked from a QR checkout because a phone was not captured up front.
+
+### Step 4: Points Are Awarded
+
+Once verification completes, the session enters the canonical processing pipeline. Loyalty rules are evaluated and points are awarded / ledgered against the resolved customer.
+
+POS does not calculate any of this. It only created the session and delivered the QR.
+
+### Idempotency And The Same Customer
+
+Because the idempotency key is derived from the request, a retried identical request reuses the pending session's QR and returns the same `qr_link` instead of duplicating the session. This keeps loyalty attribution from being double-counted for the same sale.
+
+### Relationship To The App Flow
+
+The **Communication** path and the **App** path converge on the same downstream outcome — Samparka owns loyalty logic and points are awarded through its processing pipeline. Only the customer-resolution entry point differs:
+
+- **App:** customer resolved up front by cashier (phone lookup)
+- **Communication:** customer resolved on scan & claim
+
+Both preserve the core principle that loyalty is optional and never blocks the sale.
+  </Tab>
+</Tabs>
 
 ## Related Documentation
 
 - [Customer Identity](./customer-identity)
 - [Customer API](./customer-api)
 - [Loyalty Processing](./loyalty-processing)
+- [Purchase QR Overview](./purchase-qr/overview)
+- [Purchase QR Request / Response Contract](./purchase-qr/request-response)
 - [Payload Reference](../payload-reference)

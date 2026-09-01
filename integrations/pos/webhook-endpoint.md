@@ -14,6 +14,10 @@ sidebarTitle: Webhook Endpoint
     - Content-Type: `application/json`
   </Tab>
   <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
     The **Purchase QR** endpoint is the sister checkout entry point that uses the same tokenized auth as the webhook endpoint — but instead of pushing a *completed* sale, it creates a QR session and returns a QR link in the response.
 
     ## Endpoint

@@ -415,7 +415,7 @@ paths:
         Generate a scannable Samparka purchase-checkout QR for a POS cash sale.
         The POS renders the returned qr_link as a QR code and prints it on the receipt.
         The customer scans it to verify and claim loyalty points.
-        200 means the QR was created and a short_url is present. A retry of the same bill_id
+        200 means the QR was created and a short_url is present. A retry of the same request
         while the session is pending returns the same QR (idempotent).
       operationId: postPosPurchaseQr
       parameters:
@@ -431,10 +431,12 @@ paths:
                 summary: Cash sale requiring a purchase QR
                 x-source-fixture: examples/payloads.json#/purchase_qr_request
                 value:
-                  bill_id: INV-2041
                   amount: 1250
                   currency: NPR
-                  customer_phone: '+9779800001234'
+                  items:
+                    - name: Cappuccino
+                      qty: 1
+                      price: 850
       responses:
         '200':
           description: Purchase QR generated successfully (idempotent retry returns same QR)
@@ -451,11 +453,9 @@ paths:
                     message: Purchase QR ready
                     data:
                       qr_link: https://samparka.co/r/xKd93k
-                      purchase_reference: 'posqr:blanxer:INV-2041'
+                      purchase_reference: 'posqr:{provider}:...'
                       amount: 1250
                       currency: NPR
-                      customer_phone: '+9779800001234'
-                      bill_id: INV-2041
                       status: QR_GENERATED
                       expires_at: '2026-08-31T07:40:08.000Z'
         '400':
@@ -762,22 +762,31 @@ components:
       type: object
       additionalProperties: false
       required:
-        - bill_id
         - amount
-        - customer_phone
+        - items
       properties:
-        bill_id:
-          type: string
-          description: Unique bill identifier. Used as part of the idempotency key.
         amount:
           type: number
           description: Sale amount. Must be greater than 0.
         currency:
           type: string
           description: 3-letter currency code. Defaults to NPR.
-        customer_phone:
-          type: string
-          description: Customer phone matching /^\+?[0-9]{7,15}$/. Required QR deep-link target.
+        items:
+          type: array
+          description: Product items in the bill.
+          items:
+            type: object
+            required:
+              - name
+              - qty
+              - price
+            properties:
+              name:
+                type: string
+              qty:
+                type: number
+              price:
+                type: number
     PurchaseQrSuccessData:
       type: object
       required:
@@ -790,14 +799,10 @@ components:
           description: Short URL the POS renders as a scannable QR code.
         purchase_reference:
           type: string
-          description: Idempotency key, posqr:{provider}:{bill_id}.
+          description: Idempotency key derived from the request, posqr:{provider}:...
         amount:
           type: number
         currency:
-          type: string
-        customer_phone:
-          type: string
-        bill_id:
           type: string
         status:
           type: string

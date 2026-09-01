@@ -731,7 +731,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"bill_id\": \"INV-2041\",\n  \"amount\": 1250,\n  \"currency\": \"NPR\",\n  \"customer_phone\": \"{{customerPhone}}\"\n}"
+              "raw": "{\n  \"amount\": 1250,\n  \"currency\": \"NPR\",\n  \"items\": [\n    { \"name\": \"Cappuccino\", \"qty\": 1, \"price\": 850 }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/integrations/pos/{{provider}}/{{webhookToken}}/purchase-qr",

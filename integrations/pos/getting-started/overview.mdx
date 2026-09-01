@@ -46,15 +46,19 @@ sidebarTitle: Overview
     </Note>
   </Tab>
   <Tab title="Communication">
-    The **Purchase QR** endpoint lets **Blanxer / RestroX POS terminals** create a Samparka *purchase-checkout* session on the fly and receive the QR link in the same HTTP response. The POS renders that link as a QR and prints it on its receipt. The customer scans → WhatsApp flow → Wapio verification → points.
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+    The **Purchase QR** endpoint lets **POS terminals** create a Samparka *purchase-checkout* session on the fly and receive the QR link in the same HTTP response. The POS renders that link as a QR and prints it on its receipt. The customer scans → WhatsApp flow → Wapio verification → points.
 
     ```mermaid
     sequenceDiagram
-      participant POS as POS (Blanxer/RestroX)
+      participant POS as POS
       participant SAM as Samparka
       participant CUST as Customer
 
-      POS->>SAM: POST { bill_id, amount, phone }
+      POS->>SAM: POST { amount, items }
       SAM->>SAM: Create purchase-checkout session
       SAM->>SAM: Wapio signs the QR
       SAM-->>POS: { qr_link }

@@ -190,18 +190,16 @@ See [Purchase QR Checkout](./purchase-qr/request-response).
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",
-    "purchase_reference": "posqr:blanxer:INV-2041",
+    "purchase_reference": "posqr:{provider}:...",
     "amount": 1250,
     "currency": "NPR",
-    "customer_phone": "+9779800001234",
-    "bill_id": "INV-2041",
     "status": "QR_GENERATED",
     "expires_at": "2026-08-31T07:40:08.000Z"
   }
 }
 ```
 
-`qr_link` is the short URL the POS turns into a scannable QR. A retried `bill_id` while the session is pending returns the same QR.
+`qr_link` is the short URL the POS turns into a scannable QR. A retried request while the session is pending returns the same QR.
 
 ### `400 Invalid purchase QR request`
 
@@ -236,7 +234,7 @@ See [Purchase QR Checkout](./purchase-qr/request-response).
 ```json
 {
   "success": false,
-  "message": "blanxer is not connected for this store",
+  "message": "{provider} is not connected for this store",
   "errors": { "code": "pos_not_connected", "status": "CREATED" }
 }
 ```
@@ -246,7 +244,7 @@ See [Purchase QR Checkout](./purchase-qr/request-response).
 ```json
 {
   "success": false,
-  "message": "This bill has already been processed",
+  "message": "This session has already been processed",
   "errors": { "code": "purchase_qr_unavailable", "status": "COMPLETED" }
 }
 ```
@@ -256,7 +254,7 @@ See [Purchase QR Checkout](./purchase-qr/request-response).
 ```json
 {
   "success": false,
-  "message": "This bill's checkout has expired",
+  "message": "This session's checkout has expired",
   "errors": { "code": "purchase_qr_expired" }
 }
 ```
