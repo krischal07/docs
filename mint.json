@@ -25,8 +25,7 @@
         "integrations/pos/customer-loyalty-award-flow",
         "integrations/pos/customer-identity",
         "integrations/pos/PARTNER-HANDOFF",
-        "integrations/pos/authentication",
-        "integrations/pos/webhook-endpoint"
+        "integrations/pos/authentication"
       ]
     },
     {

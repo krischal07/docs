@@ -35,7 +35,6 @@ Samparka is a customer loyalty platform. A valid POS integration is complete onl
 - [Quick Start](./quick-start)
 - [Authentication](./authentication)
 - [Endpoint Catalog](./endpoint-catalog)
-- [Webhook Endpoint](./webhook-endpoint)
 - [Event Types](./event-types)
 - [Payload Reference](./payload-reference)
 - [Response Reference](./response-reference)

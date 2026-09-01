@@ -26,8 +26,7 @@
           "integrations/pos/customer-identity",
           "integrations/pos/PARTNER-HANDOFF",
           "integrations/pos/quick-start",
-          "integrations/pos/authentication",
-          "integrations/pos/webhook-endpoint"
+          "integrations/pos/authentication"
         ]
       },
       {
