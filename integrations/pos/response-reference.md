@@ -4,6 +4,10 @@ description: Reference the partner-visible response contracts for connect, test-
 sidebarTitle: Response Reference
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
+<Tabs>
+  <Tab title="App">
 
 These are the partner-visible responses for the active POS integration path.
 
@@ -281,8 +285,58 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus t
 
 ```json
 {
-  "success": false,
-  "message": "QR link could not be generated for this bill",
-  "errors": { "code": "purchase_qr_generation_failed" }
+  "success": false,    "message": "QR link could not be generated for this bill",
+    "errors": { "code": "purchase_qr_generation_failed" }
+  }
+```
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+`POST /integrations/pos/{provider}/purchase-qr`
+
+Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). See [Purchase QR Checkout](/integrations/pos/purchase-qr/request-response).
+
+## 200 — Purchase QR ready
+
+```json
+{
+  "success": true,
+  "message": "Purchase QR ready",
+  "data": {
+    "qr_link": "https://samparka.co/r/xKd93k",
+    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+    "amount": 1250,
+    "currency": "NPR",
+    "status": "QR_GENERATED",
+    "expires_at": "2026-08-26T12:12:04.000Z"
+  }
 }
 ```
+
+## Error codes
+
+| Status | When |
+|---|---|
+| `400 purchase_qr_validation_failed` | Missing/non-positive `amount`, bad `currency`, missing/empty `items` |
+| `401 invalid provider key` | Missing/invalid `Authorization: Bearer <provider_api_key>` |
+| `401 invalid integration key` | Missing/invalid `X-Integration-Key` in request body |
+| `404 unknown provider` | Provider not recognized |
+| `409 pos_not_connected` | POS integration not `CONNECTED`/`ACTIVE` |
+| `422 no active connected communication provider` | No WhatsApp/Wapio provider active |
+| `409 already processed` | Session previously completed/claimed/failed |
+| `410 expired` | Session previously expired |
+| `502 QR generation failed` | Wapio/redirect failure |
+
+<Columns cols={2}>
+  <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+    Full error codes and idempotency behavior.
+  </Card>
+  <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+    Automated test cases and deployment notes.
+  </Card>
+</Columns>
+  </Tab>
+</Tabs>

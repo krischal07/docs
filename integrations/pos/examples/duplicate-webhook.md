@@ -4,7 +4,10 @@ description: Example showing how Samparka safely acknowledges a repeated POS web
 sidebarTitle: Duplicate Webhook
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
 
+<Tabs>
+  <Tab title="App">
 ## Request
 
 Use the `duplicate_sale_request` fixture from [`payloads.json`](./payloads.json). This fixture intentionally matches the earlier sale payload.
@@ -37,3 +40,32 @@ Samparka recognized the repeated delivery and acknowledged it safely without han
 ## What To Do Next
 
 Treat this response as success and stop retrying that payload.
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+```bash
+curl -X POST https://server.samparka.xyz/integrations/pos/{provider}/purchase-qr \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <provider_api_key>" \
+  -d '{
+    "amount": 1250,
+    "currency": "NPR",
+    "X-Integration-Key": "<integration_key>",
+    "items": [
+      { "name": "Cappuccino", "qty": 1, "price": 850 }
+    ]
+  }'
+```
+
+Retry the same request while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`) to see the same QR returned (200). See [Request / Response Contract](/integrations/pos/purchase-qr/request-response) for the full idempotency behavior.
+
+<Columns cols={2}>
+  <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+    Full error codes and idempotency behavior.
+  </Card>
+</Columns>
+  </Tab>
+</Tabs>

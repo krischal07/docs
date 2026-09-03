@@ -4,6 +4,9 @@ description: Required and optional POS fields for connect, test-sale, and webhoo
 sidebarTitle: Payload Reference
 ---
 
+
+<Tabs>
+  <Tab title="App">
 # Payload Reference
 
 Samparka reads different fields for `connect`, `test-sale`, and direct webhook delivery.
@@ -81,3 +84,40 @@ not from webhook payload fields.
 
 - Webhook payload restaurant fields are optional, non-canonical metadata for outlet-owned integrations.
 - Fields outside the parser mappings are not required for the canonical partner flow.
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+    The Purchase QR endpoint accepts a different request shape than the webhook events:
+
+    `POST /integrations/pos/{provider}/purchase-qr`
+
+    ### Required Properties
+
+    | Field | Type | Required | Description | Example |
+    | ----- | ---- | -------- | ----------- | ------- |
+    | `amount` | number | Yes | Sale amount. Must be greater than `0`. | `1250` |
+    | `items` | array | Yes | Product items in the bill. Each item has `name`, `qty`, and `price`. | `[{ "name": "Cappuccino", "qty": 1, "price": 850 }]` |
+
+    ### Optional Properties
+
+    | Field | Type | Required | Description | Example |
+    | ----- | ---- | -------- | ----------- | ------- |
+    | `currency` | string | No | 3-letter currency code. Defaults to `NPR` if omitted. | `NPR` |
+
+    Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). No `webhook_token` in the path.
+
+    See [Purchase QR Request / Response](/integrations/pos/purchase-qr/request-response) for the full contract.
+
+    <Columns cols={2}>
+      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+        Full request/response shape, error codes, and idempotency.
+      </Card>
+      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+        Example curl calls and behavior matrix.
+      </Card>
+    </Columns>
+  </Tab>
+</Tabs>

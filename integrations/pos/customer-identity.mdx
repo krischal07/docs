@@ -4,6 +4,10 @@ description: Understand the normalized phone strategy, store-scoped customer res
 sidebarTitle: Customer Identity
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
+<Tabs>
+  <Tab title="App">
 
 The POS native integration uses store-scoped, phone-first customer identity. Partner customer operations search and return customers through normalized phone behavior.
 
@@ -173,3 +177,32 @@ Customer identity affects:
 - [Customer API](./customer-api)
 - [Partner API](./partner-api)
 - [Loyalty Processing](./loyalty-processing)
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+The POS native integration uses store-scoped, phone-first customer identity. Partner customer operations search and return customers through normalized phone behavior.
+
+<Info>
+**Also see — Purchase QR customer flow**. The Purchase QR endpoint creates checkout sessions that follow the same customer identity pipeline after scan and claim. See the [Purchase QR Overview](/integrations/pos/purchase-qr/overview).
+</Info>
+
+## Related Documentation
+
+- [Customer Loyalty Award Flow](./customer-loyalty-award-flow)
+- [Customer API](./customer-api)
+- [Partner API](./partner-api)
+- [Loyalty Processing](./loyalty-processing)
+
+<Columns cols={2}>
+  <Card title="Overview" icon="compass" href="/integrations/pos/purchase-qr/overview">
+    Summary, architecture, and lifecycle.
+  </Card>
+  <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+    Example curl calls and behavior matrix.
+  </Card>
+</Columns>
+  </Tab>
+</Tabs>

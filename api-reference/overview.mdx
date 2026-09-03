@@ -3,5 +3,113 @@ title: API Reference
 description: Root-level API reference summary for POS.
 sidebarTitle: API Reference
 ---
-
+ 
+<Tabs>
+  <Tab title="App">
+    Use this section to move from first read to first successful webhook delivery and customer-verification pass.
+    
+    <Columns cols={2}>
+      <Card title="Partner Handoff" icon="handshake" href="/integrations/pos/PARTNER-HANDOFF">
+        Best starting point for a new POS engineer.
+      </Card>
+      <Card title="Quick Start" icon="rocket" href="/integrations/pos/quick-start">
+        Shortest path to a successful sale and refund test.
+      </Card>
+      <Card title="Authentication" icon="shield" href="/integrations/pos/authentication">
+        Confirm how the webhook token is used to authorize delivery.
+      </Card>
+    </Columns>
+    
+    ## Recommended Reading Order
+    
+    <Steps>
+      <Step title="Start With Handoff">
+        Open the partner handoff page for the full onboarding path and partner-specific flow.
+      </Step>
+      <Step title="Read The Quick Start">
+        Use the quick start to set up delivery and confirm the happy path quickly.
+      </Step>
+      <Step title="Verify Auth And Endpoint">
+        Review authentication and endpoint details before moving into repeated testing.
+      </Step>
+      <Step title="Expand Into Testing">
+        Use the testing guide, examples, and checklist to validate both transport and business outcomes.
+      </Step>
+    </Steps>
+    
+    <Note>
+    The broader reviewed overview remains available in the canonical [POS Partner Guide](/integrations/pos/README).
+    </Note>
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+    
+    The **Purchase QR** endpoint lets **POS terminals** create a Samparka *purchase-checkout* session on the fly and receive the QR link in the same HTTP response. The POS renders that link as a QR and prints it on its receipt. The customer scans → WhatsApp flow → Wapio verification → points.
+    
+    ```mermaid
+    sequenceDiagram
+      participant POS as POS
+      participant SAM as Samparka
+      participant CUST as Customer
+    
+      POS->>SAM: POST { amount, items }
+      SAM->>SAM: Create purchase-checkout session
+      SAM->>SAM: Wapio signs the QR
+      SAM-->>POS: { qr_link }
+      POS->>POS: Render link as QR and print on receipt
+      CUST->>CUST: Scans QR on receipt
+      CUST->>SAM: Opens WhatsApp deep link & claims
+      SAM->>SAM: Verification + completion orchestrator
+      SAM-->>CUST: Points awarded
+    ```
+    
+    <Columns cols={2}>
+      <Card title="Overview" icon="compass" href="/integrations/pos/purchase-qr/overview">
+        Summary, architecture, state lifecycle, and end-to-end sequence.
+      </Card>
+      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+        Request/response shape, error codes, and idempotency.
+      </Card>
+      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+        Example curl calls, behavior matrix, and design choices.
+      </Card>
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+        Automated test cases and deployment notes.
+      </Card>
+    </Columns>
+    
+    ## How It Works
+    
+    ```mermaid
+    stateDiagram-v2
+      [*] --> CREATED
+      CREATED --> QR_GENERATED: ensureQrGenerated
+      QR_GENERATED --> WAITING_FOR_CUSTOMER_CLAIM: customer waits
+      WAITING_FOR_CUSTOMER_CLAIM --> CLAIMED: customer scans
+      CLAIMED --> POINTS_AWARDED
+      POINTS_AWARDED --> [*]
+      QR_GENERATED --> QR_GENERATED: POS retry while pending (same QR, 200)
+    ```
+    
+    ## Recommended Reading Order
+    
+    <Steps>
+      <Step title="Start With The Overview">
+        Read the purchase QR summary and architecture.
+      </Step>
+      <Step title="Review The Contract">
+        Confirm the request/response shape and error codes.
+      </Step>
+      <Step title="Follow The Integration Guide">
+        Use the example curl and behavior matrix to connect.
+      </Step>
+      <Step title="Run The Tests">
+        Validate against the automated test cases before go-live.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+ 
 Use `/openapi.yaml` for the mirrored outlet-owned POS API contract.

@@ -4,6 +4,10 @@ description: Required and optional POS fields for connect, test-sale, and webhoo
 sidebarTitle: Payload Reference
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
+<Tabs>
+  <Tab title="App">
 
 Samparka reads different fields for `connect`, `test-sale`, and direct webhook delivery.
 
@@ -107,3 +111,29 @@ not from webhook payload fields.
 
 - Webhook payload restaurant fields are optional, non-canonical metadata for outlet-owned integrations.
 - Fields outside the parser mappings are not required for the canonical partner flow.
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+`POST /integrations/pos/{provider}/purchase-qr`
+
+| Field | Type | Required | Description | Example |
+| ----- | ---- | -------- | ----------- | ------- |
+| `amount` | number | Yes | Transaction amount, must be greater than 0. | `1250` |
+| `currency` | string | No | 3-letter currency code. Defaults to `NPR` if omitted. | `NPR` |
+| `items` | array | Yes | Product items in the bill. Each item has `name`, `qty`, and `price`. | `[{ "name": "Cappuccino", "qty": 1, "price": 850 }]` |
+
+See [Purchase QR Request / Response](/integrations/pos/purchase-qr/request-response) for the full contract.
+
+<Columns cols={2}>
+  <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+    Full error codes and idempotency behavior.
+  </Card>
+  <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+    Example curl calls and behavior matrix.
+  </Card>
+</Columns>
+  </Tab>
+</Tabs>

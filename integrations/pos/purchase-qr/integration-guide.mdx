@@ -4,6 +4,14 @@ description: How to integrate the POS purchase QR endpoint, including example cu
 sidebarTitle: Integration Guide
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
+<Tabs>
+  <Tab title="App">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
 The endpoint is authenticated with the **provider API key** (`Authorization: Bearer <provider_api_key>`, which confirms the POS vendor) plus the **integration key** (`X-Integration-Key`, which confirms the store/outlet). No `webhook_token` is used on this endpoint. The host below is the local dev API (`localhost:8081`); in production it's the Samparka API origin.
 
 ## Example curl (success)
@@ -108,3 +116,19 @@ The endpoint only issues a QR when the POS integration is connected **and** an a
 - [Request / Response Contract](./request-response)
 - [Testing & Verification](./testing)
 - [Authentication](../authentication)
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+The endpoint is authenticated with the **provider API key** (`Authorization: Bearer <provider_api_key>`, which confirms the POS vendor) plus the **integration key** (`X-Integration-Key`, which confirms the store/outlet). No `webhook_token` is used on this endpoint.
+
+## Related Documentation
+
+- [Overview](./overview)
+- [Request / Response Contract](./request-response)
+- [Testing & Verification](./testing)
+- [Authentication](../authentication)
+  </Tab>
+</Tabs>

@@ -4,7 +4,12 @@ description: Review the backend-driven contract, schema, and content verificatio
 sidebarTitle: Verification Report
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
 # Final Verification Report
+
+<Tabs>
+  <Tab title="App">
 
 This report captures the backend-driven correction of the POS partner documentation package against `../samparka_vps/samparka-backend`.
 
@@ -72,3 +77,34 @@ Result:
 ## Remaining Documentation Risks
 
 - Customer detail verification proves the partner-customer contract and the stored customer state, but loyalty transaction inspection still depends on merchant-side tooling outside the partner HTTP response itself.
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+    ## Purchase QR Verification
+
+    The Purchase QR endpoint has been verified against the backend implementation:
+
+    - `POST /integrations/pos/{provider}/purchase-qr` accepts `amount`, `currency`, and `items` with `X-Integration-Key` in the request body.
+    - Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key.
+    - Success response returns `qr_link`, `purchase_reference`, `amount`, `currency`, `status`, and `expires_at`.
+    - `409 pos_not_connected` when the POS integration is not `CONNECTED`/`ACTIVE`.
+    - `422 no active connected communication provider` when no WhatsApp/Wapio provider is active.
+    - `400` validation errors for missing/invalid `amount`, `items`, or `currency`.
+    - `401` for missing/invalid provider API key or integration key.
+    - `409 already processed` for completed/claimed sessions.
+    - `410 expired` for expired sessions.
+    - `502 QR generation failed` when Wapio/redirect fails.
+
+    <Columns cols={2}>
+      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+        Full error codes and idempotency behavior.
+      </Card>
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+        Automated test cases and deployment notes.
+      </Card>
+    </Columns>
+  </Tab>
+</Tabs>

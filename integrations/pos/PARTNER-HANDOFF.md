@@ -4,7 +4,12 @@ description: Canonical partner handoff summary for POS onboarding with Samparka 
 sidebarTitle: Partner Handoff Source
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
 # POS Partner Handoff
+
+<Tabs>
+  <Tab title="App">
 
 This package is the shareable entry point for the POS connect, test-sale, customer lookup, and webhook integration with Samparka.
 
@@ -127,3 +132,24 @@ Use [postman-collection.json](./postman-collection.json) for hands-on testing.
 ## Support Contact
 
 Use the Samparka support channel already assigned to your integration rollout.
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+This package is the shareable entry point for the POS connect, test-sale, customer lookup, and webhook integration with Samparka.
+
+## Start Here
+
+1. [Overview](./README)
+2. [Quick Start](./quick-start)
+3. [Endpoint Catalog](./endpoint-catalog)
+4. [Payload Reference](./payload-reference)
+5. [Testing Guide](./testing-guide)
+
+## Support Contact
+
+Use the Samparka support channel already assigned to your integration rollout.
+  </Tab>
+</Tabs>

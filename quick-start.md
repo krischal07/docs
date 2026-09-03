@@ -4,6 +4,9 @@ description: Connect POS to one Samparka outlet and validate partner and webhook
 sidebarTitle: Quick Start
 ---
 
+
+<Tabs>
+  <Tab title="App">
 # Quick Start
 
 This is the fastest path to a verified POS integration.
@@ -213,3 +216,81 @@ Expected response:
 ## 12. Complete Go-Live Validation
 
 Run the checks in [Integration Checklist](./integration-checklist) before switching to production traffic.
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+    The fastest path to a working POS-initiated QR checkout. The POS requests a QR and prints it on the customer's receipt.
+
+    ## Base URL
+
+    All API requests are made to:
+
+    ```text
+    https://server.samparka.xyz
+    ```
+
+    ## Prerequisites
+
+    Before calling the Purchase QR endpoint, confirm:
+
+    - the POS integration is `CONNECTED`/`ACTIVE`
+    - an active WhatsApp/Wapio communication provider is configured for the store
+
+    ## 1. Send A Purchase QR Request
+
+    `POST /integrations/pos/{provider}/purchase-qr`. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). No `webhook_token` in the path.
+
+    ```bash
+    curl -X POST https://server.samparka.xyz/integrations/pos/{provider}/purchase-qr \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer <provider_api_key>" \
+      -d '{
+        "amount": 1250,
+        "currency": "NPR",
+        "X-Integration-Key": "<integration_key>",
+        "items": [
+          { "name": "Cappuccino", "qty": 1, "price": 850 }
+        ]
+      }'
+    ```
+
+    ## 2. Receive The QR Link
+
+    Expected response:
+
+    ```json
+    {
+      "success": true,
+      "message": "Purchase QR ready",
+      "data": {
+        "qr_link": "https://samparka.co/r/xKd93k",
+        "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+        "amount": 1250,
+        "currency": "NPR",
+        "status": "QR_GENERATED",
+        "expires_at": "2026-08-26T12:12:04.000Z"
+      }
+    }
+    ```
+
+    ## 3. Render QR On The Receipt
+
+    Turn `qr_link` into a QR image and print it on the customer's receipt. When the customer scans it, they are taken through the WhatsApp claim flow and points are awarded.
+
+    ## 4. Idempotency
+
+    Each request creates a **new checkout session** (fresh `ps_…` `purchase_reference`). Retry-safety lives in the session lifecycle: while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`), retrying returns the same QR (200). See [Request / Response Contract](/integrations/pos/purchase-qr/request-response) for the full behavior.
+
+    <Columns cols={2}>
+      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+        Full example curl, behavior matrix, and design choices.
+      </Card>
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+        Automated test cases and deployment notes.
+      </Card>
+    </Columns>
+  </Tab>
+</Tabs>

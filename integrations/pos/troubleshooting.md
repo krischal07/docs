@@ -4,8 +4,10 @@ description: Diagnose connect validation, webhook authentication, payload, and d
 sidebarTitle: Troubleshooting
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
 
-
+<Tabs>
+  <Tab title="App">
 <Info>
 **Also see — Purchase QR failures** (`pos_not_connected`, no active communication provider, already processed, expired, QR generation failed): [Request / Response Contract](/integrations/pos/purchase-qr/request-response).
 </Info>
@@ -27,3 +29,28 @@ sidebarTitle: Troubleshooting
 | `410 This session's checkout has expired` on purchase QR | The same request previously expired | Check the session expiry. | Make a new request for a new sale. |
 | `502 QR link could not be generated` on purchase QR | Session created but no short URL (Wapio/redirect failure) | Retry the same request. If it repeats, check communication provider health. | Retry; if persistent, contact Samparka. |
 | `400 Invalid purchase QR request` on purchase QR | Missing/empty `items`, non-positive `amount`, or bad `currency` | Inspect the request body against the [Payload Reference](./payload-reference). | Correct the fields and resend. |
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+| Problem | Likely Cause | Verification Steps | Resolution |
+| ------- | ------------ | ------------------ | ---------- |
+| `409 pos_not_connected` on purchase QR | The POS integration is not `CONNECTED`/`ACTIVE` (e.g. status `CREATED`) | Confirm the integration is connected in the Samparka dashboard and the token belongs to that integration. | Connect the POS integration, then retry the `purchase-qr` call. |
+| `422 No active connected communication provider is configured` on purchase QR | The POS is connected but no WhatsApp/Wapio communication provider is active for the store | Confirm a communication provider is configured and active for the store. | Activate/connect the communication provider, then retry. |
+| `409 This session has already been processed` on purchase QR | The same request was previously completed/claimed/failed | Check the session status. | Make a new request for a new sale; a completed session cannot get a fresh QR. |
+| `410 This session's checkout has expired` on purchase QR | The same request previously expired | Check the session expiry. | Make a new request for a new sale. |
+| `502 QR link could not be generated` on purchase QR | Session created but no short URL (Wapio/redirect failure) | Retry the same request. If it repeats, check communication provider health. | Retry; if persistent, contact Samparka. |
+| `400 Invalid purchase QR request` on purchase QR | Missing/empty `items`, non-positive `amount`, or bad `currency` | Inspect the request body against the [Payload Reference](./payload-reference). | Correct the fields and resend. |
+
+<Columns cols={2}>
+  <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+    Full error codes and idempotency behavior.
+  </Card>
+  <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+    Automated test cases and deployment notes.
+  </Card>
+</Columns>
+  </Tab>
+</Tabs>

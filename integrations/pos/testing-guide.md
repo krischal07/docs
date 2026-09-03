@@ -4,7 +4,12 @@ description: Validate connect, test-sale, customer verification, webhook deliver
 sidebarTitle: Testing Guide
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
 # Testing Guide
+
+<Tabs>
+  <Tab title="App">
 
 <Info>
 **Also see — Purchase QR tests**. Automated cases for the POS checkout endpoint: [Testing & Verification](/integrations/pos/purchase-qr/testing).
@@ -428,3 +433,117 @@ Expected response:
 ### Invalid Token Or Unknown Provider
 
 Expected `401` for an unknown/invalid token and `404` for a provider not in `{blanxer, restrox}`.
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+This guide covers Purchase QR testing. See [Testing & Verification](./purchase-qr/testing) for the automated test suite.
+
+## Prerequisites
+
+Before testing Purchase QR, confirm:
+
+- the POS integration is `CONNECTED`/`ACTIVE`
+- an active WhatsApp/Wapio communication provider is configured for the store
+
+## Happy Path
+
+```bash
+curl -X POST "https://your-domain/integrations/pos/{provider}/purchase-qr" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <provider_api_key>" \
+  --data '{
+    "amount": 1250,
+    "currency": "NPR",
+    "X-Integration-Key": "<integration_key>",
+    "items": [
+      { "name": "Cappuccino", "qty": 1, "price": 850 }
+    ]
+  }'
+```
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Purchase QR ready",
+  "data": {
+    "qr_link": "https://your-domain/r/xKd93k",
+    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+    "amount": 1250,
+    "currency": "NPR",
+    "status": "QR_GENERATED",
+    "expires_at": "2026-08-31T07:40:08.000Z"
+  }
+}
+```
+
+Validate that:
+
+- HTTP `200`
+- `"success": true`
+- `"status": "QR_GENERATED"`
+- `qr_link` is a non-empty scannable short URL
+
+## Idempotent Retry
+
+Each request creates a **new checkout session** (fresh `ps_…` reference). Retry-safety lives in the session lifecycle: re-sending the request while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`) returns the same `qr_link` (200), not a new session.
+
+## Validation Failure
+
+Send a body with a non-positive or missing `amount`, or missing/empty `items`.
+
+Expected response:
+
+```json
+{
+  "success": false,
+  "message": "Invalid purchase QR request",
+  "errors": { "code": "purchase_qr_validation_failed" }
+}
+```
+
+## POS Not Connected
+
+Use an integration key whose POS integration status is `CREATED` (not `CONNECTED`/`ACTIVE`).
+
+Expected response:
+
+```json
+{
+  "success": false,
+  "message": "{provider} is not connected for this store",
+  "errors": { "code": "pos_not_connected", "status": "CREATED" }
+}
+```
+
+## No Active Communication Provider
+
+Use a connected POS integration without an active WhatsApp/Wapio communication provider.
+
+Expected response:
+
+```json
+{
+  "success": false,
+  "message": "No active connected communication provider is configured"
+}
+```
+
+## Invalid Token Or Unknown Provider
+
+Expected `401` for an unknown/invalid token and `404` for a provider not in `{blanxer, restrox}`.
+
+<Columns cols={2}>
+  <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+    Full error codes and idempotency behavior.
+  </Card>
+  <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+    Automated test cases and deployment notes.
+  </Card>
+</Columns>
+  </Tab>
+</Tabs>

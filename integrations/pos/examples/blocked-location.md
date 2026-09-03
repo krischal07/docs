@@ -4,7 +4,10 @@ description: Example showing the response returned when an outlet-owned POS inte
 sidebarTitle: Missing Binding
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
 
+<Tabs>
+  <Tab title="App">
 ## Request
 
 Use the `missing_binding_request` fixture from [`payloads.json`](./payloads.json) against the token for a newly created integration before connect.
@@ -37,3 +40,28 @@ Samparka resolved the integration from the webhook token, then rejected the even
 ## What To Do Next
 
 Connect the restaurant first, confirm the binding is stored on the integration, and then resend future events.
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+If the POS integration is not `CONNECTED`/`ACTIVE`, the Purchase QR endpoint returns `409 pos_not_connected`.
+
+```json
+{
+  "success": false,
+  "message": "{provider} is not connected for this store",
+  "errors": { "code": "pos_not_connected", "status": "CREATED" }
+}
+```
+
+Connect the POS integration first, then retry the `purchase-qr` call.
+
+<Columns cols={2}>
+  <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+    Full error codes and idempotency behavior.
+  </Card>
+</Columns>
+  </Tab>
+</Tabs>

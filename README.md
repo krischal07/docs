@@ -4,7 +4,12 @@ description: Canonical overview of the POS partner connect, test-sale, customer 
 sidebarTitle: Guide Overview
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
 # POS Partner Guide
+
+<Tabs>
+  <Tab title="App">
 
 Samparka is a customer loyalty platform. A valid POS integration is complete only after both transport and business outcomes are verified.
 
@@ -138,3 +143,96 @@ A `200 Event received` response means Samparka accepted the webhook delivery. It
 - the customer can be found with the sale identity
 - loyalty transaction data exists for that customer
 - the customer's points reflect the processed sale
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+This package is the shareable entry point for the POS connect, test-sale, customer lookup, and webhook integration with Samparka.
+
+## Start Here
+
+1. [Overview](./README)
+2. [Quick Start](./quick-start)
+3. [Endpoint Catalog](./endpoint-catalog)
+4. [Payload Reference](./payload-reference)
+5. [Testing Guide](./testing-guide)
+
+## Connect Contract
+
+Request:
+
+```json
+{
+  "integrationKey": "{{integrationKey}}",
+  "externalLocationId": "{{expectedLocationId}}",
+  "externalLocationName": "{{expectedLocationName}}"
+}
+```
+
+Success response:
+
+```json
+{
+  "success": true,
+  "integrationId": "{{integrationId}}",
+  "token": "{{webhookToken}}",
+  "status": "CONNECTED"
+}
+```
+
+## Webhook Contract
+
+Send webhook events to `/webhook/restrox/{token}` with transaction data and a customer phone:
+
+```json
+{
+  "event_type": "order.completed",
+  "order_id": "pos-sale-1001",
+  "amount": 850,
+  "customer": {
+    "phone": "+97798XXXXXXXX"
+  }
+}
+```
+
+Payload location fields such as `external_location_id`, `external_location_name`, `restaurantId`, and `restaurantName` are optional non-canonical metadata for outlet-owned attribution.
+
+## Customer Lookup Contract
+
+Use the partner-authenticated customer lookup routes:
+
+```http
+GET /api/partners/restrox/customers/search?phone={{customerPhone}}
+Authorization: Bearer {{providerApiKey}}
+x-integration-key: {{integrationKey}}
+```
+
+```http
+GET /api/partners/restrox/customers/{{customerId}}
+Authorization: Bearer {{providerApiKey}}
+x-integration-key: {{integrationKey}}
+```
+
+`providerApiKey` is shared manually by Samparka during onboarding. For this integration, use `restrox` as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
+
+## Testing Checklist
+
+Use [Integration Checklist](./integration-checklist) for go-live validation.
+
+`ACTIVE` only proves the integration activated. Do not sign off until customer verification, loyalty transaction verification, and points verification are complete.
+
+## OpenAPI
+
+Use [openapi.yaml](./openapi.yaml) for machine-readable request and response definitions.
+
+## Postman Collection
+
+Use [postman-collection.json](./postman-collection.json) for hands-on testing.
+
+## Support Contact
+
+Use the Samparka support channel already assigned to your integration rollout.
+  </Tab>
+</Tabs>

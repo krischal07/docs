@@ -4,6 +4,14 @@ description: Request shape, response shape, error codes, and idempotency for the
 sidebarTitle: Request / Response Contract
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
+<Tabs>
+  <Tab title="App">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
 **Endpoint** — `POST /integrations/pos/:provider/purchase-qr`
 
 **Auth (two-part):**
@@ -80,3 +88,20 @@ The `purchase_reference` uses the standard `ps_…` prefix (same as dashboard).
 - [Testing & Verification](./testing)
 - [Payload Reference](../payload-reference)
 - [Response Reference](../response-reference)
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+**Endpoint** — `POST /integrations/pos/:provider/purchase-qr`
+
+## Related Documentation
+
+- [Overview](./overview)
+- [Integration Guide](./integration-guide)
+- [Testing & Verification](./testing)
+- [Payload Reference](../payload-reference)
+- [Response Reference](../response-reference)
+  </Tab>
+</Tabs>

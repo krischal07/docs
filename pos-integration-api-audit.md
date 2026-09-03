@@ -4,7 +4,12 @@ description: Root-level audit summary for the current POS contract.
 sidebarTitle: Audit Notes
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
 # POS Integration Audit
+
+<Tabs>
+  <Tab title="App">
 
 > Evidence boundary: static audit of `samparka-backend/src` on 2026-08-11. This describes implemented code paths, not a claim that external providers or workers are running in production. Updated 2026-09-01 to reflect Purchase QR items-based flow and provider-agnostic endpoints.
 
@@ -136,3 +141,65 @@ Controller --> POS: acknowledgement
 - Analytics and mission processor registrations look complete but currently perform no work.
 - No provider-webhook dead-letter queue is implemented; recovery is document/replay based.
 - Purchase QR idempotency is now derived from request contents (provider + items) rather than an explicit `bill_id`, which means the collision properties depend on the item normalization in the idempotency hash.
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+> Evidence boundary: static audit of `samparka-backend/src` on 2026-08-11. This describes implemented code paths, not a claim that external providers or workers are running in production. Updated 2026-09-01 to reflect Purchase QR items-based flow and provider-agnostic endpoints.
+
+## Architecture and entry points
+
+POS is an adapter-based webhook ingress. `src/integrations/pos/providers/index.js` is the registry; it contains **Blanxer** and **RestroX**, each exposing `validate`, `parser.parse`, and `mapper.map`. `bootstrapProviders.js` seeds Provider records for Samparka, Blanxer, and RestroX. Provider records declare capabilities; the code rejects webhook use when the provider is not active/capable.
+
+Public receipt endpoints are mounted twice: `POST /integrations/pos/:provider/events` and `/webhook/:provider/events`; the token routes are `POST /integrations/pos/restrox/:token`, `/blanxer/:token`, and `/:provider/:token`. The generic legacy provider route returns 410 unless `POS_LEGACY_PROVIDER_ROUTE_ENABLED=true`. The merchant-management API is under `/api/pos-integrations`; administration/replay surfaces are mounted under `/api/admin/pos` and provider administration under `/api/admin/pos/providers`. Partner lifecycle endpoints are `/api/partners/:provider/{connect,disconnect,test-sale}` (Bearer provider API key) and RestroX has `/api/partners/restrox/{connect,sync-locations,test-sale}`.
+
+There is also a separate canonical ingress endpoint, `POST /api/v1/integrations/purchases`. It is not a third loyalty engine: Purchase Sessions use it to enter the same `InternalEvent -> processEvent` pipeline.
+
+## Purchase QR — items-based flow
+
+The Purchase QR endpoint was refactored to remove `bill_id` and `customer_phone` from the request. The POS now sends `amount`, `currency`, and `items` (product items with `name`, `qty`, `price`).
+
+### Request shape
+
+```json
+{
+  "amount": 1250,
+  "currency": "NPR",
+  "items": [
+    { "name": "Cappuccino", "qty": 1, "price": 850 },
+    { "name": "Latte", "qty": 1, "price": 400 }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| `amount` | number | Yes | Transaction amount, must be > 0. |
+| `currency` | string | No | 3-letter currency code. Defaults to `NPR`. |
+| `items` | array | Yes | Product items in the bill. Each item has `name`, `qty`, and `price`. |
+
+### Key behavioral changes from previous `bill_id`/`phone` design
+
+- `bill_id` is no longer sent or used as the idempotency key. The idempotency key is now derived from the request (provider + items).
+- `customer_phone` is no longer required or sent. The QR is no longer a WhatsApp deep link targeting a specific phone number.
+- Customer lookup for loyalty attribution happens downstream via the normal webhook processing pipeline, not at QR creation time.
+- The response no longer includes `customer_phone` or `bill_id`.
+- Error codes for invalid requests now check for missing/empty `items` instead of missing/invalid `customer_phone` or empty `bill_id`.
+
+### Provider-agnostic language
+
+All Purchase QR documentation now uses generic `:provider` path params and `{provider}` in examples instead of hardcoding `blanxer` or `restrox`. The endpoint works with any registered POS provider.
+
+## Observed risks and boundaries
+
+- The fallback idempotency hash uses a limited payload subset, so distinct sales with the same selected values can collide, while changed timestamps/amount representations can evade a duplicate.
+- Raw-event storage occurs before authentication and can be abused for database growth absent the noted rate-limit placeholder.
+- POS processing is request-synchronous, coupling provider latency to transactions and Mongo writes.
+- Store-owned mapping can acknowledge blocked events; recovery is operational/manual.
+- Analytics and mission processor registrations look complete but currently perform no work.
+- No provider-webhook dead-letter queue is implemented; recovery is document/replay based.
+- Purchase QR idempotency is now derived from request contents (provider + items) rather than an explicit `bill_id`, which means the collision properties depend on the item normalization in the idempotency hash.
+  </Tab>
+</Tabs>

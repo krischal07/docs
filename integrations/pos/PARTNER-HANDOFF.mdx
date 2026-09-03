@@ -4,6 +4,10 @@ description: Primary onboarding path for a new POS engineer integrating with Sam
 sidebarTitle: Partner Handoff
 ---
 
+import { Tabs, Tab } from "@mintlify/components";
+
+<Tabs>
+  <Tab title="App">
 
 Welcome to the POS integration path for Samparka Loyalty. Start here if you need the shortest accurate path from outlet-owned connect to production webhook traffic.
 
@@ -96,3 +100,34 @@ Use this page as the onboarding map. For technical details, always follow the li
     Compare happy-path and edge-case deliveries.
   </Card>
 </Columns>
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+Welcome to the POS integration path for Samparka Loyalty. Start here if you need the shortest accurate path from outlet-owned connect to production webhook traffic.
+
+<Info>
+Start with the [Quick Start](./quick-start) or follow the recommended partner flow below.
+</Info>
+
+<Columns cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/integrations/pos/quick-start">
+    Shortest path to a successful sale and refund test.
+  </Card>
+  <Card title="Testing Guide" icon="flask-conical" href="/integrations/pos/testing-guide">
+    Step-by-step verification for every response contract.
+  </Card>
+</Columns>
+
+<Columns cols={2}>
+  <Card title="Postman Collection" icon="download" href="/integrations/pos/reference/postman-collection">
+    Download and import the reviewed Postman collection.
+  </Card>
+  <Card title="Examples" icon="book-open" href="/integrations/pos/examples/overview">
+    Compare happy-path and edge-case deliveries.
+  </Card>
+</Columns>
+  </Tab>
+</Tabs>

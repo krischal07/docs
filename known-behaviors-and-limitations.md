@@ -4,6 +4,9 @@ description: Compatibility overview for the earlier POS known behaviors page, ma
 sidebarTitle: Known Behaviors
 ---
 
+
+<Tabs>
+  <Tab title="App">
 # Known Behaviors and Limitations
 
 This page keeps the older POS URL working for existing bookmarks and search results.
@@ -30,3 +33,30 @@ The current POS guide no longer uses the older "native" information architecture
 <Info>
 If you arrived here from an older shared link, follow the pages above for the current partner-facing POS contract and go-live workflow.
 </Info>
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+    The Purchase QR endpoint has these known behaviors:
+
+    - Each request creates a **new checkout session** (fresh `ps_…` `purchase_reference`). There is no cross-request dedup — retry-safety lives in the session lifecycle.
+    - While a session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`), retrying returns the same QR (`200`).
+    - A completed/claimed session rejects retries with `409`.
+    - An expired session rejects retries with `410`.
+    - The POS must be `CONNECTED`/`ACTIVE` (not `CREATED`) to issue a QR.
+    - An active WhatsApp/Wapio communication provider is required — no fallback deep-link exists.
+    - `items` are required at creation time for loyalty attribution.
+    - `currency` defaults to `NPR` if omitted.
+
+    <Columns cols={2}>
+      <Card title="Overview" icon="compass" href="/integrations/pos/purchase-qr/overview">
+        Architecture, state lifecycle, and end-to-end sequence.
+      </Card>
+      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+        Full error codes and idempotency behavior.
+      </Card>
+    </Columns>
+  </Tab>
+</Tabs>
