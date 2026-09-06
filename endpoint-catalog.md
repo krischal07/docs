@@ -1,6 +1,6 @@
 ---
 title: Endpoint Catalog
-description: Root-level endpoint summary for POS.
+description: Root-level endpoint summary for System.
 sidebarTitle: Endpoint Catalog
 ---
 
@@ -21,19 +21,19 @@ sidebarTitle: Endpoint Catalog
 
     | Endpoint | Purpose | Authentication |
     | -------- | ------- | -------------- |
-    | `POST /integrations/pos/{provider}/purchase-qr` | Create a scannable purchase-checkout QR for a cash sale from the POS terminal; returns the QR link in the response. | `Authorization: Bearer {{providerApiKey}}` and `X-Integration-Key` in request body |
+    | `POST /integrations/system/{provider}/purchase-qr` | Create a scannable purchase-checkout QR for a cash sale from the System terminal; returns the QR link in the response. | `Authorization: Bearer {{providerApiKey}}` and `X-Integration-Key` in request body |
 
     <Columns cols={2}>
-      <Card title="Overview" icon="compass" href="/integrations/pos/purchase-qr/overview">
+      <Card title="Overview" icon="compass" href="/integrations/system/purchase-qr/overview">
         Summary, architecture, and lifecycle.
       </Card>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Request/response shape, error codes, idempotency.
       </Card>
-      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+      <Card title="Integration Guide" icon="rocket" href="/integrations/system/purchase-qr/integration-guide">
         Example curl and behavior matrix.
       </Card>
-      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
         Automated test cases and deployment notes.
       </Card>
     </Columns>

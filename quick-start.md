@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Connect POS to one Samparka outlet and validate partner and webhook delivery quickly.
+description: Connect System to one Samparka outlet and validate partner and webhook delivery quickly.
 sidebarTitle: Quick Start
 ---
 
@@ -9,7 +9,7 @@ sidebarTitle: Quick Start
   <Tab title="App">
 # Quick Start
 
-This is the fastest path to a verified POS integration.
+This is the fastest path to a verified System integration.
 
 See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integration-checklist).
 
@@ -19,7 +19,7 @@ See also: [Testing Guide](./testing-guide) and [Integration Checklist](./integra
 
 ## 1. Receive The Integration Key
 
-Ask Samparka to manually share both of these values for your outlet-owned POS integration:
+Ask Samparka to manually share both of these values for your outlet-owned System integration:
 
 - `integrationKey`
 - provider API key to use as `Authorization: Bearer {{providerApiKey}}`
@@ -72,7 +72,7 @@ Do not assert `message`, `restaurantId`, or `externalLocationId` in the connect 
 
 After a successful connect request, store the returned `token`.
 
-Configure POS to send webhook events to:
+Configure System to send webhook events to:
 
 `https://samparka.xyz/webhook/{provider}/{{webhookToken}}`
 
@@ -83,7 +83,7 @@ Use the canonical sale fixture from [`examples/payloads.json`](./examples/payloa
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "pos-sale-1001",
+  "order_id": "system-sale-1001",
   "created_at": "2026-06-08T10:15:00.000Z",
   "amount": 850,
   "currency": "NPR",
@@ -131,7 +131,7 @@ Fetch the merchant integration after the first valid sale and confirm:
 
 ## 7. Verify The Customer Exists
 
-POS authenticates as a partner, provides `Authorization: Bearer {{providerApiKey}}`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
+System authenticates as a partner, provides `Authorization: Bearer {{providerApiKey}}`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
 
 ```bash
 curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone={{customerPhone}}" \
@@ -222,7 +222,7 @@ Run the checks in [Integration Checklist](./integration-checklist) before switch
       The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
     </Info>
 
-    The fastest path to a working POS-initiated QR checkout. The POS requests a QR and prints it on the customer's receipt.
+    The fastest path to a working System-initiated QR checkout. The System requests a QR and prints it on the customer's receipt.
 
     ## Base URL
 
@@ -236,15 +236,15 @@ Run the checks in [Integration Checklist](./integration-checklist) before switch
 
     Before calling the Purchase QR endpoint, confirm:
 
-    - the POS integration is `CONNECTED`/`ACTIVE`
+    - the System integration is `CONNECTED`/`ACTIVE`
     - an active WhatsApp/Wapio communication provider is configured for the store
 
     ## 1. Send A Purchase QR Request
 
-    `POST /integrations/pos/{provider}/purchase-qr`. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). No `webhook_token` in the path.
+    `POST /integrations/system/{provider}/purchase-qr`. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). No `webhook_token` in the path.
 
     ```bash
-    curl -X POST https://server.samparka.xyz/integrations/pos/{provider}/purchase-qr \
+    curl -X POST https://server.samparka.xyz/integrations/system/{provider}/purchase-qr \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer <provider_api_key>" \
       -d '{
@@ -282,13 +282,13 @@ Run the checks in [Integration Checklist](./integration-checklist) before switch
 
     ## 4. Idempotency
 
-    Each request creates a **new checkout session** (fresh `ps_…` `purchase_reference`). Retry-safety lives in the session lifecycle: while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`), retrying returns the same QR (200). See [Request / Response Contract](/integrations/pos/purchase-qr/request-response) for the full behavior.
+    Each request creates a **new checkout session** (fresh `ps_…` `purchase_reference`). Retry-safety lives in the session lifecycle: while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`), retrying returns the same QR (200). See [Request / Response Contract](/integrations/system/purchase-qr/request-response) for the full behavior.
 
     <Columns cols={2}>
-      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+      <Card title="Integration Guide" icon="rocket" href="/integrations/system/purchase-qr/integration-guide">
         Full example curl, behavior matrix, and design choices.
       </Card>
-      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
         Automated test cases and deployment notes.
       </Card>
     </Columns>

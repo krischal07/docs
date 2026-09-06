@@ -1,6 +1,6 @@
 ---
 title: Missing Binding Example
-description: Example showing the response returned when an outlet-owned POS integration has no bound restaurant.
+description: Example showing the response returned when an outlet-owned System integration has no bound restaurant.
 sidebarTitle: Missing Binding
 ---
 
@@ -18,7 +18,7 @@ Use the `missing_binding_request` fixture from [`payloads.json`](./payloads.json
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "pos-sale-2001",
+  "order_id": "system-sale-2001",
   "created_at": "2026-06-08T13:10:00.000Z",
   "amount": 600,
   "currency": "NPR",
@@ -54,7 +54,7 @@ Use the `missing_binding_request` fixture from [`payloads.json`](./payloads.json
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "pos-sale-2001",
+  "order_id": "system-sale-2001",
   "created_at": "2026-06-08T13:10:00.000Z",
   "amount": 600,
   "currency": "NPR",

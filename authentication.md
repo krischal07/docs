@@ -1,6 +1,6 @@
 ---
 title: Authentication
-description: Root-level authentication summary for POS.
+description: Root-level authentication summary for System.
 sidebarTitle: Authentication
 ---
 
@@ -10,7 +10,7 @@ sidebarTitle: Authentication
 - merchant lifecycle APIs use merchant auth
 - partner APIs use `Authorization: Bearer {{providerApiKey}}` as the canonical auth model
 - for this integration, use `restrox` as the `{provider}` value in documented partner and webhook routes
-- POS customer APIs use `Authorization: Bearer {{providerApiKey}}` plus `x-integration-key`
+- System customer APIs use `Authorization: Bearer {{providerApiKey}}` plus `x-integration-key`
 - `x-partner-key` remains legacy compatibility behavior and should not be used in new integrations
 - webhooks use `POST /webhook/restrox/{token}`
   </Tab>
@@ -21,13 +21,13 @@ sidebarTitle: Authentication
 
     The Purchase QR endpoint uses a two-part auth model:
 
-    - `Authorization: Bearer <provider_api_key>` — confirms the POS vendor (provider key `slug` must match the route `:provider`)
+    - `Authorization: Bearer <provider_api_key>` — confirms the System vendor (provider key `slug` must match the route `:provider`)
     - `X-Integration-Key` in request body — confirms which store/outlet
 
     No `webhook_token` is used on this endpoint. The provider API key confirms the vendor, and the integration key resolves the outlet.
 
     ```bash
-    curl -X POST https://server.samparka.xyz/integrations/pos/{provider}/purchase-qr \
+    curl -X POST https://server.samparka.xyz/integrations/system/{provider}/purchase-qr \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer <provider_api_key>" \
       -d '{
@@ -41,10 +41,10 @@ sidebarTitle: Authentication
     ```
 
     <Columns cols={2}>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Full auth details, request/response shape, and error codes.
       </Card>
-      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+      <Card title="Integration Guide" icon="rocket" href="/integrations/system/purchase-qr/integration-guide">
         Example curl calls, behavior matrix, and design choices.
       </Card>
     </Columns>

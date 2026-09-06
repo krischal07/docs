@@ -21,71 +21,71 @@
       {
         "group": "Getting Started",
         "pages": [
-          "integrations/pos/getting-started/overview",
-          "integrations/pos/customer-loyalty-award-flow",
-          "integrations/pos/customer-identity",
-          "integrations/pos/PARTNER-HANDOFF",
-          "integrations/pos/quick-start",
-          "integrations/pos/authentication"
+          "integrations/system/getting-started/overview",
+          "integrations/system/customer-loyalty-award-flow",
+          "integrations/system/customer-identity",
+          "integrations/system/PARTNER-HANDOFF",
+          "integrations/system/quick-start",
+          "integrations/system/authentication"
         ]
       },
       {
         "group": "Purchase QR",
         "pages": [
-          "integrations/pos/purchase-qr/overview",
-          "integrations/pos/purchase-qr/request-response",
-          "integrations/pos/purchase-qr/integration-guide",
-          "integrations/pos/purchase-qr/testing"
+          "integrations/system/purchase-qr/overview",
+          "integrations/system/purchase-qr/request-response",
+          "integrations/system/purchase-qr/integration-guide",
+          "integrations/system/purchase-qr/testing"
         ]
       },
       {
-        "group": "POS Events",
+        "group": "System Events",
         "pages": [
-          "integrations/pos/event-types",
-          "integrations/pos/payload-reference",
-          "integrations/pos/response-reference",
-          "integrations/pos/refunds"
+          "integrations/system/event-types",
+          "integrations/system/payload-reference",
+          "integrations/system/response-reference",
+          "integrations/system/refunds"
         ]
       },
       {
-        "group": "POS Reliability",
+        "group": "System Reliability",
         "pages": [
-          "integrations/pos/idempotency",
-          "integrations/pos/location-mapping",
-          "integrations/pos/known-behaviors-and-limitations"
+          "integrations/system/idempotency",
+          "integrations/system/location-mapping",
+          "integrations/system/known-behaviors-and-limitations"
         ]
       },
       {
-        "group": "POS Testing",
+        "group": "System Testing",
         "pages": [
-          "integrations/pos/testing-guide",
-          "integrations/pos/troubleshooting"
+          "integrations/system/testing-guide",
+          "integrations/system/troubleshooting"
         ]
       },
       {
-        "group": "POS Reference",
+        "group": "System Reference",
         "pages": [
-          "integrations/pos/reference/overview",
-          "integrations/pos/endpoint-catalog",
-          "integrations/pos/api-reference/overview",
-          "integrations/pos/reference/postman-collection"
+          "integrations/system/reference/overview",
+          "integrations/system/endpoint-catalog",
+          "integrations/system/api-reference/overview",
+          "integrations/system/reference/postman-collection"
         ]
       },
       {
-        "group": "POS Examples",
+        "group": "System Examples",
         "pages": [
-          "integrations/pos/examples/overview",
-          "integrations/pos/examples/sale-completed",
-          "integrations/pos/examples/refund-created",
-          "integrations/pos/examples/duplicate-webhook",
-          "integrations/pos/examples/blocked-location"
+          "integrations/system/examples/overview",
+          "integrations/system/examples/sale-completed",
+          "integrations/system/examples/refund-created",
+          "integrations/system/examples/duplicate-webhook",
+          "integrations/system/examples/blocked-location"
         ]
       },
       {
-        "group": "POS Go Live",
+        "group": "System Go Live",
         "pages": [
-          "integrations/pos/integration-checklist",
-          "integrations/pos/final-verification-report"
+          "integrations/system/integration-checklist",
+          "integrations/system/final-verification-report"
         ]
       }
     ]

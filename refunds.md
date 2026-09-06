@@ -23,10 +23,10 @@ See also: [Event Types](./event-types) and [Testing Guide](./testing-guide).
     If a reversal is needed for a Purchase QR sale, use the standard `refund.created` webhook event with the original sale identifier.
 
     <Columns cols={2}>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Purchase QR session lifecycle and completion states.
       </Card>
-      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+      <Card title="Integration Guide" icon="rocket" href="/integrations/system/purchase-qr/integration-guide">
         Example curl calls and behavior matrix.
       </Card>
     </Columns>

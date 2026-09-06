@@ -1,0 +1,134 @@
+---
+title: Purchase QR Integration Guide
+description: How to integrate the System purchase QR endpoint, including example curl calls, behavior matrix, and design choices.
+sidebarTitle: Integration Guide
+---
+
+import { Tabs, Tab } from "@mintlify/components";
+
+<Tabs>
+  <Tab title="App">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+The endpoint is authenticated with the **provider API key** (`Authorization: Bearer <provider_api_key>`, which confirms the System vendor) plus the **integration key** (`X-Integration-Key`, which confirms the store/outlet). No `webhook_token` is used on this endpoint. The host below is the local dev API (`localhost:8081`); in production it's the Samparka API origin.
+
+## Example curl (success)
+
+```bash
+curl -X POST http://localhost:8081/integrations/system/{provider}/purchase-qr \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <provider_api_key>" \
+  -H "X-Integration-Key: <integration_key>" \
+  -d '{
+    "amount": 1250,
+    "currency": "NPR",
+    "items": [
+      { "name": "Cappuccino", "qty": 1, "price": 850 },
+      { "name": "Latte", "qty": 1, "price": 400 }
+    ]
+  }'
+```
+
+### 200 — System connected + active communication provider → real Wapio QR
+
+```
+HTTP 200
+{
+  "success": true,
+  "message": "Purchase QR ready",
+  "data": {
+    "qr_link": "http://localhost:8081/r/xKd93k",
+    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+    "amount": 1250,
+    "currency": "NPR",
+    "status": "QR_GENERATED",
+    "expires_at": "2026-08-31T07:40:08.000Z"
+  }
+}
+```
+
+### 409 — System integration not connected (status is `CREATED`, not `CONNECTED`/`ACTIVE`)
+
+```
+HTTP 409
+{
+  "success": false,
+  "message": "{provider} is not connected for this store",
+  "errors": { "code": "system_not_connected", "status": "CREATED" }
+}
+```
+
+### 422 — System connected but no active WhatsApp/Wapio communication provider
+
+```
+HTTP 422
+{
+  "success": false,
+  "message": "No active connected communication provider is configured"
+}
+```
+
+## Behavior matrix
+
+The endpoint only issues a QR when the System integration is connected **and** an active communication provider exists.
+
+| System | WhatsApp/Wapio | Result |
+|---|---|---|
+| Not connected | anything | `409 system_not_connected` — no QR, no session |
+| Connected | not connected | `422 no active connected communication provider` — no QR, no session |
+| Connected | connected | `200` real Wapio QR |
+
+## Design choices
+
+| Choice | Rationale |
+|---|---|
+| Auth via **provider API key (Bearer) + integration key (`X-Integration-Key`)** | Mirrors the canonical ingress. The Bearer key (`spkp_…`) confirms the System vendor; the integration key confirms the store/outlet. Provider key `slug` must match the route `:provider`. Reuses existing `authenticateProviderApiKey` — no new secrets, no webhook token in the path. |
+| **Fresh `purchase_reference` per request (no dedup)** | Because the request no longer carries a `bill_id`, no stable idempotency key exists — each call creates a new `ps_...` session via `buildPurchaseReference()`. Retry-safety therefore lives in the session lifecycle (`ensureQrGenerated`), not across separate requests. |
+| **Items are required at creation** (400) | The System must send product items so the QR session has the bill details needed for loyalty attribution. |
+| **`currency` defaults to `NPR`** | System payloads may omit currency; dashboard uses 3-letter codes, Nepal is the operating market. Explicit value overrides. |
+| **System must be genuinely connected** | The endpoint refuses with `409 system_not_connected` unless the integration status is `CONNECTED`/`ACTIVE` — matches the dashboard's notion of "connected". A `CREATED`/`DISCONNECTED` integration can't issue checkouts. |
+| **Requires an active communication provider** | If the System is connected but no WhatsApp/Wapio communication provider is active, session creation aborts with `422` (`no active connected communication provider`) — no QR is issued. There is deliberately **no fallback** deep-link. |
+| **Only one route addition, placed before the catch-all** | `/integrations/system/:provider/purchase-qr` is 2 segments, so it never collides with `/:provider/events` (2) or the catch-all `/:provider/:token` (2) — but registered first for safety. |
+| **No dashboard/frontend changes** | The System owns the UI (its receipt). `checkitbro` is a disposable localhost visualizer, not a feature. |
+
+## File map
+
+| File | Purpose |
+|---|---|
+| `src/integrations/system/purchaseQrController.js` | Validation (amount/currency/items reconcile), provider/integration resolution, System-connected guard, session creation, response shaping |
+| `src/integrations/system/routes.js` | Added `POST /:provider/purchase-qr` before the catch-all routes |
+| `src/purchaseSessions/service/PurchaseSessionService.js` | Added `createPOSCheckoutSession()` — System entry point that routes through the normal `createSession()` / Wapio pipeline |
+| `src/purchaseSessions/utils/processingStatus.js` | Reused. `getProcessingStatus()` drives response codes |
+| `src/integrations/system/locationResolutionService.js` | Reused. `resolveIntegrationByKey(provider, integrationKey)` — resolves the store/outlet from `X-Integration-Key` |
+| `__tests__/integrations/system.purchase-qr.test.js` | 14 cases (see Testing page) |
+| `src/pages/CheckItBro.jsx` + `src/purchaseSessions/checkitbroDebugController.js` | Temporary localhost debug page + debug listing `GET .../checkitbro/debug`. Remove before prod. |
+
+## Open questions to confirm with the team
+
+1. **Idempotency without a bill ID:** each System request now creates a brand-new session — the same sale called twice produces two sessions/QRs. If the System can supply a stable sale/receipt reference (or we reintroduce `bill_id`), we can restore cross-request dedup. Is a single source-of-truth per sale required, or is one-QR-per-receipt acceptable?
+2. **Duplicate scan handling:** since different requests for the "same" sale are independent sessions, a confused double-scan currently yields one QR per session. Confirm whether a customer-facing dedup (e.g., same phone + outlet + amount window) is wanted.
+
+## Related Documentation
+
+- [Overview](./overview)
+- [Request / Response Contract](./request-response)
+- [Testing & Verification](./testing)
+- [Authentication](../authentication)
+  </Tab>
+  <Tab title="Communication">
+    <Info>
+      The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
+    </Info>
+
+The endpoint is authenticated with the **provider API key** (`Authorization: Bearer <provider_api_key>`, which confirms the System vendor) plus the **integration key** (`X-Integration-Key`, which confirms the store/outlet). No `webhook_token` is used on this endpoint.
+
+## Related Documentation
+
+- [Overview](./overview)
+- [Request / Response Contract](./request-response)
+- [Testing & Verification](./testing)
+- [Authentication](../authentication)
+  </Tab>
+</Tabs>

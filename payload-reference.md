@@ -1,6 +1,6 @@
 ---
 title: Payload Reference
-description: Required and optional POS fields for connect, test-sale, and webhook delivery.
+description: Required and optional System fields for connect, test-sale, and webhook delivery.
 sidebarTitle: Payload Reference
 ---
 
@@ -19,8 +19,8 @@ Samparka reads different fields for `connect`, `test-sale`, and direct webhook d
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `integrationKey` | string | Yes | Samparka Integration Key that resolves one outlet-owned `PosIntegration`. | `pos-key-001` |
-| `restaurantId` | string | Yes | POS restaurant identifier persisted as `external_location_id`. | `ktm-branch-01` |
+| `integrationKey` | string | Yes | Samparka Integration Key that resolves one outlet-owned `SystemIntegration`. | `system-key-001` |
+| `restaurantId` | string | Yes | System restaurant identifier persisted as `external_location_id`. | `ktm-branch-01` |
 
 ### Optional Properties
 
@@ -36,7 +36,7 @@ Samparka reads different fields for `connect`, `test-sale`, and direct webhook d
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `integrationKey` | string | Yes | Samparka Integration Key that resolves one outlet-owned `PosIntegration`. | `pos-key-001` |
+| `integrationKey` | string | Yes | Samparka Integration Key that resolves one outlet-owned `SystemIntegration`. | `system-key-001` |
 | `payload` | object | Yes | Webhook-shaped event body submitted into the webhook processing pipeline. | See webhook fields below. |
 
 ## Webhook Fields
@@ -47,14 +47,14 @@ Samparka reads different fields for `connect`, `test-sale`, and direct webhook d
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `event_type` or `type` | string | Yes | POS event name. | `order.completed` |
+| `event_type` or `type` | string | Yes | System event name. | `order.completed` |
 
 ### Optional Fields
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `order_id` or `transaction_id` or `id` | string | No | Provider transaction identifier used for transaction reference and idempotency. | `pos-sale-1001` |
-| `created_at` or `timestamp` | string | No | Event time from POS. | `2026-06-08T10:15:00.000Z` |
+| `order_id` or `transaction_id` or `id` | string | No | Provider transaction identifier used for transaction reference and idempotency. | `system-sale-1001` |
+| `created_at` or `timestamp` | string | No | Event time from System. | `2026-06-08T10:15:00.000Z` |
 | `amount` or `order_total` or `total` | number | No | Transaction amount. | `850` |
 | `currency` or `currency_code` | string | No | Currency code. Defaults to `NPR` if omitted. | `NPR` |
 | `customer.phone` or `phone` or `customer_phone` | string | No | Primary customer identifier for search and loyalty attribution. | `9800000101` |
@@ -64,11 +64,11 @@ Samparka reads different fields for `connect`, `test-sale`, and direct webhook d
 
 ## Restaurant Attribution Source Of Truth
 
-For outlet-owned POS:
+For outlet-owned System:
 
 ```txt
 Webhook Token
--> PosIntegration
+-> SystemIntegration
 -> Outlet
 -> Bound Restaurant
 ```
@@ -92,7 +92,7 @@ not from webhook payload fields.
 
     The Purchase QR endpoint accepts a different request shape than the webhook events:
 
-    `POST /integrations/pos/{provider}/purchase-qr`
+    `POST /integrations/system/{provider}/purchase-qr`
 
     ### Required Properties
 
@@ -109,13 +109,13 @@ not from webhook payload fields.
 
     Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). No `webhook_token` in the path.
 
-    See [Purchase QR Request / Response](/integrations/pos/purchase-qr/request-response) for the full contract.
+    See [Purchase QR Request / Response](/integrations/system/purchase-qr/request-response) for the full contract.
 
     <Columns cols={2}>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Full request/response shape, error codes, and idempotency.
       </Card>
-      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+      <Card title="Integration Guide" icon="rocket" href="/integrations/system/purchase-qr/integration-guide">
         Example curl calls and behavior matrix.
       </Card>
     </Columns>

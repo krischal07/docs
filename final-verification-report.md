@@ -1,6 +1,6 @@
 ---
 title: Final Verification Report
-description: Review the backend-driven contract, schema, and content verification for the POS partner guide package.
+description: Review the backend-driven contract, schema, and content verification for the System partner guide package.
 sidebarTitle: Verification Report
 ---
 
@@ -11,7 +11,7 @@ import { Tabs, Tab } from "@mintlify/components";
 <Tabs>
   <Tab title="App">
 
-This report captures the backend-driven correction of the POS partner documentation package against `../samparka_vps/samparka-backend`.
+This report captures the backend-driven correction of the System partner documentation package against `../samparka_vps/samparka-backend`.
 
 ## Files Updated
 
@@ -31,7 +31,7 @@ This report captures the backend-driven correction of the POS partner documentat
 - `examples/refund-created.md`
 - `examples/duplicate-webhook.md`
 - `examples/blocked-location.md`
-- mirrored files under `integrations/pos/`
+- mirrored files under `integrations/system/`
 
 ## Contract Summary
 
@@ -68,11 +68,11 @@ Reviewed repository-wide references for:
 
 Result:
 
-- Active POS customer-search examples now use `/api/partners/{provider}/customers/search`.
-- Active POS customer-detail examples now use `/api/partners/{provider}/customers/{customerId}`.
+- Active System customer-search examples now use `/api/partners/{provider}/customers/search`.
+- Active System customer-detail examples now use `/api/partners/{provider}/customers/{customerId}`.
 - Active partner API examples now use `Authorization: Bearer {{providerApiKey}}` as the canonical auth model.
-- Active POS webhook docs now use the exact backend status codes and exact message text for the documented scenarios.
-- Active POS onboarding docs now show `token` returned by connect and use it directly for webhook setup.
+- Active System webhook docs now use the exact backend status codes and exact message text for the documented scenarios.
+- Active System onboarding docs now show `token` returned by connect and use it directly for webhook setup.
 
 ## Remaining Documentation Risks
 
@@ -87,10 +87,10 @@ Result:
 
     The Purchase QR endpoint has been verified against the backend implementation:
 
-    - `POST /integrations/pos/{provider}/purchase-qr` accepts `amount`, `currency`, and `items` with `X-Integration-Key` in the request body.
+    - `POST /integrations/system/{provider}/purchase-qr` accepts `amount`, `currency`, and `items` with `X-Integration-Key` in the request body.
     - Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key.
     - Success response returns `qr_link`, `purchase_reference`, `amount`, `currency`, `status`, and `expires_at`.
-    - `409 pos_not_connected` when the POS integration is not `CONNECTED`/`ACTIVE`.
+    - `409 system_not_connected` when the System integration is not `CONNECTED`/`ACTIVE`.
     - `422 no active connected communication provider` when no WhatsApp/Wapio provider is active.
     - `400` validation errors for missing/invalid `amount`, `items`, or `currency`.
     - `401` for missing/invalid provider API key or integration key.
@@ -99,10 +99,10 @@ Result:
     - `502 QR generation failed` when Wapio/redirect fails.
 
     <Columns cols={2}>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Full error codes and idempotency behavior.
       </Card>
-      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
         Automated test cases and deployment notes.
       </Card>
     </Columns>

@@ -1,6 +1,6 @@
 ---
 title: Known Behaviors and Limitations
-description: Compatibility overview for the earlier POS known behaviors page, mapped to the current guide structure.
+description: Compatibility overview for the earlier System known behaviors page, mapped to the current guide structure.
 sidebarTitle: Known Behaviors
 ---
 
@@ -9,13 +9,13 @@ sidebarTitle: Known Behaviors
   <Tab title="App">
 # Known Behaviors and Limitations
 
-This page keeps the older POS URL working for existing bookmarks and search results.
+This page keeps the older System URL working for existing bookmarks and search results.
 
-The current POS guide no longer uses the older "native" information architecture. The supported behavior has been folded into the active onboarding, reliability, and troubleshooting pages below.
+The current System guide no longer uses the older "native" information architecture. The supported behavior has been folded into the active onboarding, reliability, and troubleshooting pages below.
 
 ## What To Expect In The Current Flow
 
-- One Samparka integration key binds one POS restaurant at a time.
+- One Samparka integration key binds one System restaurant at a time.
 - The supported connect contract is `integrationKey`, `restaurantId`, and optional `restaurantName`.
 - Webhooks are delivered to `/webhook/{provider}/{token}` after the integration is connected.
 - Restaurant attribution comes from the integration binding, not webhook payload restaurant fields.
@@ -31,7 +31,7 @@ The current POS guide no longer uses the older "native" information architecture
 - [Troubleshooting](./troubleshooting) for validation failures and delivery issues
 
 <Info>
-If you arrived here from an older shared link, follow the pages above for the current partner-facing POS contract and go-live workflow.
+If you arrived here from an older shared link, follow the pages above for the current partner-facing System contract and go-live workflow.
 </Info>
   </Tab>
   <Tab title="Communication">
@@ -45,16 +45,16 @@ If you arrived here from an older shared link, follow the pages above for the cu
     - While a session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`), retrying returns the same QR (`200`).
     - A completed/claimed session rejects retries with `409`.
     - An expired session rejects retries with `410`.
-    - The POS must be `CONNECTED`/`ACTIVE` (not `CREATED`) to issue a QR.
+    - The System must be `CONNECTED`/`ACTIVE` (not `CREATED`) to issue a QR.
     - An active WhatsApp/Wapio communication provider is required — no fallback deep-link exists.
     - `items` are required at creation time for loyalty attribution.
     - `currency` defaults to `NPR` if omitted.
 
     <Columns cols={2}>
-      <Card title="Overview" icon="compass" href="/integrations/pos/purchase-qr/overview">
+      <Card title="Overview" icon="compass" href="/integrations/system/purchase-qr/overview">
         Architecture, state lifecycle, and end-to-end sequence.
       </Card>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Full error codes and idempotency behavior.
       </Card>
     </Columns>

@@ -9,7 +9,7 @@ sidebarTitle: Response Reference
   <Tab title="App">
 # Response Reference
 
-These are the partner-visible responses for the active POS integration path.
+These are the partner-visible responses for the active System integration path.
 
 See also: [Troubleshooting](./troubleshooting).
 
@@ -59,7 +59,7 @@ See also: [Troubleshooting](./troubleshooting).
     "id": "684a00000000000000001001",
     "name": null,
     "phone": "9800000101",
-    "email": "pos-sale-1001@example.com",
+    "email": "system-sale-1001@example.com",
     "points": 85,
     "tier": null,
     "lifetimePoints": 85,
@@ -84,7 +84,7 @@ See also: [Troubleshooting](./troubleshooting).
     "id": "684a00000000000000001001",
     "name": null,
     "phone": "9800000101",
-    "email": "pos-sale-1001@example.com",
+    "email": "system-sale-1001@example.com",
     "points": 85,
     "tier": null,
     "lifetimePoints": 85,
@@ -181,9 +181,9 @@ The same `{ error, message }` envelope is used for partner customer validation, 
       The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
     </Info>
 
-    `POST /integrations/pos/{provider}/purchase-qr`
+    `POST /integrations/system/{provider}/purchase-qr`
 
-    Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). See [Purchase QR Checkout](/integrations/pos/purchase-qr/request-response).
+    Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). See [Purchase QR Checkout](/integrations/system/purchase-qr/request-response).
 
     ### `200 Purchase QR ready`
 
@@ -202,7 +202,7 @@ The same `{ error, message }` envelope is used for partner customer validation, 
     }
     ```
 
-    `qr_link` is the short URL the POS turns into a scannable QR. A retried request while the same session is pending returns the same QR.
+    `qr_link` is the short URL the System turns into a scannable QR. A retried request while the same session is pending returns the same QR.
 
     ### `400 Invalid purchase QR request`
 
@@ -232,13 +232,13 @@ The same `{ error, message }` envelope is used for partner customer validation, 
     }
     ```
 
-    ### `409 POS not connected`
+    ### `409 System not connected`
 
     ```json
     {
       "success": false,
       "message": "{provider} is not connected for this store",
-      "errors": { "code": "pos_not_connected", "status": "CREATED" }
+      "errors": { "code": "system_not_connected", "status": "CREATED" }
     }
     ```
 
@@ -291,10 +291,10 @@ The same `{ error, message }` envelope is used for partner customer validation, 
     ```
 
     <Columns cols={2}>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Full error codes and idempotency behavior.
       </Card>
-      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
         Automated test cases and deployment notes.
       </Card>
     </Columns>

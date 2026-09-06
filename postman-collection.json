@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "Samparka POS Integration",
-    "_postman_id": "f8f0b610-7cd4-4d07-9b53-pos-verification",
-    "description": "Partner API, webhook, and customer testing for the POS integration.",
+    "name": "Samparka System Integration",
+    "_postman_id": "f8f0b610-7cd4-4d07-9b53-system-verification",
+    "description": "Partner API, webhook, and customer testing for the System integration.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -145,7 +145,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"payload\": {\n    \"event_type\": \"order.completed\",\n    \"order_id\": \"pos-sale-1001\",\n    \"created_at\": \"2026-06-08T10:15:00.000Z\",\n    \"amount\": 850,\n    \"currency\": \"NPR\",\n    \"customer\": {\n      \"phone\": \"{{customerPhone}}\"\n    },\n    \"items\": [\n      {\n        \"name\": \"Cappuccino\",\n        \"qty\": 1,\n        \"price\": 850\n      }\n    ]\n  }\n}"
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"payload\": {\n    \"event_type\": \"order.completed\",\n    \"order_id\": \"system-sale-1001\",\n    \"created_at\": \"2026-06-08T10:15:00.000Z\",\n    \"amount\": 850,\n    \"currency\": \"NPR\",\n    \"customer\": {\n      \"phone\": \"{{customerPhone}}\"\n    },\n    \"items\": [\n      {\n        \"name\": \"Cappuccino\",\n        \"qty\": 1,\n        \"price\": 850\n      }\n    ]\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/partners/{{provider}}/test-sale",
@@ -285,7 +285,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"system-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
@@ -327,7 +327,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_type\": \"refund.created\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T11:30:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+              "raw": "{\n  \"event_type\": \"refund.created\",\n  \"order_id\": \"system-sale-1001\",\n  \"created_at\": \"2026-06-08T11:30:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
@@ -369,7 +369,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"system-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
@@ -411,7 +411,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-2001\",\n  \"created_at\": \"2026-06-08T13:10:00.000Z\",\n  \"amount\": 600,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000103\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Latte\",\n      \"qty\": 1,\n      \"price\": 600\n    }\n  ]\n}"
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"system-sale-2001\",\n  \"created_at\": \"2026-06-08T13:10:00.000Z\",\n  \"amount\": 600,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000103\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Latte\",\n      \"qty\": 1,\n      \"price\": 600\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
@@ -453,7 +453,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"system-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/webhook/{{provider}}/{{invalidWebhookToken}}",
@@ -495,7 +495,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"pos-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
+              "raw": "{\n  \"event_type\": \"order.completed\",\n  \"order_id\": \"system-sale-1001\",\n  \"created_at\": \"2026-06-08T10:15:00.000Z\",\n  \"amount\": 850,\n  \"currency\": \"NPR\",\n  \"customer\": {\n    \"phone\": \"9800000101\"\n  },\n  \"items\": [\n    {\n      \"name\": \"Cappuccino\",\n      \"qty\": 1,\n      \"price\": 850\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",
@@ -537,7 +537,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"order_id\": \"pos-sale-3001\",\n  \"created_at\": \"2026-06-08T14:00:00.000Z\",\n  \"amount\": 300,\n  \"currency\": \"NPR\"\n}"
+              "raw": "{\n  \"order_id\": \"system-sale-3001\",\n  \"created_at\": \"2026-06-08T14:00:00.000Z\",\n  \"amount\": 300,\n  \"currency\": \"NPR\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/webhook/{{provider}}/{{webhookToken}}",

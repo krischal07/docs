@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: Root-level API reference summary for POS.
+description: Root-level API reference summary for System.
 sidebarTitle: API Reference
 ---
  
@@ -9,13 +9,13 @@ sidebarTitle: API Reference
     Use this section to move from first read to first successful webhook delivery and customer-verification pass.
     
     <Columns cols={2}>
-      <Card title="Partner Handoff" icon="handshake" href="/integrations/pos/PARTNER-HANDOFF">
-        Best starting point for a new POS engineer.
+      <Card title="Partner Handoff" icon="handshake" href="/integrations/system/PARTNER-HANDOFF">
+        Best starting point for a new System engineer.
       </Card>
-      <Card title="Quick Start" icon="rocket" href="/integrations/pos/quick-start">
+      <Card title="Quick Start" icon="rocket" href="/integrations/system/quick-start">
         Shortest path to a successful sale and refund test.
       </Card>
-      <Card title="Authentication" icon="shield" href="/integrations/pos/authentication">
+      <Card title="Authentication" icon="shield" href="/integrations/system/authentication">
         Confirm how the webhook token is used to authorize delivery.
       </Card>
     </Columns>
@@ -38,7 +38,7 @@ sidebarTitle: API Reference
     </Steps>
     
     <Note>
-    The broader reviewed overview remains available in the canonical [POS Partner Guide](/integrations/pos/README).
+    The broader reviewed overview remains available in the canonical [System Partner Guide](/integrations/system/README).
     </Note>
   </Tab>
   <Tab title="Communication">
@@ -46,19 +46,19 @@ sidebarTitle: API Reference
       The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
     </Info>
     
-    The **Purchase QR** endpoint lets **POS terminals** create a Samparka *purchase-checkout* session on the fly and receive the QR link in the same HTTP response. The POS renders that link as a QR and prints it on its receipt. The customer scans → WhatsApp flow → Wapio verification → points.
+    The **Purchase QR** endpoint lets **System terminals** create a Samparka *purchase-checkout* session on the fly and receive the QR link in the same HTTP response. The System renders that link as a QR and prints it on its receipt. The customer scans → WhatsApp flow → Wapio verification → points.
     
     ```mermaid
     sequenceDiagram
-      participant POS as POS
+      participant System as System
       participant SAM as Samparka
       participant CUST as Customer
     
-      POS->>SAM: POST { amount, items }
+      System->>SAM: POST { amount, items }
       SAM->>SAM: Create purchase-checkout session
       SAM->>SAM: Wapio signs the QR
-      SAM-->>POS: { qr_link }
-      POS->>POS: Render link as QR and print on receipt
+      SAM-->>System: { qr_link }
+      System->>System: Render link as QR and print on receipt
       CUST->>CUST: Scans QR on receipt
       CUST->>SAM: Opens WhatsApp deep link & claims
       SAM->>SAM: Verification + completion orchestrator
@@ -66,16 +66,16 @@ sidebarTitle: API Reference
     ```
     
     <Columns cols={2}>
-      <Card title="Overview" icon="compass" href="/integrations/pos/purchase-qr/overview">
+      <Card title="Overview" icon="compass" href="/integrations/system/purchase-qr/overview">
         Summary, architecture, state lifecycle, and end-to-end sequence.
       </Card>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Request/response shape, error codes, and idempotency.
       </Card>
-      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+      <Card title="Integration Guide" icon="rocket" href="/integrations/system/purchase-qr/integration-guide">
         Example curl calls, behavior matrix, and design choices.
       </Card>
-      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
         Automated test cases and deployment notes.
       </Card>
     </Columns>
@@ -90,7 +90,7 @@ sidebarTitle: API Reference
       WAITING_FOR_CUSTOMER_CLAIM --> CLAIMED: customer scans
       CLAIMED --> POINTS_AWARDED
       POINTS_AWARDED --> [*]
-      QR_GENERATED --> QR_GENERATED: POS retry while pending (same QR, 200)
+      QR_GENERATED --> QR_GENERATED: System retry while pending (same QR, 200)
     ```
     
     ## Recommended Reading Order
@@ -112,4 +112,4 @@ sidebarTitle: API Reference
   </Tab>
 </Tabs>
  
-Use `/openapi.yaml` for the mirrored outlet-owned POS API contract.
+Use `/openapi.yaml` for the mirrored outlet-owned System API contract.

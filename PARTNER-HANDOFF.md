@@ -1,17 +1,17 @@
 ---
-title: POS Partner Handoff
-description: Canonical partner handoff summary for POS onboarding with Samparka Loyalty.
+title: System Partner Handoff
+description: Canonical partner handoff summary for System onboarding with Samparka Loyalty.
 sidebarTitle: Partner Handoff Source
 ---
 
 import { Tabs, Tab } from "@mintlify/components";
 
-# POS Partner Handoff
+# System Partner Handoff
 
 <Tabs>
   <Tab title="App">
 
-This package is the shareable entry point for the POS connect, test-sale, customer lookup, and webhook integration with Samparka.
+This package is the shareable entry point for the System connect, test-sale, customer lookup, and webhook integration with Samparka.
 
 ## Start Here
 
@@ -27,10 +27,10 @@ This package is the shareable entry point for the POS connect, test-sale, custom
 flowchart TD
   A["Merchant Creates Integration"] --> B["Partner Connects Location"]
   B --> C["Connect Returns Token"]
-  C --> D["POS Sends Webhook Or Test Sale"]
+  C --> D["System Sends Webhook Or Test Sale"]
   D --> E["System Resolves Integration"]
   E --> F["System Attributes Sale To Bound Location"]
-  F --> G["POS Calls Partner Customer API"]
+  F --> G["System Calls Partner Customer API"]
   G --> H["System Returns Store-Scoped Loyalty Data"]
 ```
 
@@ -87,7 +87,7 @@ Send webhook events to `/webhook/restrox/{token}` with transaction data and a cu
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "pos-sale-1001",
+  "order_id": "system-sale-1001",
   "amount": 850,
   "customer": {
     "phone": "+97798XXXXXXXX"
@@ -138,7 +138,7 @@ Use the Samparka support channel already assigned to your integration rollout.
       The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
     </Info>
 
-This package is the shareable entry point for the POS connect, test-sale, customer lookup, and webhook integration with Samparka.
+This package is the shareable entry point for the System connect, test-sale, customer lookup, and webhook integration with Samparka.
 
 ## Start Here
 
@@ -178,7 +178,7 @@ Send webhook events to `/webhook/restrox/{token}` with transaction data and a cu
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "pos-sale-1001",
+  "order_id": "system-sale-1001",
   "amount": 850,
   "customer": {
     "phone": "+97798XXXXXXXX"

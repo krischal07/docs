@@ -81,7 +81,7 @@ curl -X POST "https://your-domain/api/partners/{provider}/test-sale" \
     "integrationKey": "{{integrationKey}}",
     "payload": {
       "event_type": "order.completed",
-      "order_id": "pos-sale-1001",
+      "order_id": "system-sale-1001",
       "created_at": "2026-06-08T10:15:00.000Z",
       "amount": 850,
       "currency": "NPR",
@@ -126,7 +126,7 @@ curl -X POST "https://your-domain/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
-    "order_id": "pos-sale-1001",
+    "order_id": "system-sale-1001",
     "created_at": "2026-06-08T10:15:00.000Z",
     "amount": 850,
     "currency": "NPR",
@@ -172,7 +172,7 @@ Expected hit response:
     "id": "684a00000000000000001001",
     "name": null,
     "phone": "9800000101",
-    "email": "pos-sale-1001@example.com",
+    "email": "system-sale-1001@example.com",
     "points": 85,
     "tier": null,
     "lifetimePoints": 85,
@@ -221,7 +221,7 @@ curl -X POST "https://your-domain/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "refund.created",
-    "order_id": "pos-sale-1001",
+    "order_id": "system-sale-1001",
     "created_at": "2026-06-08T11:30:00.000Z",
     "amount": 850,
     "currency": "NPR",
@@ -261,7 +261,7 @@ curl -X POST "https://your-domain/webhook/{provider}/{invalid-token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
-    "order_id": "pos-sale-1001",
+    "order_id": "system-sale-1001",
     "created_at": "2026-06-08T10:15:00.000Z",
     "amount": 850,
     "currency": "NPR",
@@ -288,7 +288,7 @@ curl -X POST "https://your-domain/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
-    "order_id": "pos-sale-2001",
+    "order_id": "system-sale-2001",
     "amount": 600,
     "currency": "NPR",
     "customer": { "phone": "9800000103" }
@@ -342,19 +342,19 @@ Missing event type response:
       The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
     </Info>
 
-This guide covers Purchase QR testing. See [Testing & Verification](./integrations/pos/purchase-qr/testing) for the automated test suite.
+This guide covers Purchase QR testing. See [Testing & Verification](./integrations/system/purchase-qr/testing) for the automated test suite.
 
 ## Prerequisites
 
 Before testing Purchase QR, confirm:
 
-- the POS integration is `CONNECTED`/`ACTIVE`
+- the System integration is `CONNECTED`/`ACTIVE`
 - an active WhatsApp/Wapio communication provider is configured for the store
 
 ## Happy Path
 
 ```bash
-curl -X POST "https://your-domain/integrations/pos/{provider}/purchase-qr" \
+curl -X POST "https://your-domain/integrations/system/{provider}/purchase-qr" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <provider_api_key>" \
   --data '{
@@ -409,9 +409,9 @@ Expected response:
 }
 ```
 
-## POS Not Connected
+## System Not Connected
 
-Use an integration key whose POS integration status is `CREATED` (not `CONNECTED`/`ACTIVE`).
+Use an integration key whose System integration status is `CREATED` (not `CONNECTED`/`ACTIVE`).
 
 Expected response:
 
@@ -419,13 +419,13 @@ Expected response:
 {
   "success": false,
   "message": "{provider} is not connected for this store",
-  "errors": { "code": "pos_not_connected", "status": "CREATED" }
+  "errors": { "code": "system_not_connected", "status": "CREATED" }
 }
 ```
 
 ## No Active Communication Provider
 
-Use a connected POS integration without an active WhatsApp/Wapio communication provider.
+Use a connected System integration without an active WhatsApp/Wapio communication provider.
 
 Expected response:
 
@@ -441,10 +441,10 @@ Expected response:
 Expected `401` for an unknown/invalid token and `404` for a provider not in `{blanxer, restrox}`.
 
 <Columns cols={2}>
-  <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+  <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
     Full error codes and idempotency behavior.
   </Card>
-  <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+  <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
     Automated test cases and deployment notes.
   </Card>
 </Columns>

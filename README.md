@@ -1,17 +1,17 @@
 ---
-title: POS Partner Guide
-description: Canonical overview of the POS partner connect, test-sale, customer lookup, and webhook integration with Samparka Loyalty.
+title: System Partner Guide
+description: Canonical overview of the System partner connect, test-sale, customer lookup, and webhook integration with Samparka Loyalty.
 sidebarTitle: Guide Overview
 ---
 
 import { Tabs, Tab } from "@mintlify/components";
 
-# POS Partner Guide
+# System Partner Guide
 
 <Tabs>
   <Tab title="App">
 
-Samparka is a customer loyalty platform. A valid POS integration is complete only after both transport and business outcomes are verified.
+Samparka is a customer loyalty platform. A valid System integration is complete only after both transport and business outcomes are verified.
 
 1. Connect one external location to one outlet-owned Samparka integration with `POST /api/partners/restrox/connect`.
 2. Store the returned `token` and use it to configure the webhook URL.
@@ -20,11 +20,11 @@ Samparka is a customer loyalty platform. A valid POS integration is complete onl
 
 ## Integration Verification Flow
 
-1. Receive the Samparka Integration Key and provider API key manually for the outlet-owned POS integration.
+1. Receive the Samparka Integration Key and provider API key manually for the outlet-owned System integration.
 2. For this integration, use `restrox` as the `{provider}` value in documented route examples.
 3. Call `POST /api/partners/restrox/connect` with `integrationKey`, `externalLocationId`, and optional `externalLocationName`.
 4. Store the returned `token`.
-5. Configure POS to send events to `https://your-domain/webhook/restrox/{token}`.
+5. Configure System to send events to `https://your-domain/webhook/restrox/{token}`.
 6. Send a test `order.completed` event to the webhook endpoint or use `POST /api/partners/restrox/test-sale`.
 7. Verify the integration becomes `ACTIVE`.
 8. Search the customer with `GET /api/partners/restrox/customers/search?phone=...` using partner authentication and `x-integration-key`.
@@ -107,11 +107,11 @@ Duplicate test-sale submissions return:
 
 ## Canonical Webhook Attribution
 
-For outlet-owned POS, location identity is resolved from the integration binding:
+For outlet-owned System, location identity is resolved from the integration binding:
 
 ```txt
 Webhook Token
--> PosIntegration
+-> SystemIntegration
 -> Outlet
 -> Bound External Location
 ```
@@ -120,7 +120,7 @@ Webhook payload location fields are optional, non-canonical metadata. They are n
 
 ## Customer Lookup Authorization
 
-Customer lookup for POS is partner-authenticated and integration-scoped:
+Customer lookup for System is partner-authenticated and integration-scoped:
 
 ```txt
 Provider API Key
@@ -149,7 +149,7 @@ A `200 Event received` response means Samparka accepted the webhook delivery. It
       The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
     </Info>
 
-This package is the shareable entry point for the POS connect, test-sale, customer lookup, and webhook integration with Samparka.
+This package is the shareable entry point for the System connect, test-sale, customer lookup, and webhook integration with Samparka.
 
 ## Start Here
 
@@ -189,7 +189,7 @@ Send webhook events to `/webhook/restrox/{token}` with transaction data and a cu
 ```json
 {
   "event_type": "order.completed",
-  "order_id": "pos-sale-1001",
+  "order_id": "system-sale-1001",
   "amount": 850,
   "customer": {
     "phone": "+97798XXXXXXXX"

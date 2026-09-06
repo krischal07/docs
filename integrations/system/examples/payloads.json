@@ -1,0 +1,254 @@
+{
+  "connect_request": {
+    "integrationKey": "system-key-001",
+    "restaurantId": "ktm-branch-01",
+    "restaurantName": "Kathmandu Branch"
+  },
+  "connect_response": {
+    "success": true,
+    "integrationId": "684915c401ec340433d84ee2",
+    "token": "abcxyz",
+    "status": "CONNECTED"
+  },
+  "connect_validation_response": {
+    "success": false,
+    "message": "restaurantId is required"
+  },
+  "test_sale_request": {
+    "integrationKey": "system-key-001",
+    "payload": {
+      "event_type": "order.completed",
+      "order_id": "system-sale-1001",
+      "created_at": "2026-06-08T10:15:00.000Z",
+      "amount": 850,
+      "currency": "NPR",
+      "customer": {
+        "phone": "9800000101"
+      },
+      "items": [
+        {
+          "name": "Cappuccino",
+          "qty": 1,
+          "price": 850
+        }
+      ]
+    }
+  },
+  "sale_completed_request": {
+    "event_type": "order.completed",
+    "order_id": "system-sale-1001",
+    "created_at": "2026-06-08T10:15:00.000Z",
+    "amount": 850,
+    "currency": "NPR",
+    "customer": {
+      "phone": "9800000101"
+    },
+    "items": [
+      {
+        "name": "Cappuccino",
+        "qty": 1,
+        "price": 850
+      }
+    ]
+  },
+  "refund_created_request": {
+    "event_type": "refund.created",
+    "order_id": "system-sale-1001",
+    "created_at": "2026-06-08T11:30:00.000Z",
+    "amount": 850,
+    "currency": "NPR",
+    "customer": {
+      "phone": "9800000101"
+    },
+    "items": [
+      {
+        "name": "Cappuccino",
+        "qty": 1,
+        "price": 850
+      }
+    ]
+  },
+  "voided_sale_request": {
+    "event_type": "order.voided",
+    "order_id": "system-sale-1002",
+    "created_at": "2026-06-08T12:00:00.000Z",
+    "amount": 450,
+    "currency": "NPR",
+    "customer": {
+      "phone": "9800000102"
+    },
+    "items": [
+      {
+        "name": "Americano",
+        "qty": 1,
+        "price": 450
+      }
+    ]
+  },
+  "duplicate_sale_request": {
+    "event_type": "order.completed",
+    "order_id": "system-sale-1001",
+    "created_at": "2026-06-08T10:15:00.000Z",
+    "amount": 850,
+    "currency": "NPR",
+    "customer": {
+      "phone": "9800000101"
+    },
+    "items": [
+      {
+        "name": "Cappuccino",
+        "qty": 1,
+        "price": 850
+      }
+    ]
+  },
+  "missing_binding_request": {
+    "event_type": "order.completed",
+    "order_id": "system-sale-2001",
+    "created_at": "2026-06-08T13:10:00.000Z",
+    "amount": 600,
+    "currency": "NPR",
+    "customer": {
+      "phone": "9800000103"
+    },
+    "items": [
+      {
+        "name": "Latte",
+        "qty": 1,
+        "price": 600
+      }
+    ]
+  },
+  "missing_event_type_request": {
+    "order_id": "system-sale-3001",
+    "created_at": "2026-06-08T14:00:00.000Z",
+    "amount": 300,
+    "currency": "NPR"
+  },
+  "customer_search_response": {
+    "exists": true,
+    "customer": {
+      "id": "684a00000000000000001001",
+      "name": null,
+      "phone": "9800000101",
+      "email": "system-sale-1001@example.com",
+      "points": 85,
+      "tier": null,
+      "lifetimePoints": 85,
+      "membershipSince": "2026-06-08T10:15:00.000Z"
+    }
+  },
+  "customer_detail_response": {
+    "customer": {
+      "id": "684a00000000000000001001",
+      "name": null,
+      "phone": "9800000101",
+      "email": "system-sale-1001@example.com",
+      "points": 85,
+      "tier": null,
+      "lifetimePoints": 85,
+      "membershipSince": "2026-06-08T10:15:00.000Z"
+    }
+  },
+  "event_received_response": {
+    "success": true,
+    "message": "Event received"
+  },
+  "event_already_processed_response": {
+    "success": true,
+    "message": "Event already processed"
+  },
+  "invalid_token_response": {
+    "success": false,
+    "message": "Invalid webhook token"
+  },
+  "validation_failure_response": {
+    "success": false,
+    "message": "Missing event_type in payload"
+  },
+  "invalid_body_response": {
+    "success": false,
+    "message": "Request body must be a JSON object"
+  },
+  "internal_server_error_response": {
+    "success": false,
+    "message": "Internal server error"
+  },
+  "test_sale_success_response": {
+    "success": true,
+    "message": "Test sale submitted",
+    "data": {
+      "success": true,
+      "message": "Event received"
+    }
+  },
+  "test_sale_duplicate_response": {
+    "success": true,
+    "message": "Test sale submitted",
+    "data": {
+      "success": true,
+      "message": "Event already processed"
+    }
+  },
+  "test_sale_missing_binding_response": {
+    "success": false,
+    "message": "This System integration is not connected to a restaurant yet"
+  },
+  "test_sale_not_ready_response": {
+    "success": false,
+    "message": "This System integration is not ready to receive webhooks"
+  },
+  "customer_search_miss_response": {
+    "exists": false
+  },
+  "missing_binding_response": {
+    "success": false,
+    "message": "Integration is not connected to a restaurant"
+  },
+  "disconnected_integration_response": {
+    "success": false,
+    "message": "Integration disconnected"
+  },
+  "not_ready_response": {
+    "success": false,
+    "message": "Integration is not ready to receive webhooks"
+  },
+  "purchase_qr_request": {
+    "amount": 1250,
+    "currency": "NPR",
+    "items": [
+      { "name": "Cappuccino", "qty": 1, "price": 850 }
+    ]
+  },
+  "purchase_qr_response": {
+    "success": true,
+    "message": "Purchase QR ready",
+    "data": {
+      "qr_link": "https://samparka.co/r/xKd93k",
+      "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+      "amount": 1250,
+      "currency": "NPR",
+      "status": "QR_GENERATED",
+      "expires_at": "2026-08-31T07:40:08.000Z"
+    }
+  },
+  "purchase_qr_validation_response": {
+    "success": false,
+    "message": "Invalid purchase QR request",
+    "errors": {
+      "code": "purchase_qr_validation_failed"
+    }
+  },
+  "purchase_qr_pos_not_connected_response": {
+    "success": false,
+    "message": "{provider} is not connected for this store",
+    "errors": {
+      "code": "system_not_connected",
+      "status": "CREATED"
+    }
+  },
+  "purchase_qr_no_comm_provider_response": {
+    "success": false,
+    "message": "No active connected communication provider is configured"
+  }
+}

@@ -9,7 +9,7 @@ sidebarTitle: Location Binding
   <Tab title="App">
 # Location Binding Reference
 
-POS connect is outlet-owned and singular:
+System connect is outlet-owned and singular:
 
 ```txt
 One Integration
@@ -36,20 +36,20 @@ For backward compatibility, Samparka still accepts singular `restaurantId` and `
 
     ```txt
     X-Integration-Key (in request body)
-    -> PosIntegration
+    -> SystemIntegration
     -> Outlet
     -> Bound External Location
     ```
 
-    The POS sends `X-Integration-Key` in the request body. Samparka resolves the store/outlet from that integration key. No `webhook_token` is used in the path.
+    The System sends `X-Integration-Key` in the request body. Samparka resolves the store/outlet from that integration key. No `webhook_token` is used in the path.
 
     This is the same location resolution used by the partner customer APIs.
 
     <Columns cols={2}>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Auth model and integration key usage.
       </Card>
-      <Card title="Integration Guide" icon="rocket" href="/integrations/pos/purchase-qr/integration-guide">
+      <Card title="Integration Guide" icon="rocket" href="/integrations/system/purchase-qr/integration-guide">
         Example curl calls and behavior matrix.
       </Card>
     </Columns>

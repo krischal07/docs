@@ -1,13 +1,13 @@
 ---
 title: Idempotency
-description: Root-level duplicate handling summary for POS.
+description: Root-level duplicate handling summary for System.
 sidebarTitle: Idempotency
 ---
 
 
 <Tabs>
   <Tab title="App">
-Duplicate POS deliveries return `200 Event already processed`.
+Duplicate System deliveries return `200 Event already processed`.
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -22,13 +22,13 @@ Duplicate POS deliveries return `200 Event already processed`.
 
     Make a distinct request for each new sale. The `purchase_reference` is derived from the request, so the same request for the same merchant always maps to the same session.
 
-    See [Request / Response Contract](/integrations/pos/purchase-qr/request-response) for the full idempotency behavior.
+    See [Request / Response Contract](/integrations/system/purchase-qr/request-response) for the full idempotency behavior.
 
     <Columns cols={2}>
-      <Card title="Request / Response Contract" icon="code" href="/integrations/pos/purchase-qr/request-response">
+      <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
         Full idempotency behavior and session lifecycle.
       </Card>
-      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/pos/purchase-qr/testing">
+      <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
         Automated test cases for idempotent retries.
       </Card>
     </Columns>
