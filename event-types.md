@@ -7,9 +7,9 @@ sidebarTitle: Event Types
 
 <Tabs>
   <Tab title="App">
-- `sale.completed`
-- `refund.created`
-- `sale.voided`
+    - `sale.completed`
+    - `refund.created`
+    - `sale.voided`
   </Tab>
   <Tab title="Communication">
     <Info>

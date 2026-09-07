@@ -8,7 +8,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "https://your-domain"
+      "value": "https://samparka.co"
     },
     {
       "key": "providerApiKey",
@@ -731,10 +731,6 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{providerApiKey}}"
-              },
-              {
-                "key": "X-Integration-Key",
-                "value": "{{integrationKey}}"
               }
             ],
             "body": {

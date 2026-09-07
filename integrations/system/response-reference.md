@@ -184,7 +184,7 @@ The same `{ error, message }` envelope is used for partner customer validation, 
 
 `POST /integrations/system/{provider}/purchase-qr`
 
-Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key`). See [Purchase QR Checkout](./purchase-qr/request-response).
+Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the store is resolved from the API key's `store_id` scope. The `integration_key` is returned in the response body. See [Purchase QR Checkout](./purchase-qr/request-response).
 
 ### `200 Purchase QR ready`
 
@@ -194,16 +194,19 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus t
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",
-    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+    "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
-    "expires_at": "2026-08-31T07:40:08.000Z"
+    "expires_at": "2026-08-26T12:12:04.000Z",
+    "integration_key": "SPK-RX-TTMFHBYZ"
   }
 }
 ```
 
-`qr_link` is the short URL the System turns into a scannable QR. A retried request while the same session is pending returns the same QR.
+`data.qr_link` is the short URL the POS renders as a QR. `data.integration_key` echoes the store's integration key sent in the request body. With `payload.order_id`, retried requests return the same QR and `purchase_reference`. Without `order_id`, each request creates a new session.
+
+Sessions expire quickly (default 120 seconds or the store's configured QR expiry) — print immediately.
 
 ### `400 Invalid purchase QR request`
 
@@ -215,12 +218,30 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus t
 }
 ```
 
-### `401 Invalid integration token`
+### `401 Invalid provider key or integration key mismatch`
 
 ```json
 {
   "success": false,
-  "message": "Invalid or unknown integration token"
+  "message": "Invalid provider key or integration key mismatch"
+}
+```
+
+### `403 Store scope required`
+
+```json
+{
+  "success": false,
+  "message": "API key must be bound to a store"
+}
+```
+
+### `403 Unsupported capability`
+
+```json
+{
+  "success": false,
+  "message": "Provider does not have submitPurchase capability enabled"
 }
 ```
 
@@ -230,6 +251,15 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus t
 {
   "success": false,
   "message": "Unknown provider"
+}
+```
+
+### `404 Integration not found`
+
+```json
+{
+  "success": false,
+  "message": "Integration not found for store"
 }
 ```
 
@@ -243,7 +273,7 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus t
 }
 ```
 
-### `409 Already processed`
+### `409 Purchase QR unavailable`
 
 ```json
 {
@@ -263,15 +293,6 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus t
 }
 ```
 
-### `422 Not mapped to an outlet`
-
-```json
-{
-  "success": false,
-  "message": "Integration is not mapped to an outlet"
-}
-```
-
 ### `422 No active connected communication provider`
 
 ```json
@@ -285,9 +306,10 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus t
 
 ```json
 {
-  "success": false,    "message": "QR link could not be generated for this bill",
-    "errors": { "code": "purchase_qr_generation_failed" }
-  }
+  "success": false,
+  "message": "QR link could not be generated for this bill",
+  "errors": { "code": "purchase_qr_generation_failed" }
+}
 ```
   </Tab>
   <Tab title="Communication">
@@ -297,7 +319,7 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus t
 
 `POST /integrations/system/{provider}/purchase-qr`
 
-Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). See [Purchase QR Checkout](/integrations/system/purchase-qr/request-response).
+Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the store is resolved from the API key's `store_id` scope. The `integration_key` is returned in the response body. See [Purchase QR Checkout](/integrations/system/purchase-qr/request-response).
 
 ## 200 — Purchase QR ready
 
@@ -307,28 +329,44 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus t
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",
-    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+    "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
-    "expires_at": "2026-08-26T12:12:04.000Z"
+    "expires_at": "2026-08-26T12:12:04.000Z",
+    "integration_key": "SPK-RX-TTMFHBYZ"
   }
 }
 ```
 
+`data.qr_link` is the short URL the POS renders as a QR. `data.integration_key` echoes the store's integration key sent in the request body. With `payload.order_id`, retried requests return the same QR and `purchase_reference`. Without `order_id`, each request creates a new session.
+
+Sessions expire quickly (default 120 seconds or the store's configured QR expiry) — print immediately.
+
 ## Error codes
 
-| Status | When |
-|---|---|
-| `400 purchase_qr_validation_failed` | Missing/non-positive `amount`, bad `currency`, missing/empty `items` |
-| `401 invalid provider key` | Missing/invalid `Authorization: Bearer <provider_api_key>` |
-| `401 invalid integration key` | Missing/invalid `X-Integration-Key` in request body |
-| `404 unknown provider` | Provider not recognized |
-| `409 system_not_connected` | System integration not `CONNECTED`/`ACTIVE` |
-| `422 no active connected communication provider` | No WhatsApp/Wapio provider active |
-| `409 already processed` | Session previously completed/claimed/failed |
-| `410 expired` | Session previously expired |
-| `502 QR generation failed` | Wapio/redirect failure |
+| Status | Meaning | POS behavior |
+|---|---|---|
+| `400 purchase_qr_validation_failed` | Bad body — `payload` missing, `event_type` not `order.completed`, or amount/items/currency rules violated | Log it; this is a POS bug. Print receipt without QR. |
+| `401` | Invalid/missing provider API key, or missing/mismatched `integrationKey` in the body | Surface config error. Print receipt without QR. |
+| `403 store_scope_required` | The provider API key is not bound to a store | Contact Samparka. |
+| `403 unsupported_capability` | Provider key does not have purchase submission enabled | Contact Samparka. Print receipt without QR. |
+| `404 integration_not_found` | The store bound to the API key has no integration | Config/onboarding issue. Print receipt without QR. |
+| `404 unknown provider` | `{provider}` slug wrong, or the API key was issued for a different provider | Config problem. |
+| `409 system_not_connected` | Store integration is not `CONNECTED`/`ACTIVE` (or its key was revoked) | Config/onboarding issue. Print receipt without QR. |
+| `409 purchase_qr_unavailable` | The session for this `order_id` was already completed/claimed/failed | Do **not** retry. Print receipt without QR. |
+| `410 purchase_qr_expired` | The session for this `order_id` expired | Do **not** retry. Print receipt without QR. |
+| `422 provider_unconfigured` | Store has no active WhatsApp/Wapio communication provider | Store-side setup issue. Print receipt without QR. |
+| `502 purchase_qr_generation_failed` | Samparka-side QR/redirect failure | Safe to retry once. If it fails again, print without QR. |
+
+<Columns cols={2}>
+  <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
+    Full error codes, idempotency, and new envelope body format.
+  </Card>
+  <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
+    Automated test cases and deployment notes.
+  </Card>
+</Columns>
 
 <Columns cols={2}>
   <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">

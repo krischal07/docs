@@ -134,13 +134,13 @@ Controller --> System: acknowledgement
 
 ## Observed risks and boundaries
 
-- The fallback idempotency hash uses a limited payload subset, so distinct sales with the same selected values can collide, while changed timestamps/amount representations can evade a duplicate.
-- Raw-event storage occurs before authentication and can be abused for database growth absent the noted rate-limit placeholder.
-- System processing is request-synchronous, coupling provider latency to transactions and Mongo writes.
-- Store-owned mapping can acknowledge blocked events; recovery is operational/manual.
-- Analytics and mission processor registrations look complete but currently perform no work.
-- No provider-webhook dead-letter queue is implemented; recovery is document/replay based.
-- Purchase QR idempotency is now derived from request contents (provider + items) rather than an explicit `bill_id`, which means the collision properties depend on the item normalization in the idempotency hash.
+    - The fallback idempotency hash uses a limited payload subset, so distinct sales with the same selected values can collide, while changed timestamps/amount representations can evade a duplicate.
+    - Raw-event storage occurs before authentication and can be abused for database growth absent the noted rate-limit placeholder.
+    - System processing is request-synchronous, coupling provider latency to transactions and Mongo writes.
+    - Store-owned mapping can acknowledge blocked events; recovery is operational/manual.
+    - Analytics and mission processor registrations look complete but currently perform no work.
+    - No provider-webhook dead-letter queue is implemented; recovery is document/replay based.
+    - Purchase QR idempotency is now derived from request contents (provider + items) rather than an explicit `bill_id`, which means the collision properties depend on the item normalization in the idempotency hash.
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -194,12 +194,12 @@ All Purchase QR documentation now uses generic `:provider` path params and `{pro
 
 ## Observed risks and boundaries
 
-- The fallback idempotency hash uses a limited payload subset, so distinct sales with the same selected values can collide, while changed timestamps/amount representations can evade a duplicate.
-- Raw-event storage occurs before authentication and can be abused for database growth absent the noted rate-limit placeholder.
-- System processing is request-synchronous, coupling provider latency to transactions and Mongo writes.
-- Store-owned mapping can acknowledge blocked events; recovery is operational/manual.
-- Analytics and mission processor registrations look complete but currently perform no work.
-- No provider-webhook dead-letter queue is implemented; recovery is document/replay based.
-- Purchase QR idempotency is now derived from request contents (provider + items) rather than an explicit `bill_id`, which means the collision properties depend on the item normalization in the idempotency hash.
+    - The fallback idempotency hash uses a limited payload subset, so distinct sales with the same selected values can collide, while changed timestamps/amount representations can evade a duplicate.
+    - Raw-event storage occurs before authentication and can be abused for database growth absent the noted rate-limit placeholder.
+    - System processing is request-synchronous, coupling provider latency to transactions and Mongo writes.
+    - Store-owned mapping can acknowledge blocked events; recovery is operational/manual.
+    - Analytics and mission processor registrations look complete but currently perform no work.
+    - No provider-webhook dead-letter queue is implemented; recovery is document/replay based.
+    - Purchase QR idempotency is now derived from request contents (provider + items) rather than an explicit `bill_id`, which means the collision properties depend on the item normalization in the idempotency hash.
   </Tab>
 </Tabs>

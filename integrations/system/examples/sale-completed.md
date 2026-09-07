@@ -80,22 +80,25 @@ Samparka accepted the sale webhook, resolved the integration from the webhook to
 Verify the integration becomes `ACTIVE`, then repeat the same payload once to confirm duplicate handling.
 
 ```bash
-curl -X POST https://server.samparka.xyz/integrations/system/{provider}/purchase-qr \
+curl -X POST https://server.samparka.co/integrations/system/{provider}/purchase-qr \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <provider_api_key>" \
   -d '{
-    "amount": 1250,
-    "currency": "NPR",
-    "X-Integration-Key": "<integration_key>",
-    "items": [
-      { "name": "Cappuccino", "qty": 1, "price": 850 }
-    ]
+    "integrationKey": "<integration_key>",
+    "payload": {
+      "event_type": "order.completed",
+      "amount": 1250,
+      "currency": "NPR",
+      "items": [
+        { "name": "Cappuccino", "qty": 1, "price": 850 }
+      ]
+    }
   }'
 ```
 
 <Columns cols={2}>
   <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
-    Full error codes and idempotency behavior.
+    Full error codes, idempotency, and new envelope body format.
   </Card>
 </Columns>
   </Tab>

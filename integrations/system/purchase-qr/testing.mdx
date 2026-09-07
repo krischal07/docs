@@ -18,21 +18,33 @@ import { Tabs, Tab } from "@mintlify/components";
 
 ## Automated tests
 
-`__tests__/integrations/system.purchase-qr.test.js` (9 passed, 3 required companion suites also passed):
+`__tests__/integrations/system.purchase-qr.test.js` (32 passed):
 
 | Test | Assertion |
 |---|---|
-| happy path | 200 with `qr_link`, `purchase_reference = ps_...`, amount, currency=NPR |
-| persistence | session in `purchasesessions` with `QR_GENERATED`, `metadata.items`, `communication.metadata.short_url` |
-| idempotency (within session) | same request while pending → same `qr_link`, count stays 1 |
+| happy path | 200 with `qr_link`, `purchase_reference = sysqr:...`, amount, currency=NPR, `integration_key` echoed |
+| persistence | session in `purchasesessions` with `QR_GENERATED`, `metadata.items`, `metadata.order_id`, `metadata.event_type`, `communication.metadata.short_url` |
+| idempotency (with `order_id`) | same request with `order_id` → same `qr_link`, same `purchase_reference` |
+| idempotency (without `order_id`) | each request creates a new session |
 | items total ≠ amount | 400 |
 | missing/empty items | 400 |
 | missing/negative amount | 400 |
+| missing `event_type` | 400 |
+| invalid `event_type` (not `order.completed`) | 400 |
+| missing `payload` | 400 |
+| missing `integrationKey` | 401 |
+| mismatched `integrationKey` | 401 |
 | missing/invalid provider key | 401 |
-| missing/invalid integration key | 401 |
+| API key without store scope | 403 (`store_scope_required`) |
+| provider without `submitPurchase` capability | 403 (`unsupported_capability`) |
+| API key store scope but no integration | 404 (`integration_not_found`) |
 | unknown provider | 404 |
+| invalid `created_at` | 400 |
 | System connected, no comm provider | 422 (`no active connected communication provider`) — no session created |
 | System not connected (status CREATED) | 409 `system_not_connected` — no session created |
+| 409 `purchase_qr_unavailable` | session already completed/claimed/failed |
+| 410 `purchase_qr_expired` | session expired |
+| 502 `purchase_qr_generation_failed` | QR/redirect failure |
 
 Existing companion suites still pass: `body.size.test.js` (4/4), `contract.responses.test.js` (8/8), `location-resolution.test.js` (4/4). Run them lean to avoid the VS Code OOM:
 
@@ -45,15 +57,16 @@ NODE_OPTIONS="--max-old-space-size=512" npx jest __tests__/integrations/system.p
 * All backend. No frontend deploy required (except `checkitbro` if you keep it).
 * `checkitbro` (`src/pages/CheckItBro.jsx`, `checkitbroDebugController.js`, the `/checkitbro/debug` route on `purchaseSessions/routes.js`) is **localhost-only**. Remove those 3 additions before cutting a production release. Remove the comment-guarded `CheckItBro` import + `/checkitbro` route in `MainApp.jsx` at the same time.
 * The staging `SERVER_URL` currently produces `http://localhost:8081/r/...` short URLs — in production `SERVER_URL` yields `https://samparka.co/r/...` automatically via `RedirectLinkService.baseUrl`.
-* The `purchase_reference` format is now the standard `ps_…` prefix (same as dashboard) — no separate `posqr:` scheme.
+* The `purchase_reference` format is `sysqr:{provider}:{integrationId}:{orderId}` when `payload.order_id` is provided; otherwise a fresh session is created.
 
 ## Related Documentation
 
-- [Overview](./overview)
-- [Request / Response Contract](./request-response)
-- [Integration Guide](./integration-guide)
-- [Testing Guide](../testing-guide)
-- [Troubleshooting](../troubleshooting)
+    - [Overview](./overview)
+    - [Request / Response Contract](./request-response)
+    - [Integration Guide](./integration-guide)
+    - [Testing Guide](../testing-guide)
+    - [Troubleshooting](../troubleshooting)
+
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -66,7 +79,7 @@ NODE_OPTIONS="--max-old-space-size=512" npx jest __tests__/integrations/system.p
 
 ## Automated tests
 
-`__tests__/integrations/system.purchase-qr.test.js` (9 passed, 3 required companion suites also passed).
+`__tests__/integrations/system.purchase-qr.test.js` (27 passed).
 
 Existing companion suites still pass: `body.size.test.js` (4/4), `contract.responses.test.js` (8/8), `location-resolution.test.js` (4/4).
 
@@ -76,10 +89,11 @@ Existing companion suites still pass: `body.size.test.js` (4/4), `contract.respo
 
 ## Related Documentation
 
-- [Overview](./overview)
-- [Request / Response Contract](./request-response)
-- [Integration Guide](./integration-guide)
-- [Testing Guide](../testing-guide)
-- [Troubleshooting](../troubleshooting)
+    - [Overview](./overview)
+    - [Request / Response Contract](./request-response)
+    - [Integration Guide](./integration-guide)
+    - [Testing Guide](../testing-guide)
+    - [Troubleshooting](../troubleshooting)
+
   </Tab>
 </Tabs>

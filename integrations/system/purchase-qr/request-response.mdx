@@ -14,35 +14,54 @@ import { Tabs, Tab } from "@mintlify/components";
 
 **Endpoint** — `POST /integrations/system/:provider/purchase-qr`
 
-**Auth (two-part):**
-- `Authorization: Bearer <provider_api_key>` — confirms the System vendor (provider key `slug` must match the route `:provider`)
-- `X-Integration-Key: <integration_key>` — confirms which store/outlet
+**Auth chain (in order):**
 
-No `webhook_token` is used on this endpoint. The provider API key confirms the vendor, and the integration key resolves the outlet.
+1. `:provider` slug must name a known, ACTIVE provider → else `404 unknown provider`
+2. `Authorization: Bearer <spkp_…>` must hash-match an ACTIVE `providerApiKeys` row → else `401`
+3. The key's `provider_id` must equal the URL slug's provider → else `404 unknown provider`
+4. Provider must have the `submitPurchase` capability enabled → else `403 unsupported_capability`
+5. The API key must be bound to a store (`providerApiKeys.store_id`) → else `403 store_scope_required`; the store's `posintegrations` row is resolved from it → else `404 integration_not_found`
+6. Integration key not revoked AND integration status ∈ {CONNECTED, ACTIVE, active} → else `409 system_not_connected`
+7. Body `integrationKey` must match the resolved store's integration key → else `401`
+
+The provider API key confirms the vendor, and the key's `store_id` scope resolves the store and integration. The store's integration key travels in the request body (`integrationKey`), not a header. No `webhook_token` is used on this endpoint.
 
 Path params: `provider` = your System provider (`blanxer`, `restrox`, or your `{provider}` value).
 
 ## Request
 
+The endpoint accepts a webhook-style **envelope body**:
+
 ```json
 {
-  "amount": 1250,                  // required, > 0
-  "currency": "NPR",               // optional, 3-letter, defaults to NPR
-  "items": [                       // required, array of product items
-    { "name": "Cappuccino", "qty": 1, "price": 850 }
-  ]
+  "integrationKey": "SPK-RX-TTMFHBYZ",   // required, store identity
+  "payload": {                            // required, wrapper object
+    "event_type": "order.completed",     // required, must be "order.completed"
+    "order_id": "ORDER-1001",           // optional, POS order/receipt id (max 100 chars)
+    "created_at": "2026-06-08T10:15:00.000Z",  // optional, ISO 8601 timestamp
+    "amount": 1250,                      // required, > 0
+    "currency": "NPR",                   // optional, 3-letter, defaults to NPR
+    "items": [                           // required, array of product items
+      { "name": "Cappuccino", "qty": 1, "price": 850 }
+    ]
+  }
 }
 ```
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `amount` | number | Yes | Transaction amount, must be greater than 0. | `1250` |
-| `currency` | string | No | 3-letter currency code. Defaults to `NPR` if omitted. | `NPR` |
-| `items` | array | Yes | Product items in the bill. Each item has `name`, `qty`, and `price`. | `[{ "name": "Cappuccino", "qty": 1, "price": 850 }]` |
+| `integrationKey` | string | Yes | Store's integration key. Must match the store the provider API key is scoped to. | `SPK-RX-TTMFHBYZ` |
+| `payload` | object | Yes | Wrapper object containing the sale details. | — |
+| `payload.event_type` | string | Yes | Must be `"order.completed"`. | `order.completed` |
+| `payload.order_id` | string | No | POS order/receipt id (max 100 chars). Used as idempotency key. May also be sent as `Idempotency-Key` header; both must match. | `ORDER-1001` |
+| `payload.created_at` | string | No | ISO 8601 sale timestamp, stored in session metadata. Invalid dates → `400`. | `2026-06-08T10:15:00.000Z` |
+| `payload.amount` | number | Yes | Transaction amount, must be greater than 0. | `1250` |
+| `payload.currency` | string | No | 3-letter currency code. Defaults to `NPR` if omitted. | `NPR` |
+| `payload.items` | array | Yes | Product items in the bill. Each item has `name`, `qty`, and `price`. Σ(items) must equal amount ±0.01. | `[{ "name": "Cappuccino", "qty": 1, "price": 850 }]` |
 
 ## Response — 200 Purchase QR ready
 
-An idempotent retry returns the same QR.
+An idempotent retry returns the same QR (when `payload.order_id` is provided).
 
 ```json
 {
@@ -50,24 +69,28 @@ An idempotent retry returns the same QR.
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",   // short_url — System turns this into a QR
-    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+    "purchase_reference": "sysqr:restrox:6a9e80a4…:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
-    "expires_at": "2026-08-26T12:12:04.000Z"
+    "expires_at": "2026-08-26T12:12:04.000Z",
+    "integration_key": "SPK-RX-TTMFHBYZ"
   }
 }
 ```
+
+`data.integration_key` echoes the store's integration key that was sent in the request body.
 
 ## Error codes
 
 | Status | When |
 |---|---|
 | `400 purchase_qr_validation_failed` | Missing/non-positive `amount`, bad `currency`, missing/empty `items`, item missing `name` / non-positive `qty` / non-positive `price`, or `items` total ≠ `amount` |
-| `401 invalid provider key` | Missing/invalid `Authorization: Bearer <provider_api_key>` |
-| `401 invalid integration key` | Missing/invalid `X-Integration-Key` |
-| `404 unknown provider` | Provider not recognized |
-| `404 integration store not found` | Token resolves but store doc missing |
+| `401 invalid provider key` | Missing/invalid `Authorization: Bearer <provider_api_key>`, or body `integrationKey` doesn't match the store's integration key |
+| `403 store_scope_required` | API key is not bound to a store (`providerApiKeys.store_id` missing) |
+| `403 unsupported_capability` | Provider does not have the `submitPurchase` capability enabled |
+| `404 unknown provider` | Provider not recognized or key's `provider_id` does not match the route `:provider` |
+| `404 integration_not_found` | Store scope resolved but no `posintegrations` row for that provider |
 | `409 system_not_connected` | The System integration status is not `CONNECTED`/`ACTIVE` — refused before any checkout is created |
 | `422 not mapped to an outlet` | Integration has no `outlet_id` bound |
 | `422 no active connected communication provider` | System is connected but no WhatsApp/Wapio communication provider is active — session creation aborts (no QR) |
@@ -77,17 +100,23 @@ An idempotent retry returns the same QR.
 
 ## Idempotency
 
-The request no longer carries a `bill_id`, so the controller doesn't derive a reference from it. Each System request creates a **new checkout session** via `buildPurchaseReference()` (a fresh `ps_{ts}_{hex}` per call) — there is no cross-request dedup. Retry-safety lives in the session lifecycle (`ensureQrGenerated`): retrying the *same pending session* returns the same QR (200) while it is `QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`; a `COMPLETED`/`CLAIMED` session is rejected (409).
+Two identical bills (same amount/items) are indistinguishable server-side, so identity must come from the client:
 
-The `purchase_reference` uses the standard `ps_…` prefix (same as dashboard).
+- **With `payload.order_id`:** deterministic key `sysqr:{provider}:{integrationId}:{orderId}` piggybacks on `findByPurchaseReference` dedup inside `createSession`. Pending retry → **same `qr_link`, 200**. Completed → 409. Expired → 410. New reference → fresh session.
+- **Without `payload.order_id`:** every request mints a fresh session. Worst case on a blind retry is an unprinted QR that expires — harmless.
+
+`payload.order_id` may also be sent as an `Idempotency-Key` header; both present must match.
+
+The `purchase_reference` uses the `sysqr:…` prefix format: `sysqr:{provider}:{integrationId}:{orderId}`.
 
 ## Related Documentation
 
-- [Overview](./overview)
-- [Integration Guide](./integration-guide)
-- [Testing & Verification](./testing)
-- [Payload Reference](../payload-reference)
-- [Response Reference](../response-reference)
+    - [Overview](./overview)
+    - [Integration Guide](./integration-guide)
+    - [Testing & Verification](./testing)
+    - [Payload Reference](../payload-reference)
+    - [Response Reference](../response-reference)
+
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -98,10 +127,11 @@ The `purchase_reference` uses the standard `ps_…` prefix (same as dashboard).
 
 ## Related Documentation
 
-- [Overview](./overview)
-- [Integration Guide](./integration-guide)
-- [Testing & Verification](./testing)
-- [Payload Reference](../payload-reference)
-- [Response Reference](../response-reference)
+    - [Overview](./overview)
+    - [Integration Guide](./integration-guide)
+    - [Testing & Verification](./testing)
+    - [Payload Reference](../payload-reference)
+    - [Response Reference](../response-reference)
+
   </Tab>
 </Tabs>

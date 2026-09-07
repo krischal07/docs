@@ -19,7 +19,7 @@ Samparka is a customer loyalty platform. A valid System integration is complete 
 2. For this integration, use `restrox` as the `{provider}` value in documented route examples.
 3. Call `POST /api/partners/restrox/connect` with `integrationKey`, `externalLocationId`, and optional `externalLocationName`.
 4. Store the returned `token`.
-5. Configure System to send events to `https://your-domain/webhook/restrox/{token}`.
+5. Configure System to send events to `https://samparka.co/webhook/restrox/{token}`.
 6. Send a test `order.completed` event to the webhook endpoint or use `POST /api/partners/restrox/test-sale`.
 7. Verify the integration becomes `ACTIVE`.
 8. Search the customer with `GET /api/partners/restrox/customers/search?phone=...` using partner authentication and `x-integration-key`.

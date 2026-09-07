@@ -12,9 +12,9 @@ Samparka's recommended System event types are:
 
 See also: [Payload Reference](./payload-reference).
 
-- `order.completed` for completed sales
-- `refund.created` for refunds
-- `order.voided` for voided or canceled sales
+    - `order.completed` for completed sales
+    - `refund.created` for refunds
+    - `order.voided` for voided or canceled sales
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -32,7 +32,7 @@ The Purchase QR endpoint creates a checkout session that flows through the same 
     Summary, architecture, and lifecycle.
   </Card>
   <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
-    Request/response shape, error codes, idempotency.
+    Request/response shape, error codes, idempotency, and new envelope body format.
   </Card>
 </Columns>
   </Tab>

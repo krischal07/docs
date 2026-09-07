@@ -183,7 +183,7 @@ The same `{ error, message }` envelope is used for partner customer validation, 
 
     `POST /integrations/system/{provider}/purchase-qr`
 
-    Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). See [Purchase QR Checkout](/integrations/system/purchase-qr/request-response).
+    Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the store is resolved from the API key's `store_id` scope. The `integration_key` is returned in the response body. See [Purchase QR Checkout](/integrations/system/purchase-qr/request-response).
 
     ### `200 Purchase QR ready`
 
@@ -197,7 +197,8 @@ The same `{ error, message }` envelope is used for partner customer validation, 
         "amount": 1250,
         "currency": "NPR",
         "status": "QR_GENERATED",
-        "expires_at": "2026-08-31T07:40:08.000Z"
+        "expires_at": "2026-08-31T07:40:08.000Z",
+        "integration_key": "xxxxxxxxxxxxxxxx"
       }
     }
     ```
@@ -214,12 +215,12 @@ The same `{ error, message }` envelope is used for partner customer validation, 
     }
     ```
 
-    ### `401 Invalid integration token`
+    ### `403 Store scope required`
 
     ```json
     {
       "success": false,
-      "message": "Invalid or unknown integration token"
+      "message": "API key must be bound to a store"
     }
     ```
 

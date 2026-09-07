@@ -76,7 +76,7 @@ Result:
 
 ## Remaining Documentation Risks
 
-- Customer detail verification proves the partner-customer contract and the stored customer state, but loyalty transaction inspection still depends on merchant-side tooling outside the partner HTTP response itself.
+    - Customer detail verification proves the partner-customer contract and the stored customer state, but loyalty transaction inspection still depends on merchant-side tooling outside the partner HTTP response itself.
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -87,13 +87,15 @@ Result:
 
     The Purchase QR endpoint has been verified against the backend implementation:
 
-    - `POST /integrations/system/{provider}/purchase-qr` accepts `amount`, `currency`, and `items` with `X-Integration-Key` in the request body.
-    - Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key.
-    - Success response returns `qr_link`, `purchase_reference`, `amount`, `currency`, `status`, and `expires_at`.
+    - `POST /integrations/system/{provider}/purchase-qr` accepts `amount`, `currency`, and `items`. The store is resolved from the API key's `store_id` scope.
+    - Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the store is resolved from the key's scope.
+    - Success response returns `qr_link`, `purchase_reference`, `amount`, `currency`, `status`, `expires_at`, and `integration_key`.
     - `409 system_not_connected` when the System integration is not `CONNECTED`/`ACTIVE`.
     - `422 no active connected communication provider` when no WhatsApp/Wapio provider is active.
     - `400` validation errors for missing/invalid `amount`, `items`, or `currency`.
-    - `401` for missing/invalid provider API key or integration key.
+    - `401` for missing/invalid provider API key.
+    - `403 store_scope_required` when API key is not bound to a store.
+    - `404 integration_not_found` when no integration exists for the store/provider.
     - `409 already processed` for completed/claimed sessions.
     - `410 expired` for expired sessions.
     - `502 QR generation failed` when Wapio/redirect fails.

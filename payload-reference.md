@@ -82,8 +82,8 @@ not from webhook payload fields.
 
 ## Additional Notes
 
-- Webhook payload restaurant fields are optional, non-canonical metadata for outlet-owned integrations.
-- Fields outside the parser mappings are not required for the canonical partner flow.
+    - Webhook payload restaurant fields are optional, non-canonical metadata for outlet-owned integrations.
+    - Fields outside the parser mappings are not required for the canonical partner flow.
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -107,7 +107,7 @@ not from webhook payload fields.
     | ----- | ---- | -------- | ----------- | ------- |
     | `currency` | string | No | 3-letter currency code. Defaults to `NPR` if omitted. | `NPR` |
 
-    Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). No `webhook_token` in the path.
+    Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the store is resolved from the API key's `store_id` scope. No `webhook_token` in the path.
 
     See [Purchase QR Request / Response](/integrations/system/purchase-qr/request-response) for the full contract.
 

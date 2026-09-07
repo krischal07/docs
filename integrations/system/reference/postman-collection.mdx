@@ -82,8 +82,8 @@ The collection's `Purchase QR` section lets you exercise the QR checkout from th
 ```
 
 - **Endpoint** — `POST {{baseUrl}}/integrations/system/{{provider}}/purchase-qr`
-- **Auth** — `Authorization: Bearer <provider_api_key>` plus `X-Integration-Key` in request body
-- **Response** — `200` with `qr_link`, `purchase_reference`, `amount`, `currency`, and `status: QR_GENERATED`
+- **Auth** — `Authorization: Bearer <provider_api_key>` (store resolved from API key scope)
+- **Response** — `200` with `qr_link`, `purchase_reference`, `amount`, `currency`, `status: QR_GENERATED`, and `integration_key`
 
 ## Recommended Testing Order
 

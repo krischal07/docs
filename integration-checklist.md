@@ -13,12 +13,12 @@ See also: [Testing Guide](./testing-guide).
 
 ## Connect Contract
 
-- [ ] `POST /api/partners/{provider}/connect` tested
-- [ ] `integrationKey` verified
-- [ ] `externalLocationId` verified
-- [ ] Bound external location stored on the integration
-- [ ] Response status is `CONNECTED`
-- [ ] Only the location-based connect payload is used in active tooling and tests
+    - [ ] `POST /api/partners/{provider}/connect` tested
+    - [ ] `integrationKey` verified
+    - [ ] `externalLocationId` verified
+    - [ ] Bound external location stored on the integration
+    - [ ] Response status is `CONNECTED`
+    - [ ] Only the location-based connect payload is used in active tooling and tests
   </Tab>
   <Tab title="Communication">
     <Info>

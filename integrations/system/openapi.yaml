@@ -6,7 +6,7 @@ info:
     Partner connect, webhook, and customer routes for the System integration with Samparka.
     Source fixtures for examples: docs/system-partner-guide/examples/payloads.json
 servers:
-  - url: https://your-domain
+  - url: https://samparka.co
 paths:
   /api/partners/{provider}/connect:
     post:
@@ -417,16 +417,21 @@ paths:
         The customer scans it to verify and claim loyalty points.
         200 means the QR was created and a short_url is present. A retry of the same (pending)
         session returns the same QR (200); a completed/claimed session is rejected (409).
+        
+        Auth chain:
+        1. :provider slug must name a known, ACTIVE provider → else 404 unknown provider
+        2. Authorization: Bearer <spkp_...> must hash-match an ACTIVE providerApiKeys row → else 401
+        3. The key's provider_id must equal the URL slug's provider → else 404 unknown provider
+        4. Provider must have the submitPurchase capability enabled → else 403 unsupported_capability
+        5. The API key must be bound to a store (providerApiKeys.store_id) → else 403 store_scope_required
+        6. Integration key not revoked AND integration status ∈ {CONNECTED, ACTIVE, active} → else 409 system_not_connected
+        7. Body integrationKey must match the resolved store's integration key → else 401
+        
+        Golden rule: loyalty QR failure must never block or fail the sale. Always print the receipt.
       operationId: postPosPurchaseQr
       security:
         - ProviderBearerAuth: []
-      parameters:
-        - name: integrationKey
-          in: header
-          required: true
-          description: The integration's integration_key, confirms which store/outlet.
-          schema:
-            type: string
+      parameters: []
       requestBody:
         required: true
         content:
@@ -438,12 +443,17 @@ paths:
                 summary: Cash sale requiring a purchase QR
                 x-source-fixture: examples/payloads.json#/purchase_qr_request
                 value:
-                  amount: 1250
-                  currency: NPR
-                  items:
-                    - name: Cappuccino
-                      qty: 1
-                      price: 850
+                  integrationKey: SPK-RX-TTMFHBYZ
+                  payload:
+                    event_type: order.completed
+                    order_id: ORDER-1001
+                    created_at: '2026-06-08T10:15:00.000Z'
+                    amount: 1250
+                    currency: NPR
+                    items:
+                      - name: Cappuccino
+                        qty: 1
+                        price: 850
       responses:
         '200':
           description: Purchase QR generated successfully (idempotent retry returns same QR)
@@ -460,11 +470,12 @@ paths:
                     message: Purchase QR ready
                     data:
                       qr_link: https://samparka.co/r/xKd93k
-                      purchase_reference: 'ps_1690000000000_ab12cd34ef56'
+                      purchase_reference: 'sysqr:restrox:6a9e80a4...:ORDER-1001'
                       amount: 1250
                       currency: NPR
                       status: QR_GENERATED
-                      expires_at: '2026-08-31T07:40:08.000Z'
+                      expires_at: '2026-08-26T12:12:04.000Z'
+                      integration_key: SPK-RX-TTMFHBYZ
         '400':
           description: Request validation failure
           content:
@@ -480,13 +491,19 @@ paths:
                     errors:
                       code: purchase_qr_validation_failed
         '401':
-          description: Invalid or missing provider API key or integration key
+          description: Invalid or missing provider API key, or integration key mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseQrErrorResponse'
+        '403':
+          description: API key not bound to a store (store_scope_required) or unsupported capability
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PurchaseQrErrorResponse'
         '404':
-          description: Unknown provider or integration store not found
+          description: Unknown provider, integration not found for store, or integration store not found
           content:
             application/json:
               schema:
@@ -507,14 +524,30 @@ paths:
                     errors:
                       code: system_not_connected
                       status: CREATED
+                purchaseQrUnavailable:
+                  summary: Session already processed
+                  value:
+                    success: false
+                    message: This session has already been processed
+                    errors:
+                      code: purchase_qr_unavailable
+                      status: COMPLETED
         '410':
           description: The same session previously expired
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PurchaseQrErrorResponse'
+              examples:
+                purchaseQrExpired:
+                  summary: Session expired
+                  value:
+                    success: false
+                    message: This session's checkout has expired
+                    errors:
+                      code: purchase_qr_expired
         '422':
-          description: Integration not mapped to an outlet or no active communication provider
+          description: No active communication provider
           content:
             application/json:
               schema:
@@ -769,31 +802,55 @@ components:
       type: object
       additionalProperties: false
       required:
-        - amount
-        - items
+        - integrationKey
+        - payload
       properties:
-        amount:
-          type: number
-          description: Sale amount. Must be greater than 0.
-        currency:
+        integrationKey:
           type: string
-          description: 3-letter currency code. Defaults to NPR.
-        items:
-          type: array
-          description: Product items in the bill.
-          items:
-            type: object
-            required:
-              - name
-              - qty
-              - price
-            properties:
-              name:
-                type: string
-              qty:
-                type: number
-              price:
-                type: number
+          description: Store's integration key. Must match the store the provider API key is scoped to.
+        payload:
+          type: object
+          required:
+            - event_type
+            - amount
+            - items
+          properties:
+            event_type:
+              type: string
+              enum:
+                - order.completed
+              description: Must be "order.completed".
+            order_id:
+              type: string
+              maxLength: 100
+              description: POS order/receipt id. Used as idempotency key.
+            created_at:
+              type: string
+              format: date-time
+              description: ISO 8601 sale timestamp.
+            amount:
+              type: number
+              description: Sale amount. Must be greater than 0.
+            currency:
+              type: string
+              description: 3-letter currency code. Defaults to NPR.
+            items:
+              type: array
+              description: Product items in the bill.
+              items:
+                type: object
+                required:
+                  - name
+                  - qty
+                  - price
+                properties:
+                  name:
+                    type: string
+                  qty:
+                    type: number
+                  price:
+                    type: number
+      description: Webhook-style envelope body for purchase QR. integrationKey is validated against the store resolved from the API key's store_id scope.
     PurchaseQrSuccessData:
       type: object
       required:
@@ -806,7 +863,7 @@ components:
           description: Short URL the System renders as a scannable QR code.
         purchase_reference:
           type: string
-          description: Session reference (ps_{ts}_{hex}). Each request creates a fresh session; no cross-request dedup.
+          description: Session reference (sysqr:{provider}:{integrationId}:{orderId}). Same request with order_id returns same reference.
         amount:
           type: number
         currency:
@@ -817,6 +874,9 @@ components:
         expires_at:
           type: string
           format: date-time
+        integration_key:
+          type: string
+          description: The store's integration key echoed from the request body.
     PurchaseQrResponse:
       type: object
       required:

@@ -28,7 +28,13 @@ import { Tabs, Tab } from "@mintlify/components";
 | `409 This session has already been processed` on purchase QR | The same request was previously completed/claimed/failed | Check the session status. | Make a new request for a new sale; a completed session cannot get a fresh QR. |
 | `410 This session's checkout has expired` on purchase QR | The same request previously expired | Check the session expiry. | Make a new request for a new sale. |
 | `502 QR link could not be generated` on purchase QR | Session created but no short URL (Wapio/redirect failure) | Retry the same request. If it repeats, check communication provider health. | Retry; if persistent, contact Samparka. |
-| `400 Invalid purchase QR request` on purchase QR | Missing/empty `items`, non-positive `amount`, or bad `currency` | Inspect the request body against the [Payload Reference](./payload-reference). | Correct the fields and resend. |
+| `400 Invalid purchase QR request` on purchase QR | Missing/empty `items`, non-positive `amount`, bad `currency`, missing `event_type`, invalid `event_type`, missing `payload`, invalid `created_at`, Σ(items) ≠ amount | Inspect the request body against the [Payload Reference](./payload-reference). | Correct the fields and resend. |
+| `401 Integration key mismatch` on purchase QR | Body `integrationKey` doesn't match the store's integration key | Compare the `integrationKey` in the request body with the store's integration key. | Use the correct integration key for the store. |
+| `403 Unsupported capability` on purchase QR | Provider does not have `submitPurchase` capability enabled | Check the provider's capabilities in the dashboard. | Enable `submitPurchase` capability for the provider. |
+| `403 Store scope required` on purchase QR | API key is not bound to a store | Verify the API key is bound to a store. | Bind the API key to a store or use a different key. |
+| `404 Integration not found` on purchase QR | The store bound to the API key has no integration | Config/onboarding issue. | Notify store admin. |
+| `409 Purchase QR unavailable` on purchase QR | The session for this `order_id` was already completed/claimed/failed | Check the session status. | Do **not** retry. Print receipt without QR. |
+| `410 Purchase QR expired` on purchase QR | The session for this `order_id` expired | Check the session expiry. | Do **not** retry. Print receipt without QR. |
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -42,11 +48,17 @@ import { Tabs, Tab } from "@mintlify/components";
 | `409 This session has already been processed` on purchase QR | The same request was previously completed/claimed/failed | Check the session status. | Make a new request for a new sale; a completed session cannot get a fresh QR. |
 | `410 This session's checkout has expired` on purchase QR | The same request previously expired | Check the session expiry. | Make a new request for a new sale. |
 | `502 QR link could not be generated` on purchase QR | Session created but no short URL (Wapio/redirect failure) | Retry the same request. If it repeats, check communication provider health. | Retry; if persistent, contact Samparka. |
-| `400 Invalid purchase QR request` on purchase QR | Missing/empty `items`, non-positive `amount`, or bad `currency` | Inspect the request body against the [Payload Reference](./payload-reference). | Correct the fields and resend. |
+| `400 Invalid purchase QR request` on purchase QR | Missing/empty `items`, non-positive `amount`, bad `currency`, missing `event_type`, invalid `event_type`, missing `payload`, invalid `created_at`, Σ(items) ≠ amount | Inspect the request body against the [Payload Reference](./payload-reference). | Correct the fields and resend. |
+| `401 Integration key mismatch` on purchase QR | Body `integrationKey` doesn't match the store's integration key | Compare the `integrationKey` in the request body with the store's integration key. | Use the correct integration key for the store. |
+| `403 Unsupported capability` on purchase QR | Provider does not have `submitPurchase` capability enabled | Check the provider's capabilities in the dashboard. | Enable `submitPurchase` capability for the provider. |
+| `403 Store scope required` on purchase QR | API key is not bound to a store | Verify the API key is bound to a store. | Bind the API key to a store or use a different key. |
+| `404 Integration not found` on purchase QR | The store bound to the API key has no integration | Config/onboarding issue. | Notify store admin. |
+| `409 Purchase QR unavailable` on purchase QR | The session for this `order_id` was already completed/claimed/failed | Check the session status. | Do **not** retry. Print receipt without QR. |
+| `410 Purchase QR expired` on purchase QR | The session for this `order_id` expired | Check the session expiry. | Do **not** retry. Print receipt without QR. |
 
 <Columns cols={2}>
   <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
-    Full error codes and idempotency behavior.
+    Full error codes, idempotency, and new envelope body format.
   </Card>
   <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
     Automated test cases and deployment notes.

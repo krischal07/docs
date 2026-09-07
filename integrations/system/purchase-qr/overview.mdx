@@ -24,7 +24,7 @@ sequenceDiagram
   participant SAM as Samparka
   participant CUST as Customer
 
-  System->>SAM: POST { amount, items }
+  System->>SAM: POST { integrationKey, payload: { event_type, order_id, amount, currency, items } }
   SAM->>SAM: Create purchase-checkout session
   SAM->>SAM: Wapio signs the QR
   SAM-->>System: { qr_link }
@@ -50,22 +50,24 @@ The new route is the **missing source**: System *creates* the QR session instead
 ```mermaid
 flowchart LR
   subgraph SYSTEM_SIDE[System Terminal]
-    System[System / fetch cashier]
+    System[POS / cashier]
   end
   subgraph SAM_SIDE[Samparka]
     CTL[purchaseQrController]
-    LS[Location Resolution<br/>locationResolutionService]
+    LS[Store Resolution<br/>API key store_id scope]
+    IG[Integration Key Validation<br/>body integrationKey]
     PG[System-connected guard<br/>CONNECTED / ACTIVE]
-    ID[Idempotency<br/>ps_... (per-request fresh)]
+    ID[Idempotency<br/>sysqr:... (with order_id)]
     WAP[QR generation via Wapio<br/>+ redirect short_url]
   end
 
-  System -->|POST /integrations/system/:provider/purchase-qr<br/>{ amount, currency, items }| CTL
+  System -->|POST /integrations/system/:provider/purchase-qr<br/>{ integrationKey, payload: { event_type, order_id, amount, currency, items } }| CTL
   CTL --> LS
-  LS --> PG
+  LS --> IG
+  IG --> PG
   PG --> ID
   ID --> WAP
-  WAP -. { qr_link, purchase_reference, ... } .-> System
+  WAP -. { qr_link, purchase_reference, integration_key, ... } .-> System
   PG -.->|else 409 system_not_connected| System
 ```
 
@@ -84,7 +86,11 @@ stateDiagram-v2
   WAITING_FOR_CUSTOMER_CLAIM --> WAITING_FOR_CUSTOMER_CLAIM: System retry while pending (same QR, 200)
 ```
 
-Statuses that still return the same QR (retry-safe): `QR_GENERATED`, `WAITING_FOR_CUSTOMER_CLAIM`. Terminal/expired ones return `409`/`410`.
+Statuses that still return the same QR (retry-safe): `QR_GENERATED`, `WAITING_FOR_CUSTOMER_CLAIM`. Terminal/expired ones return `409 purchase_qr_unavailable`/`410 purchase_qr_expired`.
+
+<Info>
+  **Golden rule:** Loyalty QR failure must never block or fail the sale. Always print the receipt.
+</Info>
 
 ## End-to-end sequence (including the customer scan)
 
@@ -100,10 +106,10 @@ sequenceDiagram
   participant ORCH as CompletionOrchestrator
   participant ING as Canonical Ingress
 
-  System->>CTL: POST { amount, items }
-  CTL->>CTL: resolveTokenContext
+  System->>CTL: POST { integrationKey, payload: { event_type, order_id, amount, items } }
+  CTL->>CTL: validate auth chain (provider key + integrationKey)
   CTL->>CTL: System-connected guard (else 409 system_not_connected)
-  CTL->>CTL: validate amount / items
+  CTL->>CTL: validate amount / items / event_type
   CTL->>SVC: createPOSCheckoutSession
   SVC->>WAPIO: generatePurchaseQR
   WAPIO-->>SVC: { whatsapp_deep_link }
@@ -111,7 +117,7 @@ sequenceDiagram
   RDL-->>SVC: redirectlinks (code / short_url)
   SVC->>SVC: transition sessions -> QR_GENERATED
   SVC-->>CTL: session (with short_url)
-  CTL-->>System: { qr_link }
+  CTL-->>System: { qr_link, purchase_reference, integration_key }
   System->>System: render QR from qr_link + print on receipt
   CUST->>CUST: scans QR
   CUST->>WHATS: opens WhatsApp deep link
@@ -121,19 +127,21 @@ sequenceDiagram
   ING-->>CUST: points awarded (loyaltyLedger / CustomerOutletPoints)
 ```
 
-## Future considerations (optional)
+## Implementation notes
 
-* Rate-limit the new route the same way `system/routes.js` notes `Rate-limiting placeholder`.
-* If System vendors need CORS/origin lockdown, add it on this path.
-* If analytics/missions should ever *consume* System-QR-origin sessions, register those processors (today they're no-ops, so no work is left for them).
+- **Send `payload.order_id` on every request** — it costs nothing and makes retry semantics exact. Without it, every request creates a new session.
+- **Never block the sale** — loyalty QR failure must never block or fail the sale. Always print the receipt.
+- **No customer phone on this endpoint** — the endpoint is phone-less. Customer identity is resolved later during the WhatsApp claim flow.
+- **Integration key in request body** — the store's integration key (`integrationKey`) is sent in the request body and validated against the store resolved from the API key's `store_id` scope. It is echoed back in the response as `data.integration_key`.
 
 ## Related Documentation
 
-- [Request / Response Contract](./request-response)
-- [Integration Guide](./integration-guide)
-- [Testing & Verification](./testing)
-- [Customer Loyalty Award Flow](../customer-loyalty-award-flow)
-- [Customer Identity](../customer-identity)
+    - [Request / Response Contract](./request-response) — Full error codes, idempotency, and envelope body format
+    - [Integration Guide](./integration-guide) — Example curl, behavior matrix, error handling, and design choices
+    - [Testing & Verification](./testing) — Automated test cases and deployment notes
+    - [Customer Loyalty Award Flow](../customer-loyalty-award-flow) — End-to-end loyalty flow including QR scan & claim
+    - [Customer Identity](../customer-identity) — Phone-first customer identity (resolved during WhatsApp claim)
+
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -144,10 +152,11 @@ The Purchase QR endpoint lets **System terminals** create a Samparka *purchase-c
 
 ## Related Documentation
 
-- [Request / Response Contract](./request-response)
-- [Integration Guide](./integration-guide)
-- [Testing & Verification](./testing)
-- [Customer Loyalty Award Flow](../customer-loyalty-award-flow)
-- [Customer Identity](../customer-identity)
+    - [Request / Response Contract](./request-response) — Full error codes, idempotency, and envelope body format
+    - [Integration Guide](./integration-guide) — Example curl, behavior matrix, error handling, and design choices
+    - [Testing & Verification](./testing) — Automated test cases and deployment notes
+    - [Customer Loyalty Award Flow](../customer-loyalty-award-flow) — End-to-end loyalty flow including QR scan & claim
+    - [Customer Identity](../customer-identity) — Phone-first customer identity (resolved during WhatsApp claim)
+
   </Tab>
 </Tabs>

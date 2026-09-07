@@ -6,7 +6,7 @@ info:
     Partner connect, webhook, and customer routes for the System integration with Samparka.
     Source fixtures for examples: docs/system-partner-guide/examples/payloads.json
 servers:
-  - url: https://your-domain
+  - url: https://samparka.co
 paths:
   /api/partners/{provider}/connect:
     post:

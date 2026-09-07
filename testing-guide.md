@@ -38,7 +38,7 @@ Verify Points Awarded
 ## Connect Test
 
 ```bash
-curl -X POST "https://your-domain/api/partners/{provider}/connect" \
+curl -X POST "https://samparka.co/api/partners/{provider}/connect" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   --data '{
@@ -74,7 +74,7 @@ Do not assert `message`, `restaurantId`, or `externalLocationId` in the connect 
 ## Test Sale Wrapper Check
 
 ```bash
-curl -X POST "https://your-domain/api/partners/{provider}/test-sale" \
+curl -X POST "https://samparka.co/api/partners/{provider}/test-sale" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   --data '{
@@ -122,7 +122,7 @@ Duplicate wrapper response:
 ## Direct Webhook Sale Test
 
 ```bash
-curl -X POST "https://your-domain/webhook/{provider}/{token}" \
+curl -X POST "https://samparka.co/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
@@ -158,7 +158,7 @@ After the first valid sale, fetch the merchant integration and confirm:
 ## Customer Search After First Sale
 
 ```bash
-curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone=9800000101" \
+curl -X GET "https://samparka.co/api/partners/{provider}/customers/search?phone=9800000101" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
@@ -192,7 +192,7 @@ Expected miss response:
 ## Customer Detail Verification
 
 ```bash
-curl -X GET "https://your-domain/api/partners/{provider}/customers/{customerId}" \
+curl -X GET "https://samparka.co/api/partners/{provider}/customers/{customerId}" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
@@ -217,7 +217,7 @@ After customer lookup succeeds, confirm the test sale created a loyalty transact
 ## Refund Test
 
 ```bash
-curl -X POST "https://your-domain/webhook/{provider}/{token}" \
+curl -X POST "https://samparka.co/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "refund.created",
@@ -257,7 +257,7 @@ Expected response:
 ## Invalid Token Test
 
 ```bash
-curl -X POST "https://your-domain/webhook/{provider}/{invalid-token}" \
+curl -X POST "https://samparka.co/webhook/{provider}/{invalid-token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
@@ -284,7 +284,7 @@ Expected response:
 Use the token from a newly created integration before calling connect:
 
 ```bash
-curl -X POST "https://your-domain/webhook/{provider}/{token}" \
+curl -X POST "https://samparka.co/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
@@ -354,13 +354,12 @@ Before testing Purchase QR, confirm:
 ## Happy Path
 
 ```bash
-curl -X POST "https://your-domain/integrations/system/{provider}/purchase-qr" \
+curl -X POST "https://samparka.co/integrations/system/{provider}/purchase-qr" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <provider_api_key>" \
   --data '{
     "amount": 1250,
     "currency": "NPR",
-    "X-Integration-Key": "<integration_key>",
     "items": [
       { "name": "Cappuccino", "qty": 1, "price": 850 }
     ]
@@ -374,12 +373,13 @@ Expected response:
   "success": true,
   "message": "Purchase QR ready",
   "data": {
-    "qr_link": "https://your-domain/r/xKd93k",
+    "qr_link": "https://samparka.co/r/xKd93k",
     "purchase_reference": "ps_1690000000000_ab12cd34ef56",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
-    "expires_at": "2026-08-31T07:40:08.000Z"
+    "expires_at": "2026-08-31T07:40:08.000Z",
+    "integration_key": "xxxxxxxxxxxxxxxx"
   }
 }
 ```
@@ -390,6 +390,7 @@ Validate that:
 - `"success": true`
 - `"status": "QR_GENERATED"`
 - `qr_link` is a non-empty scannable short URL
+- `integration_key` is present in the response
 
 ## Idempotent Retry
 

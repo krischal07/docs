@@ -55,10 +55,10 @@ For backward compatibility, Samparka still accepts singular `restaurantId` and `
 
 <Columns cols={2}>
   <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">
-    Full error codes and idempotency behavior.
+    Full error codes, idempotency, and new envelope body format.
   </Card>
   <Card title="Integration Guide" icon="rocket" href="/integrations/system/purchase-qr/integration-guide">
-    Example curl calls and behavior matrix.
+    Example curl calls, behavior matrix, and design choices.
   </Card>
 </Columns>
   </Tab>

@@ -42,7 +42,7 @@ Verify Points Awarded
 ## Connect Test
 
 ```bash
-curl -X POST "https://your-domain/api/partners/{provider}/connect" \
+curl -X POST "https://samparka.co/api/partners/{provider}/connect" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   --data '{
@@ -78,7 +78,7 @@ Do not assert `message`, `restaurantId`, or `externalLocationId` in the connect 
 ## Test Sale Wrapper Check
 
 ```bash
-curl -X POST "https://your-domain/api/partners/{provider}/test-sale" \
+curl -X POST "https://samparka.co/api/partners/{provider}/test-sale" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   --data '{
@@ -126,7 +126,7 @@ Duplicate wrapper response:
 ## Direct Webhook Sale Test
 
 ```bash
-curl -X POST "https://your-domain/webhook/{provider}/{token}" \
+curl -X POST "https://samparka.co/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
@@ -162,7 +162,7 @@ After the first valid sale, fetch the merchant integration and confirm:
 ## Customer Search After First Sale
 
 ```bash
-curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone=9800000101" \
+curl -X GET "https://samparka.co/api/partners/{provider}/customers/search?phone=9800000101" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
@@ -196,7 +196,7 @@ Expected miss response:
 ## Customer Detail Verification
 
 ```bash
-curl -X GET "https://your-domain/api/partners/{provider}/customers/{customerId}" \
+curl -X GET "https://samparka.co/api/partners/{provider}/customers/{customerId}" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
@@ -221,7 +221,7 @@ After customer lookup succeeds, confirm the test sale created a loyalty transact
 ## Refund Test
 
 ```bash
-curl -X POST "https://your-domain/webhook/{provider}/{token}" \
+curl -X POST "https://samparka.co/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "refund.created",
@@ -261,7 +261,7 @@ Expected response:
 ## Invalid Token Test
 
 ```bash
-curl -X POST "https://your-domain/webhook/{provider}/{invalid-token}" \
+curl -X POST "https://samparka.co/webhook/{provider}/{invalid-token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
@@ -288,7 +288,7 @@ Expected response:
 Use the token from a newly created integration before calling connect:
 
 ```bash
-curl -X POST "https://your-domain/webhook/{provider}/{token}" \
+curl -X POST "https://samparka.co/webhook/{provider}/{token}" \
   -H "Content-Type: application/json" \
   --data '{
     "event_type": "order.completed",
@@ -348,16 +348,20 @@ See [Purchase QR Checkout](./purchase-qr/integration-guide).
 ### Happy Path
 
 ```bash
-curl -X POST "https://your-domain/integrations/system/{provider}/purchase-qr" \
+curl -X POST "https://samparka.co/integrations/system/{provider}/purchase-qr" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <provider_api_key>" \
-  -H "X-Integration-Key: <integration_key>" \
   --data '{
-    "amount": 1250,
-    "currency": "NPR",
-    "items": [
-      { "name": "Cappuccino", "qty": 1, "price": 850 }
-    ]
+    "integrationKey": "SPK-RX-TTMFHBYZ",
+    "payload": {
+      "event_type": "order.completed",
+      "order_id": "ORDER-1001",
+      "amount": 1250,
+      "currency": "NPR",
+      "items": [
+        { "name": "Cappuccino", "qty": 1, "price": 850 }
+      ]
+    }
   }'
 ```
 
@@ -368,12 +372,13 @@ Expected response:
   "success": true,
   "message": "Purchase QR ready",
   "data": {
-    "qr_link": "https://your-domain/r/xKd93k",
-    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+    "qr_link": "https://samparka.co/r/xKd93k",
+    "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
-    "expires_at": "2026-08-31T07:40:08.000Z"
+    "expires_at": "2026-08-26T12:12:04.000Z",
+    "integration_key": "SPK-RX-TTMFHBYZ"
   }
 }
 ```
@@ -384,10 +389,11 @@ Validate that:
 - `"success": true`
 - `"status": "QR_GENERATED"`
 - `qr_link` is a non-empty scannable short URL
+- `integration_key` is present in the response
 
 ### Idempotent Retry
 
-Each request creates a **new checkout session** (fresh `ps_…` reference). Retry-safety lives in the session lifecycle: re-sending the request while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`) returns the same `qr_link` (200), not a new session.
+With `payload.order_id`, retry-safety lives in the session lifecycle: re-sending the request while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`) returns the same `qr_link` (200) and the same `purchase_reference` (`sysqr:...`). Without `order_id`, each request creates a new session.
 
 ### Validation Failure
 
@@ -432,7 +438,7 @@ Expected response:
 
 ### Invalid Token Or Unknown Provider
 
-Expected `401` for an unknown/invalid token and `404` for a provider not in `{blanxer, restrox}`.
+Expected `401` for an unknown/invalid token or mismatched `integrationKey`, and `404` for a provider not in `{blanxer, restrox}`. Also expect `403 unsupported_capability` if the provider doesn't have `submitPurchase` enabled.
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -451,16 +457,20 @@ Before testing Purchase QR, confirm:
 ## Happy Path
 
 ```bash
-curl -X POST "https://your-domain/integrations/system/{provider}/purchase-qr" \
+curl -X POST "https://samparka.co/integrations/system/{provider}/purchase-qr" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <provider_api_key>" \
   --data '{
-    "amount": 1250,
-    "currency": "NPR",
-    "X-Integration-Key": "<integration_key>",
-    "items": [
-      { "name": "Cappuccino", "qty": 1, "price": 850 }
-    ]
+    "integrationKey": "SPK-RX-TTMFHBYZ",
+    "payload": {
+      "event_type": "order.completed",
+      "order_id": "ORDER-1001",
+      "amount": 1250,
+      "currency": "NPR",
+      "items": [
+        { "name": "Cappuccino", "qty": 1, "price": 850 }
+      ]
+    }
   }'
 ```
 
@@ -471,12 +481,13 @@ Expected response:
   "success": true,
   "message": "Purchase QR ready",
   "data": {
-    "qr_link": "https://your-domain/r/xKd93k",
-    "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+    "qr_link": "https://samparka.co/r/xKd93k",
+    "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
-    "expires_at": "2026-08-31T07:40:08.000Z"
+    "expires_at": "2026-08-26T12:12:04.000Z",
+    "integration_key": "SPK-RX-TTMFHBYZ"
   }
 }
 ```
@@ -487,10 +498,11 @@ Validate that:
 - `"success": true`
 - `"status": "QR_GENERATED"`
 - `qr_link` is a non-empty scannable short URL
+- `integration_key` is present in the response
 
 ## Idempotent Retry
 
-Each request creates a **new checkout session** (fresh `ps_…` reference). Retry-safety lives in the session lifecycle: re-sending the request while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`) returns the same `qr_link` (200), not a new session.
+With `payload.order_id`, retry-safety lives in the session lifecycle: re-sending the request while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`) returns the same `qr_link` (200) and the same `purchase_reference` (`sysqr:...`). Without `order_id`, each request creates a new session.
 
 ## Validation Failure
 

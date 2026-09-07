@@ -47,13 +47,12 @@ Treat this response as success and stop retrying that payload.
     </Info>
 
 ```bash
-curl -X POST https://server.samparka.xyz/integrations/system/{provider}/purchase-qr \
+curl -X POST https://server.samparka.co/integrations/system/{provider}/purchase-qr \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <provider_api_key>" \
   -d '{
     "amount": 1250,
     "currency": "NPR",
-    "X-Integration-Key": "<integration_key>",
     "items": [
       { "name": "Cappuccino", "qty": 1, "price": 850 }
     ]

@@ -70,23 +70,31 @@ Samparka reads different fields for `connect`, `test-sale`, and direct webhook d
 
 `POST /integrations/system/{provider}/purchase-qr`
 
-The System sends the cash-sale details and receives a scannable purchase QR `qr_link` in response. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key`). No `webhook_token` in the path. See [Purchase QR Request / Response](./purchase-qr/request-response).
+The System sends a webhook-style envelope with the cash-sale details and receives a scannable purchase QR `qr_link` in response. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the store is resolved from the API key's `store_id` scope. The store's integration key travels in the request body (`integrationKey`), **not a header**. No `webhook_token` or `X-Integration-Key` header in the path. See [Purchase QR Request / Response](./purchase-qr/request-response).
 
 ### Required Properties
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `amount` | number | Yes | Sale amount. Must be greater than `0`. | `1250` |
-| `items` | array | Yes | Product items in the bill. Each item has `name`, `qty`, and `price`. | `[{ "name": "Cappuccino", "qty": 1, "price": 850 }]` |
+| `integrationKey` | string | Yes | Store's integration key. Must match the store the provider API key is scoped to, else `401`. Sent in the **request body**, not a header. | `SPK-RX-TTMFHBYZ` |
+| `payload` | object | Yes | Wrapper object holding the sale details. | — |
+| `payload.event_type` | string | Yes | Must be `"order.completed"`, else `400`. | `order.completed` |
+| `payload.amount` | number | Yes | Sale amount. Must be greater than `0`. | `1250` |
+| `payload.items` | array | Yes | Product items in the bill. Each item has `name`, `qty`, and `price`. Σ(items) must equal amount ±0.01, else `400`. | `[{ "name": "Cappuccino", "qty": 1, "price": 850 }]` |
 
 ### Optional Properties
 
 | Field | Type | Required | Description | Example |
 | ----- | ---- | -------- | ----------- | ------- |
-| `currency` | string | No | 3-letter currency code. Defaults to `NPR` if omitted. | `NPR` |
+| `payload.order_id` | string | Recommended | POS order/receipt id (max 100 chars). Enables safe retries — see [Idempotency](#idempotency). Can also be sent as an `Idempotency-Key` header; when both are present they must match. | `ORDER-1001` |
+| `payload.created_at` | string | No | ISO 8601 timestamp of the sale; stored in session metadata. Invalid dates → `400`. | `2026-06-08T10:15:00.000Z` |
+| `payload.currency` | string | No | 3-letter currency code. Defaults to `NPR` if omitted. | `NPR` |
 
 <Note>
   `items` is **required** for purchase QR because the System must provide the product items in the bill for loyalty attribution.
+  `payload.event_type` must be `"order.completed"` — other values return `400`.
+  `integrationKey` is validated against the store resolved from the API key's `store_id` scope — mismatch returns `401`.
+  **No `customer_phone` field is accepted on this endpoint** — the endpoint is phone-less. Customer identity is resolved during the WhatsApp claim flow.
 </Note>
 
 ## Restaurant Attribution Source Of Truth
@@ -109,8 +117,8 @@ not from webhook payload fields.
 
 ## Additional Notes
 
-- Webhook payload restaurant fields are optional, non-canonical metadata for outlet-owned integrations.
-- Fields outside the parser mappings are not required for the canonical partner flow.
+    - Webhook payload restaurant fields are optional, non-canonical metadata for outlet-owned integrations.
+    - Fields outside the parser mappings are not required for the canonical partner flow.
   </Tab>
   <Tab title="Communication">
     <Info>

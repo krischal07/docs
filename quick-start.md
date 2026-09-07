@@ -68,15 +68,7 @@ Validate that the response:
 
 Do not assert `message`, `restaurantId`, or `externalLocationId` in the connect response. Those values are no longer part of the success payload.
 
-## 3. Configure The Webhook URL
-
-After a successful connect request, store the returned `token`.
-
-Configure System to send webhook events to:
-
-`https://samparka.xyz/webhook/{provider}/{{webhookToken}}`
-
-## 4. Send A Test Sale
+## 3. Send A Test Sale
 
 Use the canonical sale fixture from [`examples/payloads.json`](./examples/payloads.json):
 
@@ -105,7 +97,7 @@ Expected webhook response:
 
 Location identity comes from the integration that owns `{token}`. Do not rely on payload location fields for outlet-owned attribution.
 
-## 5. Optional Partner Shortcut
+## 4. Optional Partner Shortcut
 
 `POST /api/partners/{provider}/test-sale` submits a sale into the same webhook processing path, but wraps the webhook result:
 
@@ -120,7 +112,7 @@ Location identity comes from the integration that owns `{token}`. Do not rely on
 }
 ```
 
-## 6. Verify The Integration Became ACTIVE
+## 5. Verify The Integration Became ACTIVE
 
 Fetch the merchant integration after the first valid sale and confirm:
 
@@ -129,12 +121,12 @@ Fetch the merchant integration after the first valid sale and confirm:
 
 `ACTIVE` confirms the integration activated, but it does not prove the loyalty workflow finished successfully.
 
-## 7. Verify The Customer Exists
+## 6. Verify The Customer Exists
 
 System authenticates as a partner, provides `Authorization: Bearer {{providerApiKey}}`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
 
 ```bash
-curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone={{customerPhone}}" \
+curl -X GET "https://samparka.co/api/partners/{provider}/customers/search?phone={{customerPhone}}" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
@@ -160,12 +152,12 @@ Expected miss response:
 }
 ```
 
-## 8. Verify Customer Details And Points
+## 7. Verify Customer Details And Points
 
 Fetch the resolved customer:
 
 ```bash
-curl -X GET "https://your-domain/api/partners/{provider}/customers/{{customerId}}" \
+curl -X GET "https://samparka.co/api/partners/{provider}/customers/{{customerId}}" \
   -H "Authorization: Bearer {{providerApiKey}}" \
   -H "x-integration-key: {{integrationKey}}"
 ```
@@ -183,11 +175,11 @@ Expected response:
 }
 ```
 
-## 9. Verify Loyalty Transaction Exists
+## 8. Verify Loyalty Transaction Exists
 
 Use merchant tooling or the verified customer state to confirm a loyalty transaction was created for the test sale before go-live.
 
-## 10. Repost The Same Payload Once
+## 9. Repost The Same Payload Once
 
 Send the exact same webhook body again. Samparka should acknowledge the duplicate safely.
 
@@ -200,7 +192,7 @@ Expected response:
 }
 ```
 
-## 11. Send A Test Refund
+## 10. Send A Test Refund
 
 Use a `refund.created` payload that reuses the original sale identifier.
 
@@ -213,7 +205,7 @@ Expected response:
 }
 ```
 
-## 12. Complete Go-Live Validation
+## 11. Complete Go-Live Validation
 
 Run the checks in [Integration Checklist](./integration-checklist) before switching to production traffic.
   </Tab>
@@ -229,7 +221,7 @@ Run the checks in [Integration Checklist](./integration-checklist) before switch
     All API requests are made to:
 
     ```text
-    https://server.samparka.xyz
+    https://server.samparka.co
     ```
 
     ## Prerequisites
@@ -241,16 +233,15 @@ Run the checks in [Integration Checklist](./integration-checklist) before switch
 
     ## 1. Send A Purchase QR Request
 
-    `POST /integrations/system/{provider}/purchase-qr`. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key` in request body). No `webhook_token` in the path.
+    `POST /integrations/system/{provider}/purchase-qr`. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the store is resolved from the API key's `store_id` scope. No `webhook_token` in the path.
 
     ```bash
-    curl -X POST https://server.samparka.xyz/integrations/system/{provider}/purchase-qr \
+    curl -X POST https://server.samparka.co/integrations/system/{provider}/purchase-qr \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer <provider_api_key>" \
       -d '{
         "amount": 1250,
         "currency": "NPR",
-        "X-Integration-Key": "<integration_key>",
         "items": [
           { "name": "Cappuccino", "qty": 1, "price": 850 }
         ]
@@ -271,7 +262,8 @@ Run the checks in [Integration Checklist](./integration-checklist) before switch
         "amount": 1250,
         "currency": "NPR",
         "status": "QR_GENERATED",
-        "expires_at": "2026-08-26T12:12:04.000Z"
+        "expires_at": "2026-08-26T12:12:04.000Z",
+        "integration_key": "xxxxxxxxxxxxxxxx"
       }
     }
     ```

@@ -21,7 +21,7 @@ sidebarTitle: Endpoint Catalog
 
     | Endpoint | Purpose | Authentication |
     | -------- | ------- | -------------- |
-    | `POST /integrations/system/{provider}/purchase-qr` | Create a scannable purchase-checkout QR for a cash sale from the System terminal; returns the QR link in the response. | `Authorization: Bearer {{providerApiKey}}` and `X-Integration-Key` in request body |
+    | `POST /integrations/system/{provider}/purchase-qr` | Create a scannable purchase-checkout QR for a cash sale from the System terminal; returns the QR link in the response. | `Authorization: Bearer {{providerApiKey}}` (store resolved from API key scope) |
 
     <Columns cols={2}>
       <Card title="Overview" icon="compass" href="/integrations/system/purchase-qr/overview">

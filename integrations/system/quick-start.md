@@ -20,27 +20,27 @@ sidebarTitle: Quick Start
     All API requests are made to:
 
     ```text
-    https://server.samparka.xyz
+    https://server.samparka.co
     ```
 
     <CodeGroup>
 
     ```bash Connect
-    POST https://server.samparka.xyz/api/partners/{provider}/connect
+    POST https://server.samparka.co/api/partners/{provider}/connect
     ```
 
     ```bash Webhook
-    POST https://server.samparka.xyz/webhook/{provider}/{token}
+    POST https://server.samparka.co/webhook/{provider}/{token}
     ```
 
     ```bash Customer Search
-    GET https://server.samparka.xyz/api/partners/{provider}/customers/search?phone={phone}
+    GET https://server.samparka.co/api/partners/{provider}/customers/search?phone={phone}
     ```
 
     </CodeGroup>
 
     <Tip>
-      Set `https://server.samparka.xyz` as the `baseUrl` variable in your Postman collection or HTTP client before running any requests.
+      Set `https://server.samparka.co` as the `baseUrl` variable in your Postman collection or HTTP client before running any requests.
     </Tip>
 
     ## 1. Receive The Integration Key
@@ -98,7 +98,7 @@ sidebarTitle: Quick Start
 
     Use the returned `token` to configure the webhook endpoint for subsequent provider event delivery.
 
-    `https://samparka.xyz/webhook/{provider}/{{webhookToken}}`
+    `https://samparka.co/webhook/{provider}/{{webhookToken}}`
 
     ## 4. Send A Test Sale
 
@@ -158,7 +158,7 @@ sidebarTitle: Quick Start
     The provider authenticates as a partner, provides `Authorization: Bearer {{providerApiKey}}`, provides `x-integration-key`, searches the customer by phone, and receives customer loyalty data.
 
     ```bash
-    curl -X GET "https://your-domain/api/partners/{provider}/customers/search?phone={{customerPhone}}" \
+    curl -X GET "https://samparka.co/api/partners/{provider}/customers/search?phone={{customerPhone}}" \
       -H "Authorization: Bearer {{providerApiKey}}" \
       -H "x-integration-key: {{integrationKey}}"
     ```
@@ -189,7 +189,7 @@ sidebarTitle: Quick Start
     Fetch the resolved customer:
 
     ```bash
-    curl -X GET "https://your-domain/api/partners/{provider}/customers/{{customerId}}" \
+    curl -X GET "https://samparka.co/api/partners/{provider}/customers/{{customerId}}" \
       -H "Authorization: Bearer {{providerApiKey}}" \
       -H "x-integration-key: {{integrationKey}}"
     ```
@@ -249,31 +249,38 @@ sidebarTitle: Quick Start
     All API requests are made to:
 
     ```text
-    https://server.samparka.xyz
+    https://server.samparka.co
     ```
 
     ## Prerequisites
 
     Before calling the Purchase QR endpoint, confirm:
 
-    - the System integration is `CONNECTED`/`ACTIVE`
+    - the System integration is `CONNECTED`/`ACTIVE` (not `CREATED`)
     - an active WhatsApp/Wapio communication provider is configured for the store
+    - provider API key (`spkp_…`) is bound to the store with `submitPurchase` capability enabled
+    - store integration key (`integrationKey`) is in hand
 
     ## 1. Send A Purchase QR Request
 
-    `POST /integrations/system/{provider}/purchase-qr`. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`) plus the integration key (`X-Integration-Key`). No `webhook_token` in the path.
+    `POST /integrations/system/{provider}/purchase-qr`. Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the store is resolved from the API key's `store_id` scope. The store's integration key travels in the request body (`integrationKey`), **not a header**. No `webhook_token` or `X-Integration-Key` header in the path.
 
     ```bash
-    curl -X POST https://server.samparka.xyz/integrations/system/{provider}/purchase-qr \
+    curl -X POST https://server.samparka.co/integrations/system/{provider}/purchase-qr \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer <provider_api_key>" \
-      -H "X-Integration-Key: <integration_key>" \
       -d '{
-        "amount": 1250,
-        "currency": "NPR",
-        "items": [
-          { "name": "Cappuccino", "qty": 1, "price": 850 }
-        ]
+        "integrationKey": "your_store_integration_key",
+        "payload": {
+          "event_type": "order.completed",
+          "order_id": "ORDER-1001",
+          "created_at": "2026-06-08T10:15:00.000Z",
+          "amount": 1250,
+          "currency": "NPR",
+          "items": [
+            { "name": "Cappuccino", "qty": 1, "price": 850 }
+          ]
+        }
       }'
     ```
 
@@ -287,26 +294,29 @@ sidebarTitle: Quick Start
       "message": "Purchase QR ready",
       "data": {
         "qr_link": "https://samparka.co/r/xKd93k",
-        "purchase_reference": "ps_1690000000000_ab12cd34ef56",
+        "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
         "amount": 1250,
         "currency": "NPR",
         "status": "QR_GENERATED",
-        "expires_at": "2026-08-26T12:12:04.000Z"
+        "expires_at": "2026-08-26T12:12:04.000Z",
+        "integration_key": "your_store_integration_key"
       }
     }
     ```
 
     ## 3. Render QR On The Receipt
 
-    Turn `qr_link` into a QR image and print it on the customer's receipt. When the customer scans it, they are taken through the WhatsApp claim flow and points are awarded.
+    Turn `qr_link` into a QR image and print it on the customer's receipt. **Always print the receipt** — loyalty QR failure must never block or fail the sale. When the customer scans it, they are taken through the WhatsApp claim flow and points are awarded.
 
-    ## 4. Idempotency
+    ## 4. Idempotency & Retry
 
-    Each request creates a **new checkout session** (fresh `ps_…` `purchase_reference`). Retry-safety lives in the session lifecycle: while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`), retrying returns the same QR (200). See [Request / Response Contract](/integrations/system/purchase-qr/request-response) for the full behavior.
+    **Send `payload.order_id` on every request** — it costs nothing and makes retry semantics exact. With `payload.order_id`, retry-safety lives in the session lifecycle: while the session is pending (`QR_GENERATED` / `WAITING_FOR_CUSTOMER_CLAIM`), retrying returns the same QR (200) and the same `purchase_reference` (`sysqr:...`). Without `order_id`, each request creates a new session. See [Request / Response Contract](/integrations/system/purchase-qr/request-response) for the full behavior.
+
+    **Golden rule:** loyalty QR failure must never block or fail the sale. Always print the receipt.
 
     <Columns cols={2}>
       <Card title="Integration Guide" icon="rocket" href="/integrations/system/purchase-qr/integration-guide">
-        Full example curl, behavior matrix, and design choices.
+        Full example curl, behavior matrix, error handling, and idempotency.
       </Card>
       <Card title="Testing & Verification" icon="flask-conical" href="/integrations/system/purchase-qr/testing">
         Automated test cases and deployment notes.

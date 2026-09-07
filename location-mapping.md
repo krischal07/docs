@@ -32,16 +32,16 @@ For backward compatibility, Samparka still accepts singular `restaurantId` and `
       The **Communication** feature requires a connected WhatsApp communication provider. To use this feature and get access, contact the Samparka team.
     </Info>
 
-    The Purchase QR endpoint resolves location from the integration key, not from the webhook token:
+    The Purchase QR endpoint resolves location from the API key's `store_id` scope:
 
     ```txt
-    X-Integration-Key (in request body)
+    Provider API Key (store_id scope)
     -> SystemIntegration
     -> Outlet
     -> Bound External Location
     ```
 
-    The System sends `X-Integration-Key` in the request body. Samparka resolves the store/outlet from that integration key. No `webhook_token` is used in the path.
+    The store is resolved from the API key's `store_id` scope. No `X-Integration-Key` header is required. No `webhook_token` is used in the path.
 
     This is the same location resolution used by the partner customer APIs.
 
