@@ -67,7 +67,7 @@ For backward compatibility, Samparka still accepts singular `restaurantId` and `
 
 ## Test Sale Contract
 
-`POST /api/partners/restrox/test-sale` wraps the underlying webhook response.
+`POST /api/partners/{provider}/test-sale` wraps the underlying webhook response.
 
 ```json
 {
@@ -82,7 +82,7 @@ For backward compatibility, Samparka still accepts singular `restaurantId` and `
 
 ## Webhook Contract
 
-Send webhook events to `/webhook/restrox/{token}` with transaction data and a customer phone:
+Send webhook events to `/webhook/{provider}/{token}` with transaction data and a customer phone:
 
 ```json
 {
@@ -102,18 +102,18 @@ Payload location fields such as `external_location_id`, `external_location_name`
 Use the partner-authenticated customer lookup routes:
 
 ```http
-GET /api/partners/restrox/customers/search?phone={{customerPhone}}
+GET /api/partners/{provider}/customers/search?phone={{customerPhone}}
 Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
 ```http
-GET /api/partners/restrox/customers/{{customerId}}
+GET /api/partners/{provider}/customers/{{customerId}}
 Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
-`providerApiKey` is shared manually by Samparka during onboarding. For this integration, use `restrox` as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
+`providerApiKey` is shared manually by Samparka during onboarding. For this integration, use your assigned provider slug as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
 
 ## Testing Checklist
 
@@ -173,7 +173,7 @@ Success response:
 
 ## Webhook Contract
 
-Send webhook events to `/webhook/restrox/{token}` with transaction data and a customer phone:
+Send webhook events to `/webhook/{provider}/{token}` with transaction data and a customer phone:
 
 ```json
 {
@@ -193,18 +193,18 @@ Payload location fields such as `external_location_id`, `external_location_name`
 Use the partner-authenticated customer lookup routes:
 
 ```http
-GET /api/partners/restrox/customers/search?phone={{customerPhone}}
+GET /api/partners/{provider}/customers/search?phone={{customerPhone}}
 Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
 ```http
-GET /api/partners/restrox/customers/{{customerId}}
+GET /api/partners/{provider}/customers/{{customerId}}
 Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
-`providerApiKey` is shared manually by Samparka during onboarding. For this integration, use `restrox` as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
+`providerApiKey` is shared manually by Samparka during onboarding. For this integration, use your assigned provider slug as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
 
 ## Testing Checklist
 

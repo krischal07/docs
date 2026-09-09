@@ -26,7 +26,7 @@ import { Tabs, Tab } from "@mintlify/components";
 
 The provider API key confirms the vendor, and the key's `store_id` scope resolves the store and integration. The store's integration key travels in the request body (`integrationKey`), not a header. No `webhook_token` is used on this endpoint.
 
-Path params: `provider` = your System provider (`blanxer`, `restrox`, or your `{provider}` value).
+Path params: `provider` = your System provider slug (your `{provider}` value).
 
 ## Request
 
@@ -69,7 +69,7 @@ An idempotent retry returns the same QR (when `payload.order_id` is provided).
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",   // short_url — System turns this into a QR
-    "purchase_reference": "sysqr:restrox:6a9e80a4…:ORDER-1001",
+    "purchase_reference": "sysqr:{provider}:6a9e80a4…:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",

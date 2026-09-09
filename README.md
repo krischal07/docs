@@ -13,7 +13,7 @@ import { Tabs, Tab } from "@mintlify/components";
 
 Samparka is a customer loyalty platform. A valid System integration is complete only after both transport and business outcomes are verified.
 
-1. Connect one external location to one outlet-owned Samparka integration with `POST /api/partners/restrox/connect`.
+1. Connect one external location to one outlet-owned Samparka integration with `POST /api/partners/{provider}/connect`.
 2. Store the returned `token` and use it to configure the webhook URL.
 3. Send sale, refund, and void webhook traffic after the integration is connected.
 4. Verify customer resolution, loyalty processing, and awarded points after the first valid sale.
@@ -21,14 +21,14 @@ Samparka is a customer loyalty platform. A valid System integration is complete 
 ## Integration Verification Flow
 
 1. Receive the Samparka Integration Key and provider API key manually for the outlet-owned System integration.
-2. For this integration, use `restrox` as the `{provider}` value in documented route examples.
-3. Call `POST /api/partners/restrox/connect` with `integrationKey`, `externalLocationId`, and optional `externalLocationName`.
+2. For this integration, use your assigned provider slug as the `{provider}` value in documented route examples.
+3. Call `POST /api/partners/{provider}/connect` with `integrationKey`, `externalLocationId`, and optional `externalLocationName`.
 4. Store the returned `token`.
-5. Configure System to send events to `https://samparka.co/webhook/restrox/{token}`.
-6. Send a test `order.completed` event to the webhook endpoint or use `POST /api/partners/restrox/test-sale`.
+5. Configure System to send events to `https://samparka.co/webhook/{provider}/{token}`.
+6. Send a test `order.completed` event to the webhook endpoint or use `POST /api/partners/{provider}/test-sale`.
 7. Verify the integration becomes `ACTIVE`.
-8. Search the customer with `GET /api/partners/restrox/customers/search?phone=...` using partner authentication and `x-integration-key`.
-9. Fetch the customer with `GET /api/partners/restrox/customers/{customerId}` and confirm loyalty fields are populated.
+8. Search the customer with `GET /api/partners/{provider}/customers/search?phone=...` using partner authentication and `x-integration-key`.
+9. Fetch the customer with `GET /api/partners/{provider}/customers/{customerId}` and confirm loyalty fields are populated.
 10. Verify a loyalty transaction exists for the sale and the awarded points reflect successful processing.
 11. Repost the same sale payload once to confirm duplicate safety.
 12. Send a `refund.created` webhook that references the original sale identifier.
@@ -77,7 +77,7 @@ Successful connect responses return:
 
 ## Test Sale Contract
 
-`POST /api/partners/restrox/test-sale` is a partner wrapper around the same webhook processing path used by `/webhook/restrox/{token}`.
+`POST /api/partners/{provider}/test-sale` is a partner wrapper around the same webhook processing path used by `/webhook/{provider}/{token}`.
 
 Successful responses are wrapped:
 
@@ -184,7 +184,7 @@ Success response:
 
 ## Webhook Contract
 
-Send webhook events to `/webhook/restrox/{token}` with transaction data and a customer phone:
+Send webhook events to `/webhook/{provider}/{token}` with transaction data and a customer phone:
 
 ```json
 {
@@ -204,18 +204,18 @@ Payload location fields such as `external_location_id`, `external_location_name`
 Use the partner-authenticated customer lookup routes:
 
 ```http
-GET /api/partners/restrox/customers/search?phone={{customerPhone}}
+GET /api/partners/{provider}/customers/search?phone={{customerPhone}}
 Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
 ```http
-GET /api/partners/restrox/customers/{{customerId}}
+GET /api/partners/{provider}/customers/{{customerId}}
 Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
-`providerApiKey` is shared manually by Samparka during onboarding. For this integration, use `restrox` as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
+`providerApiKey` is shared manually by Samparka during onboarding. For this integration, use `{provider}` as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
 
 ## Testing Checklist
 

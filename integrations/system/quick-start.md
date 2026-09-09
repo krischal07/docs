@@ -107,7 +107,7 @@ sidebarTitle: Quick Start
     ```json
     {
       "event_type": "order.completed",
-      "order_id": "restrox-sale-1001",
+      "order_id": "system-sale-1001",
       "created_at": "2026-06-08T10:15:00.000Z",
       "amount": 850,
       "currency": "NPR",
@@ -294,7 +294,7 @@ sidebarTitle: Quick Start
       "message": "Purchase QR ready",
       "data": {
         "qr_link": "https://samparka.co/r/xKd93k",
-        "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
+        "purchase_reference": "sysqr:{provider}:6a9e80a4...:ORDER-1001",
         "amount": 1250,
         "currency": "NPR",
         "status": "QR_GENERATED",

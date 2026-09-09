@@ -8,7 +8,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "https://samparka.co"
+      "value": "https://server.samparka.co"
     },
     {
       "key": "providerApiKey",
@@ -52,7 +52,7 @@
     },
     {
       "key": "provider",
-      "value": "restrox"
+      "value": "replace-with-provider-slug"
     },
     {
       "key": "invalidWebhookToken",
@@ -735,7 +735,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 1250,\n  \"currency\": \"NPR\",\n  \"items\": [\n    { \"name\": \"Cappuccino\", \"qty\": 1, \"price\": 850 }\n  ]\n}"
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"payload\": {\n    \"event_type\": \"order.completed\",\n    \"order_id\": \"ORDER-1001\",\n    \"created_at\": \"2026-06-08T10:15:00.000Z\",\n    \"amount\": 1250,\n    \"currency\": \"NPR\",\n    \"items\": [\n      { \"name\": \"Cappuccino\", \"qty\": 1, \"price\": 850 }\n    ]\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/integrations/system/{{provider}}/purchase-qr",

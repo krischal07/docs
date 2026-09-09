@@ -373,7 +373,7 @@ Expected response:
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",
-    "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
+    "purchase_reference": "sysqr:{provider}:6a9e80a4...:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
@@ -438,7 +438,7 @@ Expected response:
 
 ### Invalid Token Or Unknown Provider
 
-Expected `401` for an unknown/invalid token or mismatched `integrationKey`, and `404` for a provider not in `{blanxer, restrox}`. Also expect `403 unsupported_capability` if the provider doesn't have `submitPurchase` enabled.
+Expected `401` for an unknown/invalid token or mismatched `integrationKey`, and `404` for an unknown `{provider}` value. Also expect `403 unsupported_capability` if the provider doesn't have `submitPurchase` enabled.
   </Tab>
   <Tab title="Communication">
     <Info>
@@ -482,7 +482,7 @@ Expected response:
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",
-    "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
+    "purchase_reference": "sysqr:{provider}:6a9e80a4...:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
@@ -547,7 +547,7 @@ Expected response:
 
 ## Invalid Token Or Unknown Provider
 
-Expected `401` for an unknown/invalid token and `404` for a provider not in `{blanxer, restrox}`.
+Expected `401` for an unknown/invalid token and `404` for an unknown `{provider}` value.
 
 <Columns cols={2}>
   <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">

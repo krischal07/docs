@@ -9,7 +9,7 @@ Samparka is a customer loyalty platform. A valid System integration is complete 
 3. Send sale, refund, and void webhook traffic after the integration is connected.
 4. Verify customer resolution, loyalty processing, and awarded points after the first valid sale.
 
-**Provider value:** for this integration, use `restrox` as the `{provider}` value in documented route examples.
+**Provider value:** for this integration, use your assigned provider slug as the `{provider}` value in documented route examples.
 
 ---
 
@@ -60,13 +60,13 @@ Verify Points Awarded
 ```
 
 1. Receive the Samparka **Integration Key** and **provider API key** manually for the outlet-owned System integration.
-2. Call `POST /api/partners/restrox/connect` with `integrationKey`, `externalLocationId`, and optional `externalLocationName`.
+2. Call `POST /api/partners/{provider}/connect` with `integrationKey`, `externalLocationId`, and optional `externalLocationName`.
 3. Store the returned `token`.
-4. Configure System to send events to `https://samparka.co/webhook/restrox/{token}`.
-5. Send a test `order.completed` event to the webhook endpoint or use `POST /api/partners/restrox/test-sale`.
+4. Configure System to send events to `https://samparka.co/webhook/{provider}/{token}`.
+5. Send a test `order.completed` event to the webhook endpoint or use `POST /api/partners/{provider}/test-sale`.
 6. Verify the integration becomes `ACTIVE`.
-7. Search the customer with `GET /api/partners/restrox/customers/search?phone=...` using partner authentication and `x-integration-key`.
-8. Fetch the customer with `GET /api/partners/restrox/customers/{customerId}` and confirm loyalty fields are populated.
+7. Search the customer with `GET /api/partners/{provider}/customers/search?phone=...` using partner authentication and `x-integration-key`.
+8. Fetch the customer with `GET /api/partners/{provider}/customers/{customerId}` and confirm loyalty fields are populated.
 9. Verify a loyalty transaction exists for the sale and the awarded points reflect successful processing.
 10. Repost the same sale payload once to confirm duplicate safety.
 11. Send a `refund.created` webhook that references the original sale identifier.
@@ -113,10 +113,10 @@ System Returns Store-Scoped Loyalty Data
 
 - Merchant lifecycle APIs use merchant auth.
 - Partner APIs use `Authorization: Bearer {{providerApiKey}}` as the **canonical auth model**.
-- For this integration, use `restrox` as the `{provider}` value in documented partner and webhook routes.
+- For this integration, use your assigned provider slug as the `{provider}` value in documented partner and webhook routes.
 - System customer APIs use `Authorization: Bearer {{providerApiKey}}` **plus** `x-integration-key`.
 - `x-partner-key` remains legacy compatibility behavior and should **not** be used in new integrations.
-- Webhooks use `POST /webhook/restrox/{token}` — the token in the URL path is the auth.
+- Webhooks use `POST /webhook/{provider}/{token}` — the token in the URL path is the auth.
 
 **Customer Lookup Authorization:**
 
@@ -477,18 +477,18 @@ Webhook payload location fields are optional, non-canonical metadata. They are *
 Use the partner-authenticated customer lookup routes:
 
 ```http
-GET /api/partners/restrox/customers/search?phone={{customerPhone}}
+GET /api/partners/{provider}/customers/search?phone={{customerPhone}}
 Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
 ```http
-GET /api/partners/restrox/customers/{{customerId}}
+GET /api/partners/{provider}/customers/{{customerId}}
 Authorization: Bearer {{providerApiKey}}
 x-integration-key: {{integrationKey}}
 ```
 
-`providerApiKey` is shared manually by Samparka during onboarding. Use `restrox` as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
+`providerApiKey` is shared manually by Samparka during onboarding. Use your assigned provider slug as the route provider value. `x-integration-key` identifies the merchant or store context, and the search is scoped to that integration's store.
 
 ---
 
@@ -1379,7 +1379,7 @@ Validate that:
 }
 ```
 
-**Invalid Token Or Unknown Provider:** expected `401` for an unknown/invalid token and `404` for a provider not in `{blanxer, restrox}`.
+**Invalid Token Or Unknown Provider:** expected `401` for an unknown/invalid token and `404` for an unknown `{provider}` value.
 
 ### Refunds For Purchase QR Sales
 

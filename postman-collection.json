@@ -8,7 +8,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "https://samparka.co"
+      "value": "https://server.samparka.co"
     },
     {
       "key": "providerApiKey",
@@ -52,7 +52,7 @@
     },
     {
       "key": "provider",
-      "value": "restrox"
+      "value": "replace-with-provider-slug"
     },
     {
       "key": "invalidWebhookToken",
@@ -697,6 +697,59 @@
               ]
             },
             "description": "Verify the customer state after loyalty processing using the partner customer detail route."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Purchase QR",
+      "item": [
+        {
+          "name": "Create Purchase QR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('purchase QR returns 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('success flag matches implementation', function () { pm.expect(body.success).to.eql(true); });",
+                  "pm.test('status is QR_GENERATED', function () { pm.expect(body.data.status).to.eql('QR_GENERATED'); });",
+                  "pm.test('qr_link is non-empty', function () { pm.expect(body.data.qr_link).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{providerApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"integrationKey\": \"{{integrationKey}}\",\n  \"payload\": {\n    \"event_type\": \"order.completed\",\n    \"order_id\": \"ORDER-1001\",\n    \"created_at\": \"2026-06-08T10:15:00.000Z\",\n    \"amount\": 1250,\n    \"currency\": \"NPR\",\n    \"items\": [\n      { \"name\": \"Cappuccino\", \"qty\": 1, \"price\": 850 }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/integrations/system/{{provider}}/purchase-qr",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "integrations",
+                "system",
+                "{{provider}}",
+                "purchase-qr"
+              ]
+            },
+            "description": "Generate a scannable purchase-checkout QR for a System cash sale. Requires a connected System integration and an active communication provider."
           }
         }
       ]

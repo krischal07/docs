@@ -194,7 +194,7 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the s
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",
-    "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
+    "purchase_reference": "sysqr:{provider}:6a9e80a4...:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",
@@ -329,7 +329,7 @@ Auth is the provider API key (`Authorization: Bearer <provider_api_key>`); the s
   "message": "Purchase QR ready",
   "data": {
     "qr_link": "https://samparka.co/r/xKd93k",
-    "purchase_reference": "sysqr:restrox:6a9e80a4...:ORDER-1001",
+    "purchase_reference": "sysqr:{provider}:6a9e80a4...:ORDER-1001",
     "amount": 1250,
     "currency": "NPR",
     "status": "QR_GENERATED",

@@ -439,7 +439,7 @@ Expected response:
 
 ## Invalid Token Or Unknown Provider
 
-Expected `401` for an unknown/invalid token and `404` for a provider not in `{blanxer, restrox}`.
+Expected `401` for an unknown/invalid token and `404` for an unknown `{provider}` value.
 
 <Columns cols={2}>
   <Card title="Request / Response Contract" icon="code" href="/integrations/system/purchase-qr/request-response">

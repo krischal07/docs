@@ -9,7 +9,7 @@ sidebarTitle: Authentication
   <Tab title="App">
     - merchant lifecycle APIs use merchant auth
     - partner APIs use `Authorization: Bearer {{providerApiKey}}` as the canonical auth model
-    - for this integration, use `restrox` as the `{provider}` value in documented partner and webhook routes
+    - use your assigned provider slug as the `{provider}` value in documented partner and webhook routes
     - System customer APIs use `Authorization: Bearer {{providerApiKey}}` plus `x-integration-key`
   </Tab>
   <Tab title="Communication">
